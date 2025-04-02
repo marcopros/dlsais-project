@@ -1,16 +1,42 @@
 <p align='center'>
-    <h1 align="center">Design Large Scale AI Systems</h1>
+    <h1 align="center">Home Repair Assistant</h1>
     <p align="center">
-    Project for DLSAIS @ University of Trento A.Y.2024/2025
+    Project for Design Large Scale AI Systems <br> @ University of Trento A.Y.2024/2025
     </p>
     <p align='center'>
       Group B <br>
-      A. De Vidi, M. Grisenti, M. Prosperi, G. Vazzoler, C. Zamuner <br>
+      A. De Vidi, M. Grisenti, M. Prosperi, <br> G. Vazzoler, C. Zamuner <br>
     </p>   
 </p>
 
 ----------
+<p> 
+  <b> AI-based assistant for managing home problems and connecting with professionals. </b> <br> <br>
+  The system combines AI-driven diagnosis and automated data collection to create an efficient bridge between users in distress and qualified professionals, eliminating manual steps in research. <br>
 
-## Requirements --> **Link**
+  <ul>
+  <li> It does not replace the technician, but diagnoses the problem, finds the most suitable professional and facilitates contact. 
+  <li> It integrates NLP (natural language processing) and machine learning to analyze user requests.
+  </ul>
+</p> 
 
-## Architecture --> **Link**
+----------
+<p align='center'>
+  <h3 align='center'> WHAT IT DOES, HOW IT HELPS </h3>
+  <p> <b> For users: </b> <ul> 
+    <li> Saves time in searching for reliable professionals.
+    <li> Preliminary diagnosis of the problem to avoid unnecessary interventions.
+    <li> Comparison of professionals (reviews, rates, availability, word of mouth).
+  </ul></p>
+  <p> <b> For professionals: </b> <ul>
+    <li>Access to profiled clients with clear needs.
+    <li>Reduced communication time through detailed descriptions of the problem. 
+  </ul> </p> 
+</p>
+
+
+
+
+## Requirements --> **[Link](https://docs.google.com/document/d/1h5aTDhGsE6GPwdTVpKwTkm87zcH38Ci-F5FXBIQbkOs/edit?usp=sharing)**
+
+## Architecture --> **[Link](https://drive.google.com/file/d/1gcKNvieO_fnmZ8s8xKSWcWuYHjZWNs5s/view?usp=sharing)**
