@@ -1,7 +1,7 @@
 <p align='center'>
     <h1 align="center">Home Repair Assistant</h1>
     <p align="center">
-    Project for Design Large Scale AI Systems <br> @ University of Trento A.Y.2024/2025
+    Project for Designing Large Scale AI Systems <br> @ University of Trento A.Y.2024/2025
     </p>
     <p align='center'>
       Group B <br>
