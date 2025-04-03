@@ -37,6 +37,6 @@
 
 
 
-## Requirements --> **[Link](https://docs.google.com/document/d/1h5aTDhGsE6GPwdTVpKwTkm87zcH38Ci-F5FXBIQbkOs/edit?usp=sharing)**
+## Requirements --> **[Doc link](https://docs.google.com/document/d/1h5aTDhGsE6GPwdTVpKwTkm87zcH38Ci-F5FXBIQbkOs/edit?usp=sharing)**
 
-## Architecture --> **[Link](https://drive.google.com/file/d/1gcKNvieO_fnmZ8s8xKSWcWuYHjZWNs5s/view?usp=sharing)**
+## Architecture --> **[Flowchart link](https://drive.google.com/file/d/1gcKNvieO_fnmZ8s8xKSWcWuYHjZWNs5s/view?usp=sharing)** | **[Doc link](https://docs.google.com/document/d/156_QKwj74Sz2SoJMdNFXA3mDP4FXiTqmRkL6dN-Yjt4/edit?usp=sharing)**
