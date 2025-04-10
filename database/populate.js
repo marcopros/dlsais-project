@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const Professional = require('./models/Professional');
 const Request = require('./models/Request');
+require('dotenv').config();
 
-const uri = 'mongodb+srv://marco:unitn25@dlsais-cluster.vkxu2tc.mongodb.net/?retryWrites=true&w=majority&appName=dlsais-cluster';
+const uri = process.env.MONGODB_URI;
 
 mongoose.connect(uri)
     .then(() => console.log('Connected to MongoDB Atlas'))
