@@ -1,7 +1,3 @@
-Absolutely! Here’s the final updated version of your **README.md**, now with a **"What's Left to Implement"** section at the end to outline upcoming development steps:
-
----
-
 # 🧩 `problem_agent` – Home Repair Assistant: Problem Handling Agents
 
 This package is part of a modular AI system designed to help users resolve household issues through intelligent conversation and diagnostic steps. The `problem_agent` module includes the agents responsible for:
@@ -130,9 +126,3 @@ If you don’t see `problem_agent` in the UI:
   - Share information between turns
   - Remember past interactions
   - Store user preferences (e.g., preferred language, location, skill level)
-
-This will enable a more personalized and continuous multi-step support experience for the user.
-
----
-
-Let me know if you want to break out session management into subtasks or need help implementing that next!
