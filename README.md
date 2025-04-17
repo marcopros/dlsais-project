@@ -37,10 +37,18 @@
 ---
 ## Agents
 - 🛠️ **[Diagnosis Agent](https://github.com/marcopros/dlsais-project/blob/main/diagnosis_agent)**: Based on the user's input, it identifies the type of problem and suggests a possible DIY solution if the user prefers. Otherwise, it forwards the task to the next agent.
+- 🧰 **DIY Agent**: Empowers users to solve problems independently by offering clear, step-by-step instructions, recommended tools and materials, safety precautions, and curated multimedia resources. 
 - 🧩 **Matching Agent**: Searches for a professional to address the user's issue, considering factors such as the user's trust network (Network of Trust), location, past interventions, and personal preferences.
 - 📅 **Appointment Agent**: Facilitates contact between the user and the selected professional, and, when possible, manages the scheduling of the appointment.
 - 🗣️ **Feedback Agent**: Gathers user feedback to update and improve the Network of Trust.
 
+<br>
+
+<p align="center">
+  <img src="architecture-structure.png" alt="System Architecture" style="width: 80%; max-width: 800px;" />
+</p>
+
+<br>
 
 
 ## Requirements --> **[Doc link](https://docs.google.com/document/d/1h5aTDhGsE6GPwdTVpKwTkm87zcH38Ci-F5FXBIQbkOs/edit?usp=sharing)**
