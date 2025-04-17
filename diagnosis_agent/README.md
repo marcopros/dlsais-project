@@ -1,6 +1,6 @@
-# 🧩 `problem_agent` – Home Repair Assistant: Problem Handling Agents
+# 🧩 `diagnosis_agent` – Home Repair Assistant: Problem Handling Agents
 
-This package is part of a modular AI system designed to help users resolve household issues through intelligent conversation and diagnostic steps. The `problem_agent` module includes the agents responsible for:
+This package is part of a modular AI system designed to help users resolve household issues through intelligent conversation and diagnostic steps. The `diagnosis_agent` module includes the agents responsible for:
 
 1. Understanding the user's problem  
 2. Diagnosing possible DIY solutions  
@@ -41,7 +41,7 @@ User ↔ Listener Agent → DIY Agent → Orchestrator Agent → [Professional F
 ## 📁 Folder Structure
 
 ```
-problem_agent/
+diagnosis_agent/
 ├── __init__.py             # Package initializer
 ├── agent.py                # Main agent definitions
 ├── diy_agent.py            # DIY troubleshooting agent
@@ -78,7 +78,7 @@ pip install google-adk
 
 ### 2. Create `.env` File
 
-Inside `problem_agent/`, create a `.env` file with the following:
+Inside `diagnosis_agent/`, create a `.env` file with the following:
 
 ```env
 GOOGLE_GENAI_USE_VERTEXAI=FALSE
@@ -104,15 +104,15 @@ adk web
 ```
 
 1. Open the URL provided in the terminal (usually `http://localhost:8000` or `http://127.0.0.1:8000`).
-2. In the top-left corner, select your agent from the dropdown — choose **`problem_agent`**.
+2. In the top-left corner, select your agent from the dropdown — choose **`diagnosis_agent`**.
 
 ---
 
 ### 🛠️ Troubleshooting
 
-If you don’t see `problem_agent` in the UI:
+If you don’t see `diagnosis_agent` in the UI:
 
-- Make sure you're running `adk web` from the **parent directory** of `problem_agent/` (e.g., the root of your project).
+- Make sure you're running `adk web` from the **parent directory** of `diagnosis_agent/` (e.g., the root of your project).
 - Ensure your `agent.py` file is properly configured with an exported agent.
 
 📚 For full details, see the official [Google ADK Quickstart Guide](https://google.github.io/adk-docs/get-started/quickstart/#run-your-agent).
