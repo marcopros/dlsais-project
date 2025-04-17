@@ -36,7 +36,7 @@
 
 ---
 ## Agents
-- 🛠️ **[Problem Agent](https://github.com/marcopros/dlsais-project/blob/main/problem_agent)**: Based on the user's input, it identifies the type of problem and suggests a possible DIY solution if the user prefers. Otherwise, it forwards the task to the next agent.
+- 🛠️ **[Diagnosis Agent](https://github.com/marcopros/dlsais-project/blob/main/problem_agent)**: Based on the user's input, it identifies the type of problem and suggests a possible DIY solution if the user prefers. Otherwise, it forwards the task to the next agent.
 - 🧩 **Matching Agent**: Searches for a professional to address the user's issue, considering factors such as the user's trust network (Network of Trust), location, past interventions, and personal preferences.
 - 📅 **Appointment Agent**: Facilitates contact between the user and the selected professional, and, when possible, manages the scheduling of the appointment.
 - 🗣️ **Feedback Agent**: Gathers user feedback to update and improve the Network of Trust.
