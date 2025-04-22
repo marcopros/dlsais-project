@@ -1,7 +1,7 @@
 from google.adk.agents import LlmAgent
 
-from problem_agent.listener_agent import listener_agent
-from problem_agent.diy_agent import diy_agent
+from diagnosis_agent.listener_agent import listener_agent
+from diagnosis_agent.diy_agent import diy_agent
 
 # Create the orchestrator agent that will manage the interaction between the listener and DIY agents
 

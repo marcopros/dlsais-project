@@ -6,7 +6,13 @@ require('dotenv').config();
 
 const uri = process.env.MONGODB_URI;
 
-mongoose.connect(uri)
-    .then(() => console.log('Connected to MongoDB Atlas'))
-    .catch(err => console.error('Error connecting to MongoDB Atlas:', err));
+async function populate() {
+    try {
+        await mongoose.connect(uri);
+        console.log("Connected to INTERNAL Database");
+    } catch (err) {
+        console.error("Error connecting to MongoDB Atlas:", err.message);
+    }
+}
 
+populate();
