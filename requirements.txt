@@ -1,0 +1,6 @@
+google-adk
+pydantic 
+python-dotenv 
+adktools 
+ydantic-settings 
+litellm
