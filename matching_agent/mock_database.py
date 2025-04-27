@@ -6,7 +6,7 @@ professionals = [
         "password": "hashed_password_1",
         "phone": "+39 333 1234567",
         "profession": "plumber",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["plumber", "pipe repairs"],
         "rating": 4.5
     },
@@ -16,7 +16,7 @@ professionals = [
         "password": "hashed_password_1",
         "phone": "+39 333 1234567",
         "profession": "plumber",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["plumber", "sink repairs"],
         "rating": 4.5
     },
@@ -26,7 +26,7 @@ professionals = [
         "password": "hashed_password_5",
         "phone": "+39 337 5566778",
         "profession": "plumber",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["plumber", "bathroom installations", "leak detection"],
         "rating": 4.7
     },
@@ -36,7 +36,7 @@ professionals = [
         "password": "hashed_password_6",
         "phone": "+39 338 2233445",
         "profession": "plumber",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["plumber", "water heater repair", "emergency services"],
         "rating": 4.3
     },
@@ -46,7 +46,7 @@ professionals = [
         "password": "hashed_password_7",
         "phone": "+39 339 9988776",
         "profession": "plumber",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["plumber", "drain cleaning", "pipe replacement"],
         "rating": 4.6
     },
@@ -56,7 +56,7 @@ professionals = [
         "password": "hashed_password_8",
         "phone": "+39 340 7788990",
         "profession": "plumber",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["plumber", "boiler maintenance", "kitchen plumbing"],
         "rating": 4.4
     },
@@ -66,7 +66,7 @@ professionals = [
         "password": "hashed_password_9",
         "phone": "+39 341 1122334",
         "profession": "plumber",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["plumber", "shower installation", "sewage systems"],
         "rating": 4.8
     },
@@ -76,7 +76,7 @@ professionals = [
         "password": "hashed_password_2",
         "phone": "+39 334 7654321",
         "profession": "electrician",
-        "location": "Milan",
+        "location": "Milan, Italy",
         "skills": ["electrician", "electrical systems"],
         "rating": 4.2
     },
@@ -86,7 +86,7 @@ professionals = [
         "password": "hashed_password_3",
         "phone": "+39 335 2468101",
         "profession": "plumber",
-        "location": "Turin",
+        "location": "Turin, Italy",
         "skills": ["plumber", "bathrooms", "boilers"],
         "rating": 4.8
     },
@@ -96,7 +96,7 @@ professionals = [
         "password": "hashed_password_4",
         "phone": "+39 336 1029384",
         "profession": "painter",
-        "location": "Rome",
+        "location": "Rome, Italy",
         "skills": ["painter", "renovations"],
         "rating": 4.0
     },

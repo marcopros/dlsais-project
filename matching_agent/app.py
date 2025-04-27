@@ -62,7 +62,7 @@ async def ask_agent(query: str):
     # We iterate through events to find the final answer.
     async for event in runner.run_async(user_id=USER_ID, session_id=SESSION_ID, new_message=content):
         # You can uncomment the line below to see *all* events during execution
-        print(f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}, Content: {event.content}")
+        # print(f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}, Content: {event.content}")
         
         if event.is_final_response():
             if event.content and event.content.parts:
@@ -75,13 +75,13 @@ async def ask_agent(query: str):
             elif event.actions and event.actions.escalate:
                 final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
             break
-        '''else: 
+        else:    # For DEBUG print the use of the tools
             for part in event.content.parts:
                 if hasattr(part, 'function_call') and part.function_call:
                     print(f"\n[DEBUG] Function Call Detected: {part.function_call.name}, {part.function_call.args}")
                 elif hasattr(part, 'function_response') and part.function_response:
                     print(f"[DEBUG] Function Response Detected: {part.function_response.response}\n")
-        '''
+        
             
 
     print(f"[AGENT]: {final_response_text}")
