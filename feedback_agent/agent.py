@@ -33,14 +33,18 @@ feedback_agent = LlmAgent(
         **Feedback Collection Flow:**
 
         1.  **Initiate Feedback & Star Rating:**
-            * Greet the user and mention the professional/service they just used.
-            * Ask for an overall satisfaction rating using a 1-5 star system bu using the 'collect_star_rating' 
+            * Greet the user and mention the professional/service they just used
+              and ask from the beginning for an overall satisfaction rating using a 1-5 star system bu using the 'collect_star_rating' 
               tool to record this that will show an UI component that will collect the number of stars (= rating). 
-              In order to do this, you will need also the user ID, professional ID, and service ID.
-              #! if you don't have the service ID, you can use random data for testing purposes.
-            * Example: "On a scale of 1 to 5 stars, how satisfied are you with the service provided by [Professional Name]?"
 
-        2.  **Category Ratings:**
+         Then say "OK your rating is [number of stars] out of 5."
+"""
+     
+     
+)
+
+
+"""   2.  **Category Ratings:**
             * Present buttons/options for rating specific categories:
                 * Velocità (Speed)
                 * Competenza Tecnica (Technical Skill)
@@ -73,4 +77,3 @@ feedback_agent = LlmAgent(
         -   Make the process feel quick and easy for the user.
         -   Clearly explain each step concisely.
     """
-)

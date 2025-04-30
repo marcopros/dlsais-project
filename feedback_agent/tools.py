@@ -4,14 +4,77 @@
 # --- Placeholder functions ---
 # Replace these with actual logic interacting with your database/backend
 
-def collect_star_rating(user_id: str, professional_id: str, service_id: str, rating: int) -> dict:
-    """Records the 1-5 star rating for a specific service."""
-    print(f"TOOL: Recording star rating {rating} for user {user_id}, professional {professional_id}, service {service_id}")
-    # --- DATABASE INTERACTION LOGIC HERE ---
-    # e.g., db.save_star_rating(user_id, professional_id, service_id, rating)
-    # --- UPDATE RELIABILITY SCORE LOGIC (or trigger it) ---
-    # update_professional_score(professional_id)
-    return {"status": "success", "message": f"Star rating {rating} recorded."}
+import streamlit as st
+
+def collect_star_rating(
+    user_id: str = '000',
+    professional_id: str = '123',
+    service_id: str = '345',
+) -> dict:
+    """
+    Mostra un form Booking-style 5-star rating. Finché l'utente non 
+    clicca Submit, la funzione chiama st.stop() e non prosegue.
+    Al click, registra il rating e torna lo status 'success'.
+    """
+    # Informazione iniziale
+    st.info(f"⭐️ Hai appena completato un servizio con il professionista "
+            f"{professional_id} (servizio {service_id}).")
+    st.subheader("📝 Valuta la tua esperienza")
+
+    # Chiavi uniche per session state
+    base = f"rating_{user_id}_{professional_id}_{service_id}"
+    submitted_key = base + "_submitted"
+    value_key     = base + "_value"
+
+    # Inizializza lo stato
+    if submitted_key not in st.session_state:
+        st.session_state[submitted_key] = False
+    if value_key not in st.session_state:
+        st.session_state[value_key] = 3  # default a 3 stelle
+
+    # Prepara le etichette ★★☆☆☆ ecc.
+    star_labels = [("★" * i) + ("☆" * (5 - i)) for i in range(1, 6)]
+
+    # Form con slider e bottone
+    with st.form(key=base):
+        rating_display = st.select_slider(
+            label="Seleziona un voto:",
+            options=star_labels,
+            value=star_labels[st.session_state[value_key] - 1]
+        )
+        submitted = st.form_submit_button("Submit Rating")
+
+    # Se ho cliccato Submit, aggiorno lo state
+    if submitted:
+        # converto la stringa "★★★☆☆" in valore numerico 3
+        st.session_state[value_key]     = star_labels.index(rating_display) + 1
+        st.session_state[submitted_key] = True
+        # Rerun: al prossimo passaggio uscirà dal blocco st.stop()
+
+    # FINCHÉ non è stato cliccato Submit, fermo qui la page
+    if not st.session_state[submitted_key]:
+        st.stop()
+
+    # Arrivati qui, Submit è stato cliccato: registro e torno success
+    rating_val = st.session_state[value_key]
+    # --- Qui fate il vostro salvataggio su DB ---
+    print(
+        f"TOOL: Recording star rating {rating_val} for "
+        f"user {user_id}, professional {professional_id}, service {service_id}"
+    )
+    st.success(f"Grazie! Hai dato **{rating_val}** stelle.")
+
+    # Pulisco lo stato per eventuali future invocazioni
+    del st.session_state[submitted_key]
+    del st.session_state[value_key]
+
+    st.info(f"rating inserito: {rating_val} per {professional_id} (servizio {service_id})")
+    return {
+        "status": "success",
+        "message": f"Star rating {rating_val} recorded."
+    }
+
+
 
 def collect_category_ratings(user_id: str, professional_id: str, service_id: str, ratings: dict) -> dict:
     """Records ratings for specific categories (speed, competence, etc.)."""

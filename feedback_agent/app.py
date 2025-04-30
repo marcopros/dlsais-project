@@ -48,7 +48,7 @@ def spinning_cursor():
 
 spinner = spinning_cursor()
 
-async def ask_agent(query: str):
+async def ask_agent_v1(query: str):
     """Sends a query to the agent and prints the final response with a spinning indicator during processing."""
     print(f"\n>>> User Query: {query}")
 
@@ -119,6 +119,49 @@ async def ask_agent(query: str):
             final_response_text = f"Agent failed due to an unexpected error: {e}"
             print(f"[AGENT]: {final_response_text}")
             break
+
+async def ask_agent(query: str) -> str:
+    """Sends a query to the agent and returns the final response as a string."""
+    from google.genai import types
+    content = types.Content(role='user', parts=[types.Part(text=query)])
+    final_response_text = "Agent did not produce a final response after retries."
+
+    max_retries = 3
+    initial_delay = 1.0
+    max_delay = 100.0
+
+    for attempt in range(max_retries + 1):
+        try:
+            async def stream_response():
+                nonlocal final_response_text
+                async for event in runner.run_async(user_id=USER_ID, session_id=SESSION_ID, new_message=content):
+                    if event.is_final_response():
+                        if event.content and event.content.parts:
+                            texts = []
+                            for part in event.content.parts:
+                                if hasattr(part, 'text') and part.text:
+                                    texts.append(part.text)
+                            final_response_text = "\n".join(texts)
+                        elif event.actions and event.actions.escalate:
+                            final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+                        break
+                return final_response_text
+
+            return await stream_response()
+
+        except google.genai.errors.ServerError as e:
+            status_code = getattr(e, 'status_code', None)
+            if status_code in [500, 503] and attempt < max_retries:
+                wait_time = min(initial_delay * (2 ** attempt), max_delay)
+                wait_time += random.uniform(0, wait_time * 0.1)
+                await asyncio.sleep(wait_time)
+            else:
+                return f"Agent failed after retries. Last error: {e}"
+        except Exception as e:
+            return f"Agent failed due to an unexpected error: {e}"
+
+    return final_response_text
+
 
 async def main():
     print("🛎️ Feedback Agent Ready. Type 'quit' to exit.")
