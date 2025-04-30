@@ -1,5 +1,6 @@
-from mock_database import professionals
-from utils import get_city_coordinates, haversine, fetch_coordinates_for_cities
+from database.utils import getProfessionals, getCities
+from matching_agent.utils import haversine, fetch_coordinates_for_cities
+
 
 
 # ----------------------
@@ -20,14 +21,8 @@ def find_professionals(profession: str, location: str) -> dict:
             'message': description of what was done
         }
     """
-    matching = []
-
-    for pro in professionals:
-        if (
-            profession.lower() == pro.get("profession", "").lower() and
-            location.lower() in pro.get("location", "").lower()
-        ):
-            matching.append(pro)
+    # Database query to find professionals filtering by profession and location
+    matching = getProfessionals(profession, location)
 
     if not matching:
         return {
@@ -54,16 +49,23 @@ def find_other_city(profession: str) -> list:
         profession (str): The profession for which to suggest cities (e.g., 'plumber').
 
     Returns:
-        list: A list of alternative cities where the searched profession is available.
+        dict: A dictionary with status and the cities (if successful) or an error message.
     """
 
-    # Filter professionals by profession
-    matching_professionals = [p for p in professionals if p["profession"].lower() == profession.lower()]
+    # Database query to find city fildered by the presence of the profession
+    available_cities = getCities(profession)
 
-    # Filter unique cities from the matching professionals
-    available_cities = list({p["location"] for p in matching_professionals})
+    if not available_cities or len(available_cities) == 0:
+        return {
+            "status": "error",
+            "error_message": f"No cities found matching profession {profession.lower()}."
+        }
 
-    return available_cities
+    return {
+        "status": "success",
+        "cities": available_cities,
+    }
+
 
 
 

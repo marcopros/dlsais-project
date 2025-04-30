@@ -2,3 +2,4 @@ google-adk
 python-dotenv
 pydantic
 pydantic-settings
+pymongo

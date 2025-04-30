@@ -37,7 +37,7 @@ else:
 
 
 # 2. Setup the Agent
-from agent import matching_agent  # Import the agent from the agent module
+from matching_agent.agent import matching_agent  # Import the agent from the agent module
 
 
 # 3. Setup the Runner

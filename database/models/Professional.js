@@ -6,6 +6,8 @@ const ProfessionalSchema = new mongoose.Schema({
     password: String,
     phone: String,
     profession: String,
+    location: String,
+    skills: [String],
     rating: Number
 });
 

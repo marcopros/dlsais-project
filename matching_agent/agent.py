@@ -1,7 +1,7 @@
 # Import ADK components
 from google.adk.agents import LlmAgent
 
-from tools import find_professionals, find_other_city, find_nearest_cities
+from matching_agent.tools import find_professionals, find_other_city, find_nearest_cities
 
 
 # The LlmAgent integrates the model, tools, and instructions

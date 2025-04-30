@@ -1,5 +1,4 @@
-# Mock database (matching ProfessionalSchema)
-professionals = [
+const professionals = [
     {
         "name": "Mario Rossi",
         "email": "mario.rossi@example.com",
@@ -12,7 +11,7 @@ professionals = [
     },
     {
         "name": "Raffaele Verdi",
-        "email": "mario.rossi@example.com",
+        "email": "raffaele.verdi@example.com",
         "password": "hashed_password_1",
         "phone": "+39 333 1234567",
         "profession": "plumber",
@@ -100,4 +99,6 @@ professionals = [
         "skills": ["painter", "renovations"],
         "rating": 4.0
     },
-]
+];
+
+module.exports = professionals;
