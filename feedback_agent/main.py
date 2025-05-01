@@ -2,10 +2,10 @@
 import os
 import asyncio
 from google.adk.agents import Agent
-from google.adk.models.lite_llm import LiteLlm # For multi-model support
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types # For creating message Content/Parts
+from google.genai import types
 
 import warnings
 # Ignore all warnings
@@ -15,28 +15,36 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 from agent_config import check_and_configure_environment
-import weather_agent # Import the agent we defined earlier
+from weather_agent import weather_agent, weather_agent_team # Import the agent we defined earlier
 
+async def call_agent_async(query: str, runner, user_id, session_id):
+  """Sends a query to the agent and prints the final response."""
+  print(f"\n>>> User Query: {query}")
 
+  # Prepare the user's message in ADK format
+  content = types.Content(role='user', parts=[types.Part(text=query)])
 
-check_and_configure_environment()
+  final_response_text = "Agent did not produce a final response." # Default
 
-def main():
-    session_service = InMemorySessionService()
+  # Key Concept: run_async executes the agent logic and yields Events.
+  # We iterate through events to find the final answer.
+  async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
+      # You can uncomment the line below to see *all* events during execution
+      # print(f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}, Content: {event.content}")
 
-    # Define constants for identifying the interaction context
-    APP_NAME = "weather_tutorial_app"
-    USER_ID = "user_1"
-    SESSION_ID = "session_001" # Using a fixed ID for simplicity
+      # Key Concept: is_final_response() marks the concluding message for the turn.
+      if event.is_final_response():
+          if event.content and event.content.parts:
+             # Assuming text response in the first part
+             final_response_text = event.content.parts[0].text
+          elif event.actions and event.actions.escalate: # Handle potential errors/escalations
+             final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+          # Add more checks here if needed (e.g., specific error codes)
+          break # Stop processing events once the final response is found
 
-    # Create the specific session where the conversation will happen
-    session = session_service.create_session(
-        app_name=APP_NAME,
-        user_id=USER_ID,
-        session_id=SESSION_ID
-    )
-    print(f"Session created: App='{APP_NAME}', User='{USER_ID}', Session='{SESSION_ID}'")
+  print(f"<<< Agent Response: {final_response_text}")
 
+async def run_conversation(USER_ID, SESSION_ID):
     # --- Runner ---
     # Key Concept: Runner orchestrates the agent execution loop.
     runner = Runner(
@@ -45,8 +53,91 @@ def main():
         session_service=session_service # Uses our session manager
     )
     print(f"Runner created for agent '{runner.agent.name}'.")
+    
+    await call_agent_async("What is the weather like in London?",
+                                       runner=runner,
+                                       user_id=USER_ID,
+                                       session_id=SESSION_ID)
+
+    await call_agent_async("How about Paris?",
+                                       runner=runner,
+                                       user_id=USER_ID,
+                                       session_id=SESSION_ID) # Expecting the tool's error message
+
+    await call_agent_async("Tell me the weather in New York",
+                                       runner=runner,
+                                       user_id=USER_ID,
+                                       session_id=SESSION_ID)
+
+# Execute the conversation using await in an async context (like Colab/Jupyter)
+
+async def run_team_conversation(runner_agent_team, USER_ID, SESSION_ID):
+        
+
+        # --- Interactions using await (correct within async def) ---
+        await call_agent_async(query = "Hello there!",
+                               runner=runner_agent_team,
+                               user_id=USER_ID,
+                               session_id=SESSION_ID)
+        await call_agent_async(query = "What is the weather in New York?",
+                               runner=runner_agent_team,
+                               user_id=USER_ID,
+                               session_id=SESSION_ID)
+        await call_agent_async(query = "Thanks, bye!",
+                               runner=runner_agent_team,
+                               user_id=USER_ID,
+                               session_id=SESSION_ID)
+
+async def main():
+    
+    session_service_stateful = InMemorySessionService()
+
+    # Define constants for identifying the interaction context
+    APP_NAME = "weather_tutorial_app"
+    SESSION_ID_STATEFUL = "session_state_demo_001"
+    USER_ID_STATEFUL = "user_state_demo"# Using a fixed ID for simplicity
+
+    # Define initial state data - user prefers Celsius initially
+    initial_state = {
+        "user_preference_temperature_unit": "Celsius"
+    }
+
+    # Create the specific session where the conversation will happen
+    session_stateful = session_service_stateful.create_session(
+        app_name=APP_NAME,
+        user_id=USER_ID_STATEFUL,
+        session_id=SESSION_ID_STATEFUL,
+        state=initial_state # Pass the initial
+    )
+    print(f"Session created: App='{APP_NAME}', User='{USER_ID_STATEFUL}', Session='{SESSION_ID_STATEFUL}'")
+    
+    retrieved_session = session_service_stateful.get_session(
+        app_name=APP_NAME,
+        user_id=USER_ID_STATEFUL,
+        session_id=SESSION_ID_STATEFUL
+    )
+    
+    print("\n--- Initial Session State ---")
+    if retrieved_session:
+        print(retrieved_session.state)
+    else:
+        print("Error: Could not retrieve session.")
+
+    print("\n--- Testing Agent Team Delegation ---")
+
+    actual_root_agent = weather_agent_team # The agent we want to run
+    runner_agent_team = Runner( # Or use InMemoryRunner
+        agent=actual_root_agent,
+        app_name=APP_NAME,
+        session_service=session_service_stateful
+    )
+    print(f"Runner created for agent '{actual_root_agent.name}'.")
+
+    await run_team_conversation(runner_agent_team, USER_ID_STATEFUL, SESSION_ID_STATEFUL) # Run the conversation with the team agent
 
 
 if __name__ == "__main__":
     # Run the main function
+    check_and_configure_environment()
+    
     asyncio.run(main())
