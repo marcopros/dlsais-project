@@ -1,0 +1,292 @@
+[
+    {
+        "function": "add_user",
+        "params": {
+            "user_id": "U3",
+            "name": "Giulia",
+            "location": "Florence",
+            "preferences": {}
+        }
+    },
+    {
+        "function": "add_professional",
+        "params": {
+            "prof_id": "P3",
+            "name": "Carlo Painter",
+            "specializations": ["Painting", "Decorating"],
+            "service_area": "Florence",
+            "contact": "carlo@painting.com",
+            "baseline_trust": 2.0
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S1",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Wall Painting",
+            "date": "2024-12-31T10:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F1",
+            "service_id": "S1",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Fantastic painting job!",
+            "feedback_date": "2024-12-31T12:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S2",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Ceiling Painting",
+            "date": "2025-01-30T10:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F2",
+            "service_id": "S2",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Excellent work, very professional.",
+            "feedback_date": "2025-01-30T12:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S3",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Exterior Painting",
+            "date": "2025-03-01T10:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F3",
+            "service_id": "S3",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Great results, highly recommended.",
+            "feedback_date": "2025-03-01T12:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S4",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Decorative Painting",
+            "date": "2025-03-31T10:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F4",
+            "service_id": "S4",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Beautiful work, very satisfied.",
+            "feedback_date": "2025-03-31T12:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S5",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Room Painting",
+            "date": "2025-04-30T10:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F5",
+            "service_id": "S5",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Superb service!",
+            "feedback_date": "2025-04-30T12:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S6",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Wall Repainting",
+            "date": "2025-04-30T14:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F6",
+            "service_id": "S6",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Amazing job!",
+            "feedback_date": "2025-04-30T16:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S7",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Fence Painting",
+            "date": "2025-04-30T18:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F7",
+            "service_id": "S7",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Perfect painting!",
+            "feedback_date": "2025-04-30T20:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S8",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Door Painting",
+            "date": "2025-05-01T08:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F8",
+            "service_id": "S8",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Top-notch service!",
+            "feedback_date": "2025-05-01T10:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    },
+    {
+        "function": "add_service_interaction",
+        "params": {
+            "service_id": "S9",
+            "user_id": "U3",
+            "prof_id": "P3",
+            "service_type": "Window Frame Painting",
+            "date": "2025-05-01T12:00:00Z",
+            "status": "Completed"
+        }
+    },
+    {
+        "function": "add_feedback",
+        "params": {
+            "feedback_id": "F9",
+            "service_id": "S9",
+            "overall_rating": 5.0,
+            "specific_ratings": {
+                "Quality": 5.0,
+                "Punctuality": 5.0,
+                "Price": 5.0,
+                "Courtesy": 5.0
+            },
+            "review_text": "Outstanding work!",
+            "feedback_date": "2025-05-01T14:00:00Z",
+            "processed_attrs": {
+                "sentiment": 0.9
+            }
+        }
+    }
+]

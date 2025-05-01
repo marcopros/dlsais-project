@@ -1,0 +1,172 @@
+[
+  {
+      "function": "add_user",
+      "params": {
+          "user_id": "U1",
+          "name": "Alice",
+          "location": "Milan",
+          "preferences": {}
+      }
+  },
+  {
+      "function": "add_professional",
+      "params": {
+          "prof_id": "P1",
+          "name": "Bob Plumbing",
+          "specializations": ["Plumbing", "Heating"],
+          "service_area": "Milan",
+          "contact": "bob@plumbing.com",
+          "baseline_trust": 2.0
+      }
+  },
+  {
+      "function": "add_service_interaction",
+      "params": {
+          "service_id": "S1",
+          "user_id": "U1",
+          "prof_id": "P1",
+          "service_type": "Plumbing Repair",
+          "date": "2024-12-31T10:00:00Z",
+          "status": "Completed"
+      }
+  },
+  {
+      "function": "add_feedback",
+      "params": {
+          "feedback_id": "F1",
+          "service_id": "S1",
+          "overall_rating": 5.0,
+          "specific_ratings": {
+              "Quality": 5.0,
+              "Punctuality": 5.0,
+              "Price": 5.0,
+              "Courtesy": 5.0
+          },
+          "review_text": "Excellent service, highly recommended!",
+          "feedback_date": "2024-12-31T12:00:00Z",
+          "processed_attrs": {
+              "sentiment": 0.9
+          }
+      }
+  },
+  {
+      "function": "add_service_interaction",
+      "params": {
+          "service_id": "S2",
+          "user_id": "U1",
+          "prof_id": "P1",
+          "service_type": "Pipe Installation",
+          "date": "2025-01-31T10:00:00Z",
+          "status": "Completed"
+      }
+  },
+  {
+      "function": "add_feedback",
+      "params": {
+          "feedback_id": "F2",
+          "service_id": "S2",
+          "overall_rating": 5.0,
+          "specific_ratings": {
+              "Quality": 5.0,
+              "Punctuality": 5.0,
+              "Price": 4.0,
+              "Courtesy": 5.0
+          },
+          "review_text": "Great job, but a bit pricey.",
+          "feedback_date": "2025-01-31T12:00:00Z",
+          "processed_attrs": {
+              "sentiment": 0.8
+          }
+      }
+  },
+  {
+      "function": "add_service_interaction",
+      "params": {
+          "service_id": "S3",
+          "user_id": "U1",
+          "prof_id": "P1",
+          "service_type": "Leak Fix",
+          "date": "2025-02-28T10:00:00Z",
+          "status": "Completed"
+      }
+  },
+  {
+      "function": "add_feedback",
+      "params": {
+          "feedback_id": "F3",
+          "service_id": "S3",
+          "overall_rating": 4.0,
+          "specific_ratings": {
+              "Quality": 4.0,
+              "Punctuality": 4.0,
+              "Price": 3.0,
+              "Courtesy": 4.0
+          },
+          "review_text": "Decent service, but not as good as before.",
+          "feedback_date": "2025-02-28T12:00:00Z",
+          "processed_attrs": {
+              "sentiment": 0.6
+          }
+      }
+  },
+  {
+      "function": "add_service_interaction",
+      "params": {
+          "service_id": "S4",
+          "user_id": "U1",
+          "prof_id": "P1",
+          "service_type": "Boiler Repair",
+          "date": "2025-03-31T10:00:00Z",
+          "status": "Completed"
+      }
+  },
+  {
+      "function": "add_feedback",
+      "params": {
+          "feedback_id": "F4",
+          "service_id": "S4",
+          "overall_rating": 3.0,
+          "specific_ratings": {
+              "Quality": 3.0,
+              "Punctuality": 3.0,
+              "Price": 2.0,
+              "Courtesy": 3.0
+          },
+          "review_text": "Service was okay, but overpriced and slow.",
+          "feedback_date": "2025-03-31T12:00:00Z",
+          "processed_attrs": {
+              "sentiment": 0.4
+          }
+      }
+  },
+  {
+      "function": "add_service_interaction",
+      "params": {
+          "service_id": "S5",
+          "user_id": "U1",
+          "prof_id": "P1",
+          "service_type": "Drain Cleaning",
+          "date": "2025-04-30T10:00:00Z",
+          "status": "Completed"
+      }
+  },
+  {
+      "function": "add_feedback",
+      "params": {
+          "feedback_id": "F5",
+          "service_id": "S5",
+          "overall_rating": 2.0,
+          "specific_ratings": {
+              "Quality": 2.0,
+              "Punctuality": 1.0,
+              "Price": 2.0,
+              "Courtesy": 2.0
+          },
+          "review_text": "Very disappointing, late and poor quality.",
+          "feedback_date": "2025-04-30T12:00:00Z",
+          "processed_attrs": {
+              "sentiment": 0.2
+          }
+      }
+  }
+]
