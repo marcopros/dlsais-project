@@ -15,7 +15,7 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 from agent_config import check_and_configure_environment
-from weather_agent import weather_agent, weather_agent_team # Import the agent we defined earlier
+from feedback_orchestrator import feedback_orchestrator_agent
 
 async def call_agent_async(query: str, runner, user_id, session_id):
   """Sends a query to the agent and prints the final response."""
@@ -71,19 +71,22 @@ async def run_conversation(USER_ID, SESSION_ID):
 
 # Execute the conversation using await in an async context (like Colab/Jupyter)
 
+query_feedback = """{
+  "jobInfo": {
+    "jobTitle": "Emergency Pipe Repair",
+    "professional": "Luca Rossi, Plumber",
+    "date": "October 26, 2024"
+  },
+  "rating": 4,
+  "feedbackType": "text",
+  "textFeedback": "Luca arrived quickly which was great for an emergency. He fixed the leak efficiently. However, the final bill was a bit higher than the initial estimate, although the work quality was good.",
+  "selectedTags": []
+}"""
+
 async def run_team_conversation(runner_agent_team, USER_ID, SESSION_ID):
         
 
-        # --- Interactions using await (correct within async def) ---
-        await call_agent_async(query = "Hello there!",
-                               runner=runner_agent_team,
-                               user_id=USER_ID,
-                               session_id=SESSION_ID)
-        await call_agent_async(query = "What is the weather in New York?",
-                               runner=runner_agent_team,
-                               user_id=USER_ID,
-                               session_id=SESSION_ID)
-        await call_agent_async(query = "Thanks, bye!",
+        await call_agent_async(query = query_feedback,
                                runner=runner_agent_team,
                                user_id=USER_ID,
                                session_id=SESSION_ID)
@@ -93,13 +96,13 @@ async def main():
     session_service_stateful = InMemorySessionService()
 
     # Define constants for identifying the interaction context
-    APP_NAME = "weather_tutorial_app"
+    APP_NAME = "feedback_agent_demo" # Name of the app
     SESSION_ID_STATEFUL = "session_state_demo_001"
     USER_ID_STATEFUL = "user_state_demo"# Using a fixed ID for simplicity
 
     # Define initial state data - user prefers Celsius initially
     initial_state = {
-        "user_preference_temperature_unit": "Celsius"
+        
     }
 
     # Create the specific session where the conversation will happen
@@ -107,25 +110,25 @@ async def main():
         app_name=APP_NAME,
         user_id=USER_ID_STATEFUL,
         session_id=SESSION_ID_STATEFUL,
-        state=initial_state # Pass the initial
+        #state=initial_state # Pass the initial
     )
     print(f"Session created: App='{APP_NAME}', User='{USER_ID_STATEFUL}', Session='{SESSION_ID_STATEFUL}'")
     
-    retrieved_session = session_service_stateful.get_session(
-        app_name=APP_NAME,
-        user_id=USER_ID_STATEFUL,
-        session_id=SESSION_ID_STATEFUL
-    )
+    # retrieved_session = session_service_stateful.get_session(
+    #     app_name=APP_NAME,
+    #     user_id=USER_ID_STATEFUL,
+    #     session_id=SESSION_ID_STATEFUL
+    # )
     
-    print("\n--- Initial Session State ---")
-    if retrieved_session:
-        print(retrieved_session.state)
-    else:
-        print("Error: Could not retrieve session.")
+    # print("\n--- Initial Session State ---")
+    # if retrieved_session:
+    #     print(retrieved_session.state)
+    # else:
+    #     print("Error: Could not retrieve session.")
 
     print("\n--- Testing Agent Team Delegation ---")
 
-    actual_root_agent = weather_agent_team # The agent we want to run
+    actual_root_agent = feedback_orchestrator_agent # The agent we want to run
     runner_agent_team = Runner( # Or use InMemoryRunner
         agent=actual_root_agent,
         app_name=APP_NAME,

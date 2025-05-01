@@ -8,18 +8,6 @@ from agent_config import MODEL_GEMINI_2_0_FLASH # Import the model constant
 
 AGENT_MODEL = MODEL_GEMINI_2_0_FLASH # Starting with Gemini
 
-weather_agent = Agent(
-    name="weather_agent_v1",
-    model=AGENT_MODEL, # Can be a string for Gemini or a LiteLlm object
-    description="Provides weather information for specific cities.",
-    instruction="You are a helpful weather assistant. "
-                "When the user asks for the weather in a specific city, "
-                "use the 'get_weather' tool to find the information. "
-                "If the tool returns an error, inform the user politely. "
-                "If the tool is successful, present the weather report clearly.",
-    tools=[get_weather], # Pass the function directly
-)
-
 weather_agent_team = Agent(
         name="weather_agent_v4_stateful", # New version name
         model=AGENT_MODEL,
