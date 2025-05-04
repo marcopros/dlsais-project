@@ -106,8 +106,20 @@ class SessionState:
 # ——— ENDPOINTS ———
 
 @app.post("/start", response_model=str)
-async def start_session(settings: SessionSettings):
-    """Crea una nuova sessione e restituisce lo session_id"""
+async def start_session(settings: Optional[SessionSettings] = None):
+    """Create a new session and return the session_id"""
+    if settings is None:
+        settings = SessionSettings(
+            favourite_language="English",
+            search_for_diy_solution=False,
+            user_location=None,
+            user_diy_skills=None,
+            user_diy_tools=None,
+            home_type=None,
+            solution_preferences=None,
+            time_available_for_repair=None
+        )  # default settings
+
     session_id = str(uuid.uuid4())
     sessions[session_id] = SessionState(settings)
     return session_id
