@@ -1,3 +1,9 @@
+from json import tool
+from operator import call
+from typing import Literal, List
+import aiohttp
+from unittest.mock import Base
+import uuid
 from agents import (
     Agent, 
     Runner, 
@@ -8,107 +14,153 @@ from agents import (
     TResponseInputItem,
     input_guardrail,
     WebSearchTool,
-    handoff
+    handoff,
+    MessageOutputItem,
+    ItemHelpers,
+    HandoffOutputItem,
+    ToolCallItem,
+    ToolCallOutputItem,
+    function_tool
 )
+from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
+from numpy import diag
+from regex import W
 from diagnosis_instructions import instructions as diagnosis_instructs
 from diy_instructions import diy_instucts
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 import asyncio
+import json
 
 # Load environment variables from .env file
 load_dotenv()
 
-# --- Guardrail ---
-class HomeIssueOutput(BaseModel):
-    is_home_issue: bool
-    reason: str
+# CONTEXT
+class DiagnosisSettingsContext(BaseModel):
+    search_for_diy_solution: bool = False
+    user_location: str | None = None
+    user_diy_skills: Literal['beginner', 'intermediate', 'expert'] = None
+    user_diy_tools: list | None = None # screwdriver, hammer, drill, etc.
+    home_type: str | None = None #apartment, detached house, villa, other...
+    solution_preferences: Literal['temporary', 'permanent'] = None
+    time_available_for_repair: Literal['few minutes', 'hours', 'weekend'] = None
+    favourite_language: str = "English" # Italian, English, French, etc.
     
-guardrail_agent = Agent(
-    name="Guardrail agent",
-    instructions="""
-    Your job is to check if the input is a home issue or not.
-    If it is a home issue, return True and the reason. If it is not, return False and the reason.
-    """,
-    model="gpt-4.1",
-    output_type=HomeIssueOutput,
-)
 
-@input_guardrail
-async def issue_guardrail(
-    ctx: RunContextWrapper[None],
-    agent: Agent,
-    input: str | list[TResponseInputItem],
-) -> GuardrailFunctionOutput:
-    """
-    This guardrail checks if the input is a home issue or not. Consider also that agent can ask for a series of details to understand the problem, so if the user responds to them it's ok.
-    If it is a home issue, return True and the reason. If it is not, return False and the reason.
-    """
-    # Call the guardrail agent to check if the input is a home issue or not
-    result = await Runner.run(guardrail_agent, input=input, context=ctx.context)
-    
-    # print("guardrail: ", result.final_output)
-    # Return the result of the guardrail agent
-    return GuardrailFunctionOutput(
-        output_info=result.final_output,
-        tripwire_triggered=(not result.final_output.is_home_issue), # Guardrail trigegrs tripwire in case the input is not related to the question
-    )
-   
-
-# --- diagnosis agent ---
-class HomeIssueOutput(BaseModel):
-    found_root_cause: bool
+class DiagnosisAgentOut(BaseModel):
+    unlock_request_for_diy_solution: bool
     agent_response: str
-    root_cause_info: str
+    detected_problem_cause: str | None
     diy_solution: str | None
+    diy_links: list[str] | None # list of links to video or written tutorials
+    call_professional: bool # if the user prefers to call a professional instead of doing it himself/herself
+
+@function_tool
+async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
+    """ Searches YouTube for video tutorials matching the given query.
+        Returns a list of YouTube watch URLs.
+    Args:
+        query (str): The search query for the video tutorial.
+        hl (str): The language code for the search results (e.g., 'it' for Italian).
+        gl (str): The country code for the search results (e.g., 'it' for Italy).
+    """
+    # Add the site filter to the query to search only for YouTube videos
+    full_query = f"{query} site:youtube.com"
+    url = "https://serpapi.com/search"
+    params = {
+        "q": full_query,
+        "hl": hl,
+        "gl": gl,
+        "engine": "google",
+        "api_key": os.getenv("SERPAPI_API_KEY"),
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=params) as resp:
+            resp.raise_for_status()
+            data = await resp.json()
+
+    # Extract video links from the response
+    videos: List[str] = []
+    for item in data.get("organic_results", []):
+        link = item.get("link", "")
+        if "youtube.com/watch" in link:
+            videos.append(link)
+
+    # Provide only the first 5 links
+    return videos[:5]
+
 
 # --- DIY agent ---
-diy_agent = Agent(
+diy_agent = Agent[DiagnosisSettingsContext](
     name="DIY agent",
-    instructions=diy_instucts,
+    instructions=("you are given a home issue and you have to find a DIY solution to it. Search the web for a solution and provide a link to a video tutorial from YouTube (do not make it up)."
+                  "Follow accurately the setting provided in the context. "),
     model="gpt-4.1",
-    tools=[WebSearchTool()],
-    output_type=HomeIssueOutput
+    tools=[WebSearchTool(), search_video_tutorial],
+    output_type=DiagnosisAgentOut,
 )
  
 
-async def on_diy_handoff(ctx: RunContextWrapper[None], input_data: HomeIssueOutput):
-    print(f"DIY agent is looking for a solution for: {input_data.root_cause_info}")
-
-diy_handoff = handoff(
-    agent=diy_agent,
-    on_handoff=on_diy_handoff,
-    input_type=HomeIssueOutput
-)
-
-diagnosis_agent = Agent(
-    name="Agent that seeks to find the root cause of a home issue",
-    instructions=diagnosis_instructs,
+# --- Diagnosis agent ---
+diagnosis_agent = Agent[DiagnosisSettingsContext](
+    name="Diagnosis agent",
+    instructions=(f"{RECOMMENDED_PROMPT_PREFIX}"
+        "Your job is to find the root cause of the home issue and ask for a DIY solution if the user is interested or if the users prefers a professional to cope with the problem (if it does set the relative output flag to true)." 
+        "Ask few clarification if needed."
+        "Follow accurately the setting provided in the context. "),
     model="gpt-4.1",
-    #input_guardrails=[issue_guardrail],
-    output_type=HomeIssueOutput,
-    handoffs=[diy_handoff]
+    tools=[diy_agent.as_tool(
+        tool_name="propose_diy_solution",
+        tool_description="Search the web a DIY solution relatively the founded root cause with a YouTube video tutorial link (do not make it up).",
+    )],
+    output_type=DiagnosisAgentOut,
 )
+
 
 async def main():
+    input_items: list[TResponseInputItem] = []
+    current_agent: Agent[DiagnosisSettingsContext] = diagnosis_agent
     
-    with trace("Home issue diagnosis workflow"):
-        try:
-            result = await Runner.run(diagnosis_agent, input="My window is broken")
-            print("Agent:", result.final_output.agent_response)
-            
-            while not result.final_output.found_root_cause:
-                user_prompt = input("User: ")
-                result = await Runner.run(diagnosis_agent, input=user_prompt)
-                print("Agent:", result.final_output.agent_response)
+    settings = DiagnosisSettingsContext(
+        search_for_diy_solution=True,
+        user_location="Italy",
+        user_diy_skills="intermediate",
+        user_diy_tools=["screwdriver", "hammer", "drill"],
+        home_type="house",
+        solution_preferences="permanent",
+        time_available_for_repair="hours",
+        favourite_language="Italian"
+    )
+    
+    while True:
+        user_prompt = input("User: ")
+        with trace("Home issue diagnosis workflow"):
+            input_items.append({"content": user_prompt, "role": "user"})
+            result = await Runner.run(current_agent, input=input_items, context=settings)
                 
-            print("Detected cause of the problem: ", result.final_output.root_cause_info)
-            print("DIY solution: ", result.final_output.diy_solution)
+            for new_item in result.new_items:
+                agent_name = new_item.agent.name
+                   
+                if isinstance(new_item, MessageOutputItem):
+                    parsed = json.loads(ItemHelpers.text_message_output(new_item))
+                    print(f"{agent_name}: {parsed["agent_response"]}")
+                    if parsed["unlock_request_for_diy_solution"]:
+                        print("Unlocking DIY agent...")
+                        current_agent = diy_agent
+                    if parsed["diy_solution"] != None:
+                        print(f"DIY solution: {parsed["diy_solution"]}")
+                    if parsed["diy_links"] != None:
+                        print(f"DIY links: {parsed["diy_links"]}")
+                    if parsed["call_professional"]:
+                        print("User prefers to call a professional.")
+                        break
+                    
+                    #print("debug:", parsed)
                 
-        except InputGuardrailTripwireTriggered as e:
-            print(e.guardrail_result.output.output_info.reason)
-            
+            input_items = result.to_input_list()
+            current_agent = result.last_agent           
             
 
 if __name__ == "__main__":

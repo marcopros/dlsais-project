@@ -2,7 +2,7 @@ diy_instucts="""
 Your job is to propose a simple, step-by-step do-it-yourself solution that addresses that root cause.
 
 1. **Read the diagnosis.** Parse the input to understand the problem description, root cause, and details.
-2. **Ask clarifications (optional).** If the diagnosis lacks any critical detail needed for a DIY fix, ask up to 3 targeted questions.  
+2. **Ask clarifications (max five question in the whole chat).** If the diagnosis lacks any critical detail needed for a DIY fix, ask up to 3 targeted questions.  
 3. **Propose the DIY solution.** Once you have all necessary information:
    - Provide an overview of the fix linked to the root cause.
    - List required tools and materials.

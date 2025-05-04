@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Repair Agent</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 240px);
+        }
+        .settings-panel {
+            transition: all 0.3s ease;
+        }
+        .youtube-embed {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+        }
+        .youtube-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+    <header class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🔧 Home Repair Agent</h1>
+            <button id="settingsToggle" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-md">
+                ⚙️ Settings
+            </button>
+        </div>
+    </header>
+
+    <div id="settingsPanel" class="bg-white shadow-md p-6 hidden settings-panel">
+        <div class="container mx-auto">
+            <h2 class="text-xl font-semibold mb-4">Session Settings</h2>
+            <form id="settingsForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Search for DIY Solution</label>
+                    <select id="searchForDiy" class="w-full p-2 border rounded">
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Your Location</label>
+                    <input type="text" id="userLocation" placeholder="e.g., New York, USA" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">DIY Skills Level</label>
+                    <select id="userDiySkills" class="w-full p-2 border rounded">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Available Tools</label>
+                    <select id="userDiyTools" class="w-full p-2 border rounded" multiple>
+                        <option value="Screwdriver">Screwdriver</option>
+                        <option value="Hammer">Hammer</option>
+                        <option value="Pliers">Pliers</option>
+                        <option value="Wrench">Wrench</option>
+                        <option value="Drill">Drill</option>
+                        <option value="Saw">Saw</option>
+                        <option value="Measuring Tape">Measuring Tape</option>
+                        <option value="Level">Level</option>
+                    </select>
+                    <p class="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Home Type</label>
+                    <select id="homeType" class="w-full p-2 border rounded">
+                        <option value="Apartment">Apartment</option>
+                        <option value="House">House</option>
+                        <option value="Condo">Condo</option>
+                        <option value="Townhouse">Townhouse</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Solution Preferences</label>
+                    <select id="solutionPreferences" class="w-full p-2 border rounded">
+                        <option value="Quick fix">Quick fix</option>
+                        <option value="Long-term solution">Long-term solution</option>
+                        <option value="Budget-friendly">Budget-friendly</option>
+                        <option value="Professional quality">Professional quality</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Time Available for Repair</label>
+                    <select id="timeAvailable" class="w-full p-2 border rounded">
+                        <option value="Less than 1 hour">Less than 1 hour</option>
+                        <option value="1-3 hours">1-3 hours</option>
+                        <option value="Half day">Half day</option>
+                        <option value="Full day">Full day</option>
+                        <option value="Multiple days">Multiple days</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Preferred Language</label>
+                    <select id="favouriteLanguage" class="w-full p-2 border rounded">
+                        <option value="English">English</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <button type="submit" id="startSessionBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Start New Session
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <main class="flex-1 container mx-auto p-4 flex flex-col">
+        <div id="chatContainer" class="chat-container bg-white rounded-lg shadow-md p-4 mb-4 overflow-y-auto flex-1">
+            <div class="flex justify-center items-center h-full" id="initialMessage">
+                <div class="text-center text-gray-500">
+                    <div class="text-6xl mb-4">🔧</div>
+                    <h2 class="text-xl font-semibold">Welcome to Home Repair Agent</h2>
+                    <p class="mt-2">Configure your session settings and get started!</p>
+                </div>
+            </div>
+            <div id="chatMessages" class="hidden"></div>
+        </div>
+        
+        <div id="inputContainer" class="flex gap-2 mb-4">
+            <input type="text" id="userInput" placeholder="Describe your home repair issue..." 
+                class="flex-1 p-3 border rounded-lg" disabled>
+            <button id="sendButton" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg disabled:opacity-50" disabled>
+                Send
+            </button>
+        </div>
+
+        <div id="solutionPanel" class="bg-white rounded-lg shadow-md p-4 hidden">
+            <h3 class="text-lg font-semibold mb-2">Repair Solution</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <div class="mb-4">
+                        <h4 class="font-medium text-gray-700">Problem Cause:</h4>
+                        <p id="problemCause" class="mt-1 text-gray-600"></p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-medium text-gray-700">DIY Solution:</h4>
+                        <p id="diySolution" class="mt-1 text-gray-600"></p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-medium text-gray-700">Professional Help Needed:</h4>
+                        <p id="professionalHelp" class="mt-1 text-gray-600"></p>
+                    </div>
+                </div>
+                <div id="videoTutorialContainer" class="hidden">
+                    <h4 class="font-medium text-gray-700 mb-2">Video Tutorial:</h4>
+                    <div id="videoEmbed" class="youtube-embed"></div>
+                </div>
+            </div>
+            <div id="additionalLinks" class="mt-4 hidden">
+                <h4 class="font-medium text-gray-700 mb-2">Additional Resources:</h4>
+                <ul id="linksList" class="list-disc pl-5 text-blue-600"></ul>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white p-4 text-center">
+        <p>© 2025 Home Repair Agent - Your DIY Solution Assistant</p>
+    </footer>
+
+    <script>
+        // Global variables
+        let sessionId = null;
+        let currentAgent = 'Diagnosis agent';
+
+        // DOM elements
+        const settingsToggle = document.getElementById('settingsToggle');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const settingsForm = document.getElementById('settingsForm');
+        const chatContainer = document.getElementById('chatContainer');
+        const initialMessage = document.getElementById('initialMessage');
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const solutionPanel = document.getElementById('solutionPanel');
+
+        // Container per il bottone DIY
+        const diyBtnContainer = document.createElement('div');
+        diyBtnContainer.className = 'mb-4';
+        chatContainer.parentNode.insertBefore(diyBtnContainer, chatContainer.nextSibling);
+
+        // Toggle settings panel
+        settingsToggle.addEventListener('click', () => {
+            settingsPanel.classList.toggle('hidden');
+        });
+
+        // Start session form submission
+        settingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Raccolta impostazioni
+            const toolsSelect = document.getElementById('userDiyTools');
+            const selectedTools = Array.from(toolsSelect.selectedOptions).map(o => o.value);
+            const settings = {
+                search_for_diy_solution: document.getElementById('searchForDiy').value === 'true',
+                user_location: document.getElementById('userLocation').value,
+                user_diy_skills: document.getElementById('userDiySkills').value,
+                user_diy_tools: selectedTools,
+                home_type: document.getElementById('homeType').value,
+                solution_preferences: document.getElementById('solutionPreferences').value,
+                time_available_for_repair: document.getElementById('timeAvailable').value,
+                favourite_language: document.getElementById('favouriteLanguage').value
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(settings)
+                });
+                if (!response.ok) throw new Error('Start session failed');
+                
+                // 👉 parsing JSON per ottenere UUID puro
+                sessionId = await response.json();
+                console.log('Session started:', sessionId);
+                
+                // UI
+                settingsPanel.classList.add('hidden');
+                initialMessage.classList.add('hidden');
+                chatMessages.classList.remove('hidden');
+                userInput.disabled = false;
+                sendButton.disabled = false;
+
+                addMessage('system', 'Benvenuto! Descrivi il tuo problema di casa e ti aiuterò.');
+
+            } catch (err) {
+                console.error(err);
+                alert('Impossibile avviare sessione.');
+            }
+        });
+
+        // Invio messaggio
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => e.key==='Enter' && sendMessage());
+
+        async function sendMessage(text) {
+            const message = text ?? userInput.value.trim();
+            if (!message || !sessionId) return;
+            
+            // pulisci input
+            userInput.value = '';
+            addMessage('user', message);
+            userInput.disabled = sendButton.disabled = true;
+
+            try {
+                const res = await fetch('http://localhost:8000/message', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ session_id: sessionId, content: message })
+                });
+                if (!res.ok) throw new Error('Message send failed');
+                const data = await res.json();
+
+                // se sbloccato DIY agent, mostra bottone
+                diyBtnContainer.innerHTML = '';
+                if (data.diy_agent_unlocked && data.diy_solution===null) {
+                    const btn = document.createElement('button');
+                    btn.textContent = '🔧 Richiedi Soluzione Fai-da-Te';
+                    btn.className = 'bg-green-600 text-white px-4 py-2 rounded-lg';
+                    btn.onclick = () => sendMessage('Per favore suggerisci una soluzione Fai-da-Te');
+                    diyBtnContainer.appendChild(btn);
+                }
+
+                addMessage('agent', data.agent_response, data.agent);
+                updateSolutionPanel(data);
+
+                // traccia il cambio agente
+                if (data.diy_agent_unlocked && currentAgent!=='DIY agent') {
+                    currentAgent = 'DIY agent';
+                    addMessage('system', '👉 Il DIY Agent è ora attivo.');
+                }
+
+            } catch (err) {
+                console.error(err);
+                addMessage('system', 'Errore durante l\'invio del messaggio.');
+            } finally {
+                userInput.disabled = sendButton.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        function addMessage(role, text, agent=null) {
+            const div = document.createElement('div');
+            div.className = `p-3 mb-2 rounded-lg ${
+                        role === 'user'
+                            ? 'bg-blue-100 self-end'
+                            : role === 'system'
+                            ? 'bg-gray-100 self-center'
+                            : 'bg-white self-start'
+                    }`;
+            if (agent) {
+                const lbl = document.createElement('div');
+                lbl.className = 'text-xs text-gray-500 mb-1';
+                lbl.textContent = agent;
+                div.appendChild(lbl);
+            }
+            const span = document.createElement('div');
+            span.className = 'whitespace-pre-wrap';
+            span.textContent = text;
+            div.appendChild(span);
+            chatMessages.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function updateSolutionPanel(data) {
+            if (data.detected_problem_cause || data.diy_solution || data.call_professional || (data.diy_links?.length>0)) {
+                solutionPanel.classList.remove('hidden');
+                if (data.detected_problem_cause) document.getElementById('problemCause').textContent = data.detected_problem_cause;
+                if (data.diy_solution) document.getElementById('diySolution').textContent = data.diy_solution;
+                document.getElementById('professionalHelp').textContent = data.call_professional
+                  ? 'Sì, è consigliata assistenza professionale.'
+                  : 'No, puoi ripararlo da solo.';
+                
+                // video tutorial
+                const vids = data.diy_links.filter(l=>l.includes('youtube.com')||l.includes('youtu.be'));
+                if (vids.length) {
+                    document.getElementById('videoTutorialContainer').classList.remove('hidden');
+                    const id = vids[0].split('v=')[1]?.split('&')[0] || vids[0].split('youtu.be/')[1];
+                    document.getElementById('videoEmbed').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
+                }
+                // link aggiuntivi
+                if (data.diy_links.length) {
+                    const ul = document.getElementById('linksList');
+                    ul.innerHTML = '';
+                    document.getElementById('additionalLinks').classList.remove('hidden');
+                    data.diy_links.forEach(l=>{
+                        const li=document.createElement('li');
+                        const a=document.createElement('a');
+                        a.href=l; a.target='_blank'; a.textContent=l;
+                        li.appendChild(a);
+                        ul.appendChild(li);
+                    });
+                }
+            }
+        }
+
+        // Al caricamento mostra subito le impostazioni
+        document.addEventListener('DOMContentLoaded', () => {
+            settingsPanel.classList.remove('hidden');
+        });
+    </script>
+
+</body>
+</html>
