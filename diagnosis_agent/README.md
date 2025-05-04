@@ -1,128 +1,107 @@
-# 🧩 `diagnosis_agent` – Home Repair Assistant: Problem Handling Agents
-
-This package is part of a modular AI system designed to help users resolve household issues through intelligent conversation and diagnostic steps. The `diagnosis_agent` module includes the agents responsible for:
-
-1. Understanding the user's problem  
-2. Diagnosing possible DIY solutions  
-3. Passing results to the orchestrator for further action
-
-> 💡 This is **Step 1** of a larger system orchestrated by a central agent (`orchestrator_agent`), which coordinates all actions.
+Sure! Here's the **README.md** in **English**, polished and ready for your repository.
 
 ---
 
-## 🔹 Agents in this module
+### 📄 `README.md`
 
-### 👂 `Listener Agent`
-**Purpose:** Understand the user's home issue in detail.  
-**Behavior:**
-- Gathers key info from the user (what, where, when, type of issue).
-- Clarifies and confirms inputs.
-- Passes a structured description to the next agent.
+````markdown
+# 🛠️ Home-Repair Multi-Agent API
 
-### 🔧 `DIY Agent`
-**Purpose:** Determine if the issue can be solved with a DIY solution.  
-**Behavior:**
-- Searches a local knowledge base and/or uses **Google Search**.
-- Returns a clear fix or recommends escalation.
-> 🔍 This agent is tool-enabled using `google_search`.
+A FastAPI-based backend powered by AI agents that help users diagnose home repair issues and suggest DIY or professional solutions.
 
 ---
 
-## ⚙️ System Architecture (Brief)
+## 🚀 Quick Start
 
-This module is part of a broader agent system:
+### 1. Clone the project
+```bash
+git clone https://github.com/your-username/home-repair-ai.git
+cd home-repair-ai
+````
 
-```
-User ↔ Listener Agent → DIY Agent → Orchestrator Agent → [Professional Finder Agent]
-```
+### 2. Install dependencies
 
----
-
-## 📁 Folder Structure
-
-```
-diagnosis_agent/
-├── __init__.py             # Package initializer
-├── agent.py                # Main agent definitions
-├── diy_agent.py            # DIY troubleshooting agent
-├── listener_agent.py       # Listener agent to capture the problem
-├── .env                    # API key & settings
-├── .gitignore              # Ignored files
-└── README.md               # You're here!
-```
-
----
-
-## 🛠️ Setup
-
-### 1. Set up Environment & Install ADK
+Make sure you have **Python 3.10+** installed, then run:
 
 ```bash
-python -m venv .venv
-# Activate it:
-# macOS/Linux
-source .venv/bin/activate
-# Windows CMD
-.venv\Scripts\activate.bat
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
 
-Install the SDK:
+### 3. Set up environment variables
 
-```bash
-pip install google-adk
-```
-
----
-
-### 2. Create `.env` File
-
-Inside `diagnosis_agent/`, create a `.env` file with the following:
+Create a `.env` file in the project root with your credentials (e.g., API keys):
 
 ```env
-GOOGLE_GENAI_USE_VERTEXAI=FALSE
-GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_API_KEY_HERE
+# .env
+OPENAI_API_KEY=sk-...
+SERPAPI_API_KEY=...
 ```
 
-Replace the placeholder with your real [Google Generative AI API key](https://makersuite.google.com/app/apikey).
-
----
-
-## ▶️ Run Your Agent
-
-There are multiple ways to interact with your agent:
-
-- 🌐 **Dev UI**: `adk web`  
-- 🖥️ **Terminal**: `adk run`  
-- ⚙️ **API Server**: `adk api_server`  
-
-### 🚀 Launch the Dev UI
+### 4. Run the server
 
 ```bash
-adk web
+uvicorn server:app --reload
 ```
 
-1. Open the URL provided in the terminal (usually `http://localhost:8000` or `http://127.0.0.1:8000`).
-2. In the top-left corner, select your agent from the dropdown — choose **`diagnosis_agent`**.
+The API will be available at:
+📡 `http://localhost:8000`
+
+
+### 5. UI
+Open the file index.html in your browser to access the UI for interacting with the API.
+
+```bash
+open index.html
+```
 
 ---
 
-### 🛠️ Troubleshooting
+## 🧪 Swagger UI
 
-If you don’t see `diagnosis_agent` in the UI:
+FastAPI provides two built-in documentation UIs:
 
-- Make sure you're running `adk web` from the **parent directory** of `diagnosis_agent/` (e.g., the root of your project).
-- Ensure your `agent.py` file is properly configured with an exported agent.
+* 📘 Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+* 📕 ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
-📚 For full details, see the official [Google ADK Quickstart Guide](https://google.github.io/adk-docs/get-started/quickstart/#run-your-agent).
+Use these to test the endpoints interactively.
 
 ---
 
-## ✅ What’s Left to Implement
+## 🧩 Main Endpoints
 
-- 🧠 **Session Management**:  
-  Implement logic to maintain conversational context, allowing agents to:
-  - Share information between turns
-  - Remember past interactions
-  - Store user preferences (e.g., preferred language, location, skill level)
+### `POST /start`
+
+Start a new session by submitting user preferences (e.g. language, location, tools, etc.).
+
+### `POST /message`
+
+Send a message (e.g. a home issue description) and get a response from the current AI agent.
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── server.py            # FastAPI entry point
+├── agents/              # Contains agent logic and tools
+├── agent.py             # Agent definitions and tool setup
+├── requirements.txt     # Python dependencies
+└── .env                 # Environment variables (not committed)
+```
+
+---
+
+## ✅ Requirements
+
+* Python 3.10+
+* Packages in `requirements.txt`, including:
+
+  * `fastapi`
+  * `uvicorn`
+  * `pydantic`
+  * `openai`
+  * `python-dotenv`
+  * (and any agent-related libraries)
+
+---
