@@ -1,5 +1,6 @@
 from agents import function_tool
 from typing import List, Dict, Any
+import math
 
 @function_tool
 def get_rating_scoring(rating: int) -> float:
@@ -26,7 +27,7 @@ def get_time_decay(feedback_date: str) -> float:
     
     # Assuming a decay factor of 0.01 per day
     decay_factor = 0.01
-    return exp(-decay_factor * days_difference)  # Exponential decay function
+    return math.exp(-decay_factor * days_difference)  # Exponential decay function
 
 @function_tool
 def get_trust_score(rating_scoring: float, tag_scoring: float, time_decay: float, semtiment_scoring: float) -> float:
@@ -43,7 +44,7 @@ def get_trust_score(rating_scoring: float, tag_scoring: float, time_decay: float
         weights["rating_scoring"] * rating_scoring +
         weights["tag_scoring"] * tag_scoring +
         weights["time_decay"] * time_decay +
-        weights["sentiment_scoring"] * semtiment_scoring
+        weights["sentiment_scoring"] * (semtiment_scoring - 0.5)  # Normalizing sentiment score to be between -0.5 and 0.5
     )
     
 @function_tool
