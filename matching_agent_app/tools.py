@@ -1,5 +1,5 @@
 from database.utils import getProfessionals, getCities
-from matching_agent.utils import haversine, fetch_coordinates_for_cities
+from matching_agent_app.utils import haversine, fetch_coordinates_for_cities
 
 
 

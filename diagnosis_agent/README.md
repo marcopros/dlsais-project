@@ -51,7 +51,8 @@ The API will be available at:
 Open the file index.html in your browser to access the UI for interacting with the API.
 
 ```bash
-open index.html
+open index.html   [for macOS]
+start index.html  [for Windows]
 ```
 
 ---

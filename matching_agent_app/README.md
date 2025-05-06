@@ -25,6 +25,14 @@ The Matching Agent uses the following tools to provide its service:
 <br>
 
 
+## A2A Protocol
+This agent is implemented using the A2A Protocol; more precicsly the directory contain:
+matching_agent_app
+|-__init__.py
+|-agent.py
+
+
+
 ## Workflow Overview
 <ol>
 <li><b>User Input Analysis</b>

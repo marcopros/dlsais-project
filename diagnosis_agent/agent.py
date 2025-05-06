@@ -145,14 +145,14 @@ async def main():
                    
                 if isinstance(new_item, MessageOutputItem):
                     parsed = json.loads(ItemHelpers.text_message_output(new_item))
-                    print(f"{agent_name}: {parsed["agent_response"]}")
+                    print(f"{agent_name}: {parsed['agent_response']}")
                     if parsed["unlock_request_for_diy_solution"]:
                         print("Unlocking DIY agent...")
                         current_agent = diy_agent
                     if parsed["diy_solution"] != None:
-                        print(f"DIY solution: {parsed["diy_solution"]}")
+                        print(f"DIY solution: {parsed['diy_solution']}")
                     if parsed["diy_links"] != None:
-                        print(f"DIY links: {parsed["diy_links"]}")
+                        print(f"DIY links: {parsed['diy_links']}")
                     if parsed["call_professional"]:
                         print("User prefers to call a professional.")
                         break

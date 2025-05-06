@@ -1,1 +1,12 @@
 pymongo
+fastapi 
+uvicorn
+streamlit 
+httpx 
+python-dotenv 
+pydantic
+google-generativeai 
+google-adk 
+langchain 
+langchain-openai
+asyncclick

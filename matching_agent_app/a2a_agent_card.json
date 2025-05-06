@@ -1,0 +1,23 @@
+{
+    "name": "Matching Agent (A2A)",
+    "description": "Provides professional matching based on user queries.",
+    "url": "http://localhost:8000/",
+    "version": "1.0.0",
+    "defaultInputModes": ["text"],
+    "defaultOutputModes": ["text"],
+    "capabilities": {
+      "streaming": true
+    },
+    "skills": [
+      {
+        "id": "matching",
+        "name": "Matching",
+        "description": "Matching users with the best professionals based on profession, skill, location, and trust.",
+        "tags": ["professionals", "matching"],
+        "examples": [
+          "I need an electrician in New York for a broken light ",
+          "Find a plumber in San Francisco, my sink is leaking."
+        ]
+      }
+    ]
+}
