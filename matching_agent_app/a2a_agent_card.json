@@ -1,7 +1,7 @@
 {
     "name": "Matching Agent (A2A)",
     "description": "Provides professional matching based on user queries.",
-    "url": "http://localhost:8000/",
+    "url": "http://localhost:8001/",
     "version": "1.0.0",
     "defaultInputModes": ["text"],
     "defaultOutputModes": ["text"],

@@ -7,17 +7,13 @@ from dotenv import load_dotenv
 
 import uvicorn
 
-# Import core components from Google ADK for running agents and managing sessions
-from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-
 # Import common A2A server components and types
 from A2A.server import A2AServer
 from A2A.types import AgentCard, MissingAPIKeyError  # AgentCard defines metadata and capabilities of this agent
 
 # Local imports for the agent logic and task manager
-from .agent import matching_agent
-from .task_manager import MatchingAgentTaskManager
+from .agent import diagnosis_agent
+from .task_manager import DiagnosisAgentTaskManager
 
 # Configure basic logging to output logs at the INFO level
 logging.basicConfig(level=logging.INFO)
@@ -27,40 +23,35 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Application-wide constants
-APP_NAME = "matching_agent_app"  # Logical name for this agent app
+APP_NAME = "diagnosis_agent_app"  # Logical name for this agent app
 USER_ID = "1"  # Default user ID; used when associating sessions/tasks with a user
 
 
 async def run_server():
     """Initializes services and starts the A2AServer."""
 
-    if not os.getenv('GOOGLE_API_KEY'):
+    if not os.getenv('OPENAI_API_KEY'):
         raise MissingAPIKeyError(
-            'GOOGLE_API_KEY environment variable not set'
+            'OPENAI_API_KEY environment variable not set.'
     )
 
-    logger.info("Starting Matching Agent A2A Server initialization...")
+
+    logger.info("Starting Matching Diagnosis A2A Server initialization...")
 
     try:
-        # Initialize session service to store and manage user conversation states
-        session_service = InMemorySessionService()
-
         # The agent instance that will process user inputs and generate responses
-        agent = matching_agent
-
-        # Create a Runner to execute the agent logic using the session state
-        runner = Runner(app_name=APP_NAME, agent=agent, session_service=session_service)
+        agent = diagnosis_agent
 
         # Instantiate the custom task manager that handles A2A streaming and task execution 
-        task_manager = MatchingAgentTaskManager(agent, runner, session_service, APP_NAME, USER_ID)
+        task_manager = DiagnosisAgentTaskManager(agent)
 
         # Determine the port and host from environment variables
-        port = int(os.getenv("PORT", "8001"))
+        port = int(os.getenv("PORT", "8000"))
         host = os.getenv("HOST", "localhost")
         listen_host = "0.0.0.0"  # Allow external connections
 
         # Load the AgentCard configuration from a JSON file
-        with open("matching_agent_app/a2a_agent_card.json", "r") as f:
+        with open("diagnosis_agent_app/a2a_agent_card.json", "r") as f:
             agent_card_data = json.load(f)
 
         # Convert the dictionary into an AgentCard object expected by the A2A framework

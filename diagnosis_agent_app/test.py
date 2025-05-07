@@ -6,41 +6,26 @@ import uuid
 from A2A.client import A2ACardResolver, A2AClient
 
 
-def get_result_text(result_dict: dict):
-    """
-    Extracts human-readable text from a streaming result event.
-    Handles both 'status.message.parts' and 'artifact.parts' fields.
+def print_organized(data, indent=0):
+    """Stampa il contenuto del dizionario JSON con indentazione, senza parentesi."""
+    spacing = '  ' * indent  # 2 spazi per livello
 
-    Args:
-        result_dict: Dictionary containing the stream result.
-
-    Returns:
-        str: Readable text from the response or fallback message if none found.
-    """
-    if not isinstance(result_dict, dict):
-        return "Invalid result format"
-
-    result = result_dict.get("result", {})
-
-    # Case 1: Response in status field
-    status = result.get("status", {})
-    if status.get("state") == "completed":
-        message = status.get("message", {})
-        parts = message.get("parts", [])
-        final = message.get("final")
-        if parts and isinstance(parts, list) and len(parts) > 0:
-            return parts[0].get("text", "No text in message parts")
-        elif final:
-            return "Final message"
-        
-    # Case 2: Response in artifact field
-    artifact = result.get("artifact", {})
-    parts = artifact.get("parts", [])
-    if parts and isinstance(parts, list) and len(parts) > 0:
-        return parts[0].get("text", "No text in artifact parts")
-
-    # Case 3: No text content available
-    return "Unknown or incomplete response"
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if isinstance(value, (dict, list)):
+                print(f"{spacing}{key}:")
+                print_organized(value, indent + 1)
+            else:
+                print(f"{spacing}{key}: {value}")
+    elif isinstance(data, list):
+        for item in data:
+            if isinstance(item, (dict, list)):
+                print(f"{spacing}-")
+                print_organized(item, indent + 1)
+            else:
+                print(f"{spacing}- {item}")
+    else:
+        print(f"{spacing}{data}")
 
 
 async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
@@ -56,7 +41,7 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         # Download the agent card that describes the agent's capabilities
         card_resolver = A2ACardResolver(agent_url)
         agent_card = card_resolver.get_agent_card()
-        print(f"[DEBUG] Agent Card caricata per {agent_url}")
+        print(f"[DEBUG] Agent Card upload for {agent_url}")
 
         # Create an A2A client instance using the agent card
         client = A2AClient(agent_card=agent_card)
@@ -67,6 +52,7 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         # Check if the agent supports streaming responses
         streaming = agent_card.capabilities.streaming
         #streaming = False  # Uncomment to force non-streamed mode
+        #print(f"[DEBUG] Streming Option {streaming}")
 
         # Prepare the task payload to be sent to the agent
         payload = {
@@ -101,7 +87,10 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         else:
             # Send a one-time request and wait for final result
             taskResult = await client.send_task(payload)
-            print(f'[AGENT]:{taskResult.model_dump_json(exclude_none=True)}')
+            print(f"[AGENT]: ")
+            print_organized(taskResult.model_dump())
+            
+
         
 
     except Exception as e:
@@ -114,7 +103,7 @@ async def main():
     Interactive chat client that communicates with an A2A agent.
     Keeps the session alive across multiple messages.
     """
-    url = "http://localhost:8001/"      # URL of the agent service
+    url = "http://localhost:8000/"      # URL of the agent service
     session_id = str(uuid.uuid4())      # Unique ID for the entire chat session
 
     print("Chat Client A2A Started")

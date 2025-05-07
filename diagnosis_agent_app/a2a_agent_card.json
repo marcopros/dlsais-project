@@ -1,0 +1,33 @@
+{
+    "name": "Diagnosis Agent (A2A) ",
+    "description": "Provides the root cause of the home issue and ask for a DIY solution or suggest a professional. ",
+    "url": "http://localhost:8000/",
+    "version": "1.0.0",
+    "capabilities": {
+      "streaming": false
+    },
+    "skills": [
+      {
+        "id": "diagnosis",
+        "name": "Diagnosis",
+        "description": "Diagnoses home issues, determines whether professional assistance is necessary, and, when appropriate, suggests DIY solutions with helpful guidance or video tutorials.",
+        "outputs": [
+            {
+                "name": "Diagnosis",
+                "type": "object"
+            }
+        ]
+      },
+      {
+        "id": "diy",
+        "name": "DoYourSelf",
+        "description": "Given a home issue identify a suitable DIY solution. Search the web and provide a relevant YouTube video tutorial to guide the user through the repair.",
+        "outputs": [
+            {
+                "name": "Diagnosis",
+                "type": "object"
+            }
+        ]
+      }
+    ]
+}

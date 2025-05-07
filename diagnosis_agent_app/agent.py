@@ -1,38 +1,16 @@
-from json import tool
-from operator import call
-from typing import Literal, List
-import aiohttp
-from unittest.mock import Base
-import uuid
-from agents import (
-    Agent, 
-    Runner, 
-    trace, 
-    GuardrailFunctionOutput,
-    InputGuardrailTripwireTriggered,
-    RunContextWrapper,
-    TResponseInputItem,
-    input_guardrail,
-    WebSearchTool,
-    handoff,
-    MessageOutputItem,
-    ItemHelpers,
-    HandoffOutputItem,
-    ToolCallItem,
-    ToolCallOutputItem,
-    function_tool
-)
-from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
-from numpy import diag
-from regex import W
-from diagnosis_instructions import instructions as diagnosis_instructs
-from diy_instructions import diy_instucts
-from pydantic import BaseModel
-from dotenv import load_dotenv
 import os
-import asyncio
-import json
+import aiohttp
 
+from typing import List, Optional
+
+from agents import Agent, function_tool, WebSearchTool
+
+from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
+from pydantic import BaseModel
+
+
+
+'''
 # Load environment variables from .env file
 load_dotenv()
 
@@ -46,8 +24,11 @@ class DiagnosisSettingsContext(BaseModel):
     solution_preferences: Literal['temporary', 'permanent'] = None
     time_available_for_repair: Literal['few minutes', 'hours', 'weekend'] = None
     favourite_language: str = "English" # Italian, English, French, etc.
-    
+'''    
 
+
+
+# --- OUTPUT DEF ---
 class DiagnosisAgentOut(BaseModel):
     unlock_request_for_diy_solution: bool
     agent_response: str
@@ -56,6 +37,21 @@ class DiagnosisAgentOut(BaseModel):
     diy_links: list[str] | None # list of links to video or written tutorials
     call_professional: bool # if the user prefers to call a professional instead of doing it himself/herself
 
+
+# --- SESSION ----
+class SessionSettings(BaseModel):
+    search_for_diy_solution: bool = False
+    user_location: Optional[str]
+    user_diy_skills: Optional[str]
+    user_diy_tools: Optional[List[str]]
+    home_type: Optional[str]
+    solution_preferences: Optional[str]
+    time_available_for_repair: Optional[str]
+    favourite_language: str = "English"
+
+
+
+# --- DIY AGENT ---
 @function_tool
 async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
     """ Searches YouTube for video tutorials matching the given query.
@@ -92,33 +88,43 @@ async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
     return videos[:5]
 
 
-# --- DIY agent ---
-diy_agent = Agent[DiagnosisSettingsContext](
+diy_agent = Agent[SessionSettings](
     name="DIY agent",
-    instructions=("you are given a home issue and you have to find a DIY solution to it. Search the web for a solution and provide a link to a video tutorial from YouTube (do not make it up)."
-                  "Follow accurately the setting provided in the context. "),
+    instructions=(
+        "You are given a home issue and you have to find a DIY solution to it. "
+        "Search the web for a solution and provide a link to a video tutorial from YouTube."
+        "Follow the settings provided in the context."
+    ),
     model="gpt-4.1",
     tools=[WebSearchTool(), search_video_tutorial],
     output_type=DiagnosisAgentOut,
 )
+
+
  
 
-# --- Diagnosis agent ---
-diagnosis_agent = Agent[DiagnosisSettingsContext](
+# --- DIAGNOSIS AGENT ---
+diagnosis_agent = Agent[SessionSettings](
     name="Diagnosis agent",
-    instructions=(f"{RECOMMENDED_PROMPT_PREFIX}"
-        "Your job is to find the root cause of the home issue and ask for a DIY solution if the user is interested or if the users prefers a professional to cope with the problem (if it does set the relative output flag to true)." 
-        "Ask few clarification if needed."
-        "Follow accurately the setting provided in the context. "),
+    instructions=(
+        f"{RECOMMENDED_PROMPT_PREFIX}"
+        "Your job is to find the root cause of the home issue and ask for a DIY solution or suggest a professional. "
+        "Ask clarifications if needed."
+    ),
     model="gpt-4.1",
     tools=[diy_agent.as_tool(
         tool_name="propose_diy_solution",
-        tool_description="Search the web a DIY solution relatively the founded root cause with a YouTube video tutorial link (do not make it up).",
+        tool_description="Search the web for a DIY solution with a YouTube video link."
     )],
     output_type=DiagnosisAgentOut,
 )
 
 
+
+
+
+
+'''
 async def main():
     input_items: list[TResponseInputItem] = []
     current_agent: Agent[DiagnosisSettingsContext] = diagnosis_agent
@@ -166,4 +172,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
-
+'''
