@@ -1,7 +1,7 @@
 {
     "name": "Diagnosis Agent (A2A) ",
     "description": "Provides the root cause of the home issue and ask for a DIY solution or suggest a professional. ",
-    "url": "http://localhost:8000/",
+    "url": "http://localhost:8001/",
     "version": "1.0.0",
     "capabilities": {
       "streaming": false

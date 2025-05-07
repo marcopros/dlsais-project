@@ -30,12 +30,17 @@ class DiagnosisSettingsContext(BaseModel):
 
 # --- OUTPUT DEF ---
 class DiagnosisAgentOut(BaseModel):
-    unlock_request_for_diy_solution: bool
-    agent_response: str
+    agent_response: str                 # summary of the diagnosis agent 
+    # Diagnosis Fields
+    diagnosis: str | None
     detected_problem_cause: str | None
+    type_specialist: str | None
+    city: str | None
+    # DIY Fields
+    unlock_request_for_diy_solution: bool
     diy_solution: str | None
     diy_links: list[str] | None # list of links to video or written tutorials
-    call_professional: bool # if the user prefers to call a professional instead of doing it himself/herself
+    
 
 
 # --- SESSION ----
@@ -108,8 +113,16 @@ diagnosis_agent = Agent[SessionSettings](
     name="Diagnosis agent",
     instructions=(
         f"{RECOMMENDED_PROMPT_PREFIX}"
-        "Your job is to find the root cause of the home issue and ask for a DIY solution or suggest a professional. "
-        "Ask clarifications if needed."
+        "You are a home diagnosis expert. Your role is to analyze user-reported home issues, determine the likely cause, "
+        "and provide a structured diagnosis in the specified format.\n"
+        "\n"
+        "If the issue is unclear, ask clarifying questions before proceeding. Once diagnosed:\n"
+        "- Summarize the issue and its cause clearly\n"
+        "- Consider if a DIY solution is appropriate based on the user’s skills, tools, and preferences\n"
+        "- If suitable, use the 'propose_diy_solution' tool to fetch a video tutorial-based DIY guide\n"
+        "\n"
+        "Always respect context from the session settings such as language, location, available time, and DIY capabilities. "
+        "Your output must strictly follow the DiagnosisAgentOut schema."
     ),
     model="gpt-4.1",
     tools=[diy_agent.as_tool(

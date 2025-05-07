@@ -2,7 +2,6 @@ import os
 import json
 import asyncio
 import logging
-from re import A
 from dotenv import load_dotenv
 
 import uvicorn
@@ -13,11 +12,11 @@ from google.adk.sessions.in_memory_session_service import InMemorySessionService
 
 # Import common A2A server components and types
 from A2A.server import A2AServer
-from A2A.types import AgentCard, MissingAPIKeyError  # AgentCard defines metadata and capabilities of this agent
+from A2A.types import AgentCard, MissingAPIKeyError
 
 # Local imports for the agent logic and task manager
-from .agent import matching_agent
-from .task_manager import MatchingAgentTaskManager
+from .agent import orchestrator
+from .task_manager import OrchestratorTaskManager
 
 # Configure basic logging to output logs at the INFO level
 logging.basicConfig(level=logging.INFO)
@@ -46,21 +45,21 @@ async def run_server():
         session_service = InMemorySessionService()
 
         # The agent instance that will process user inputs and generate responses
-        agent = matching_agent
+        agent = orchestrator
 
         # Create a Runner to execute the agent logic using the session state
         runner = Runner(app_name=APP_NAME, agent=agent, session_service=session_service)
 
         # Instantiate the custom task manager that handles A2A streaming and task execution 
-        task_manager = MatchingAgentTaskManager(agent, runner, session_service, APP_NAME, USER_ID)
+        task_manager = OrchestratorTaskManager(agent, runner, session_service, APP_NAME, USER_ID)
 
         # Determine the port and host from environment variables
-        port = int(os.getenv("PORT", "8002"))
+        port = int(os.getenv("PORT", "8000"))
         host = os.getenv("HOST", "localhost")
         listen_host = "0.0.0.0"  # Allow external connections
 
         # Load the AgentCard configuration from a JSON file
-        with open("matching_agent_app/a2a_agent_card.json", "r") as f:
+        with open("orchestrator/a2a_agent_card.json", "r") as f:
             agent_card_data = json.load(f)
 
         # Convert the dictionary into an AgentCard object expected by the A2A framework

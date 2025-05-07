@@ -6,9 +6,9 @@ from typing import AsyncIterable, Any
 
 # Google ADK imports for agent execution and session management
 from agents import Agent, Runner, trace
-from openai.types.responses import ResponseTextDeltaEvent
 
 from .session import SessionService
+from .agent import DiagnosisAgentOut
 # help(Runner)                      # To see the available methods and attributes of the Runner class
 # help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
 
@@ -23,13 +23,29 @@ from A2A.types import (
     TaskState,
     SendTaskStreamingRequest,
     SendTaskStreamingResponse,
-    JSONRPCResponse
 )
 from A2A.server.task_manager import InMemoryTaskManager
 
 # Setup basic logging to help debug and trace execution flow
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+async def validate_diagnosis_output(output: DiagnosisAgentOut):
+    """
+    Validates that required diagnosis fields are present.
+    Raises ValueError if any required field is missing.
+    """
+    required_fields = {
+        "diagnosis": output.diagnosis,
+        "detected_problem_cause": output.detected_problem_cause,
+        "type_specialist": output.type_specialist,
+    }
+
+    missing = [field for field, value in required_fields.items() if value is None]
+    if missing:
+        raise ValueError(f"Missing required diagnosis fields: {missing}")
+    return True
 
 
 # Custom Task Manager for Diagnosis Agent
@@ -130,6 +146,23 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
 
             part_summary = [{"type": "text", "text": summary}]
             part_data = [{"type": "data", "data": data}]
+
+
+            # Check if the response is valid, else require more input 
+            try:
+                await validate_diagnosis_output(final_response)
+            except ValueError as e:
+                logger.error(f"Invalid diagnosis output: {e}")
+                error_message = Message(
+                    role="agent",
+                    parts=[TextPart(type="text", text=f"Diagnosis incomplete: {str(e)}")],
+                )
+                failed_task = await self.update_store(
+                    task_id=task.id,
+                    status=TaskStatus(state=TaskState.INPUT_REQUIRED, message=Message(role='agent', parts=part_summary)),
+                    artifacts=[]
+                )
+                return SendTaskResponse(id=request.id, result=failed_task)
             
             # Update task as completed
             updated_task = await self.update_store(

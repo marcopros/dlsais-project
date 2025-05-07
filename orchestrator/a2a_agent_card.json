@@ -1,0 +1,29 @@
+{
+  "name": "Orchestrator",
+  "description": "This agent acts as the central coordinator of the system. Based on user input, it routes tasks to the appropriate specialized agent.",
+  "url": "http://localhost:8000/",
+  "version": "1.0.0",
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "capabilities": {
+    "streaming": false
+  },
+  "skills": [
+    {
+      "id": "orchestration",
+      "name": "Task Routing & Coordination",
+      "description": "Routes user queries between DiagnosisAgent and MatchingAgent based on the nature of the request.",
+      "tags": ["orchestration", "routing", "coordination"],
+      "examples": [
+        "I think my sink is leaking, but I'm not sure how bad it is.",
+        "Can I fix this broken outlet myself or should I call an electrician?",
+        "Find me a plumber in Boston if it's not a DIY job."
+      ]
+    }
+  ],
+  "tools": [
+    "validate_diagnosis_output",
+    "diagnosis_agent_send_task",
+    "matching_agent_send_task"
+  ]
+}

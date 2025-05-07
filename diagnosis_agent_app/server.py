@@ -46,7 +46,7 @@ async def run_server():
         task_manager = DiagnosisAgentTaskManager(agent)
 
         # Determine the port and host from environment variables
-        port = int(os.getenv("PORT", "8000"))
+        port = int(os.getenv("PORT", "8001"))
         host = os.getenv("HOST", "localhost")
         listen_host = "0.0.0.0"  # Allow external connections
 
