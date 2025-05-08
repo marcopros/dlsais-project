@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Feedback AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .chip-active-positive { background-color: #bbf7d0 !important; }
+    .chip-active-negative { background-color: #fecaca !important; }
+    .chip:hover { filter: brightness(0.95); }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
+
+  <div class="bg-white w-full max-w-xl rounded-xl shadow-lg p-6 space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold text-blue-600">Electrical System Repair</h1>
+      <p class="text-sm text-gray-500">Marco Bianchi, Electrician — April 28, 2025</p>
+    </div>
+
+    <div id="step1" class="fade-in space-y-4">
+      <label class="block text-lg font-medium">1. Come valuti il servizio?</label>
+      <div id="rating" class="flex space-x-2 text-3xl">
+        <button data-rating="1" class="star text-gray-300">&#9733;</button>
+        <button data-rating="2" class="star text-gray-300">&#9733;</button>
+        <button data-rating="3" class="star text-gray-300">&#9733;</button>
+        <button data-rating="4" class="star text-gray-300">&#9733;</button>
+        <button data-rating="5" class="star text-gray-300">&#9733;</button>
+      </div>
+      <button id="toStep2" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50" disabled>Avanti</button>
+    </div>
+
+    <div id="step2" class="hidden fade-in space-y-4">
+      <label class="block text-lg font-medium">2. Lascia un feedback</label>
+      <div class="flex space-x-4">
+        <button id="btnText" class="input-method px-4 py-2 rounded-lg bg-gray-200">✍️ Scrivi</button>
+        <button id="btnChips" class="input-method px-4 py-2 rounded-lg bg-gray-200">💬 Seleziona</button>
+      </div>
+      <textarea id="textFeedback" class="hidden w-full border rounded-lg p-3" placeholder="Scrivi qui il tuo feedback..."></textarea>
+      <div id="chipContainer" class="hidden space-y-2">
+        <div class="font-semibold text-green-600">Aspetti positivi</div>
+        <div id="positiveChips" class="flex flex-wrap gap-2"></div>
+        <div class="font-semibold text-red-600">Aspetti negativi</div>
+        <div id="negativeChips" class="flex flex-wrap gap-2"></div>
+      </div>
+      <button id="submitBtn" class="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 flex justify-center items-center gap-2">
+        <span>🚀 Invia Feedback</span>
+        <span id="spinner" class="hidden animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span>
+      </button>
+    </div>
+
+    <div id="resultBox" class="hidden bg-green-50 border-l-4 border-green-400 p-4 mt-4 rounded shadow-sm">
+      <div class="flex items-start">
+        <div class="text-green-500 text-2xl mr-3">🤖</div>
+        <div class="text-sm space-y-1">
+          <h3 class="font-bold text-green-700 text-lg">Analisi del feedback</h3>
+          <div id="resultOutput" class="text-green-900 whitespace-pre-wrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let selectedRating = 0;
+let inputMethod = null;
+let selectedChips = [];
+
+const chips = {
+  positive: ['👍 Professional', '⏱️ Punctual', '💰 Fair price', '🧹 Clean and tidy', '🤝 Polite', '🔧 Accurate work', '📱 Excellent communication', '🚀 Fast and efficient', '🎓 Very competent', '♻️ Sustainable', '🛠️ Modern equipment', '🔄 Flexible'],
+  negative: ['⏰ Late', '💸 Too expensive', '🗣️ Poor communication', '🛠️ Incomplete work', '😕 Unprofessional', '🧰 Inadequate equipment', '📝 Inaccurate estimate', '⚠️ Safety issues', '🗑️ Left a mess', '⌛ Too slow', '💦 Non-durable result', '🔙 Required additional interventions']
+};
+
+document.querySelectorAll('.star').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedRating = parseInt(btn.dataset.rating);
+    document.querySelectorAll('.star').forEach((b, i) => {
+      b.classList.toggle('text-yellow-400', i < selectedRating);
+      b.classList.toggle('text-gray-300', i >= selectedRating);
+    });
+    document.getElementById('toStep2').disabled = selectedRating === 0;
+  });
+});
+
+document.getElementById('toStep2').onclick = () => {
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+};
+
+document.getElementById('btnText').onclick = () => {
+  inputMethod = 'text';
+  document.getElementById('textFeedback').classList.remove('hidden');
+  document.getElementById('chipContainer').classList.add('hidden');
+  selectedChips = [];
+  document.querySelectorAll('[data-chip-id]').forEach(chip => {
+    chip.classList.remove('chip-active-positive', 'chip-active-negative');
+  });
+};
+
+document.getElementById('btnChips').onclick = () => {
+  inputMethod = 'chips';
+  document.getElementById('textFeedback').classList.add('hidden');
+  document.getElementById('chipContainer').classList.remove('hidden');
+  document.getElementById('textFeedback').value = '';
+};
+
+function renderChips(containerId, items, cat) {
+  const container = document.getElementById(containerId);
+  items.forEach((txt, i) => {
+    const chip = document.createElement('button');
+    const id = `${cat[0]}${i+1}`;
+    chip.textContent = txt;
+    chip.className = "chip px-3 py-1 rounded-full border text-sm bg-gray-100 hover:shadow-sm";
+    chip.onclick = () => {
+      if (selectedChips.includes(id)) {
+        selectedChips = selectedChips.filter(c => c !== id);
+        chip.classList.remove('chip-active-positive', 'chip-active-negative');
+      } else {
+        selectedChips.push(id);
+        chip.classList.add(cat === 'positive' ? 'chip-active-positive' : 'chip-active-negative');
+      }
+    };
+    chip.dataset.chipId = id;
+    chip.dataset.text = txt;
+    chip.dataset.category = cat;
+    container.appendChild(chip);
+  });
+}
+
+renderChips('positiveChips', chips.positive, 'positive');
+renderChips('negativeChips', chips.negative, 'negative');
+
+document.getElementById('submitBtn').onclick = async () => {
+  if (selectedRating === 0 || !inputMethod ||
+      (inputMethod === 'text' && !document.getElementById('textFeedback').value.trim()) ||
+      (inputMethod === 'chips' && selectedChips.length === 0)) {
+    alert("Completa tutti i campi prima di inviare.");
+    return;
+  }
+
+  const spinner = document.getElementById('spinner');
+  spinner.classList.remove('hidden');
+
+  const tags = Array.from(document.querySelectorAll('[data-chip-id]'))
+    .filter(el => selectedChips.includes(el.dataset.chipId))
+    .map(el => ({
+      id: el.dataset.chipId,
+      text: el.dataset.text,
+      category: el.dataset.category
+    }));
+
+  const feedback = {
+    jobInfo: {
+      jobTitle: "Electrical System Repair",
+      professional: "Marco Bianchi, Electrician",
+      date: "2025-04-28"
+    },
+    rating: selectedRating,
+    feedbackType: inputMethod,
+    textFeedback: inputMethod === 'text' ? document.getElementById('textFeedback').value : "",
+    selectedTags: inputMethod === 'chips' ? tags : []
+  };
+
+  try {
+    const res = await fetch("http://localhost:8001/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ feedback })
+    });
+    const data = await res.json();
+    const summary = `
+🧠 Valutazione numerica: ${data.rating_scoring ?? "N/A"}
+🏷️ Punteggio da tag: ${data.tag_scoring ?? "N/A"}
+🕓 Time decay: ${data.time_decay ?? "N/A"}
+💬 Sentiment: ${data.sentiment_scoring ?? "N/A"}
+✅ Trust score aggiornato: ${data.updated_trust_score ?? "N/A"}
+    `;
+    document.getElementById('resultOutput').textContent = summary;
+    document.getElementById('resultBox').classList.remove('hidden');
+  } catch (err) {
+    alert("Errore: " + err.message);
+  } finally {
+    spinner.classList.add('hidden');
+  }
+};
+</script>
+</body>
+</html>

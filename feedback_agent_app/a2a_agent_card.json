@@ -1,0 +1,25 @@
+{
+    "name": "Feedback Agent (A2A)",
+    "description": "Provides professional matching based on user queries.",
+    "url": "http://localhost:8003/",
+    "version": "1.0.0",
+    "defaultInputModes": ["text"],
+    "defaultOutputModes": ["text"],
+    "capabilities": {
+      "streaming": true
+    },
+    "skills": [
+      {
+        "id": "analysis",
+        "name": "Feedback anlysis",
+        "description": "Recevies a feedback from the usern analyses it and updates professional's trust score.",
+        "tags": ["professionals", "feedback", "analysis", "trust", "score"],
+        "outputs": [
+            {
+                "name": "AnalysisResult",
+                "type": "object"
+            }
+        ]
+      }
+    ]
+}
