@@ -12,7 +12,7 @@ from A2A.server import A2AServer
 from A2A.types import AgentCard, MissingAPIKeyError  # AgentCard defines metadata and capabilities of this agent
 
 # Local imports for the agent logic and task manager
-from feedback_agent_app.agent import diagnosis_agent
+from feedback_agent_app.agent import feedback_agent, FeedbackOut
 from feedback_agent_app.task_manager import FeedbackAgentTaskManager
 
 # Configure basic logging to output logs at the INFO level
@@ -40,7 +40,7 @@ async def run_server():
 
     try:
         # The agent instance that will process user inputs and generate responses
-        agent = diagnosis_agent
+        agent = feedback_agent
 
         # Instantiate the custom task manager that handles A2A streaming and task execution 
         task_manager = FeedbackAgentTaskManager(agent)

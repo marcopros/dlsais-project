@@ -1,4 +1,5 @@
 import asyncio
+from email import message
 import json
 import uuid
 import logging
@@ -7,8 +8,8 @@ from typing import AsyncIterable, Any
 # Google ADK imports for agent execution and session management
 from agents import Agent, Runner, trace
 
-#from .feedback_agent_app.session import SessionService
-from feedback_agent_app.agent import feedback_agent, FeedbackOut
+from .feedback_agent_app.session import SessionService
+from feedback_agent_app.agent import FeedbackOut
 # help(Runner)                      # To see the available methods and attributes of the Runner class
 # help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
 
@@ -69,7 +70,7 @@ class FeedbackAgentTaskManager(InMemoryTaskManager):
         """
         super().__init__()
         self.agent = agent
-        # self.sessions = SessionService()
+        self.sessions = SessionService()
         logger.info("FeedbackAgentTaskManager initialized.")
     
 
@@ -147,7 +148,7 @@ class FeedbackAgentTaskManager(InMemoryTaskManager):
             final_response =  await self.invoke(user_message, task.sessionId)
             
             # Assume final_response is a DiagnosisAgentOut instance
-            summary = final_response.agent_response
+            summary = final_response # DOVREBBE ESSERE una sorta di JSON
             data = final_response.model_dump()
 
             part_summary = [{"type": "text", "text": summary}]
@@ -158,7 +159,7 @@ class FeedbackAgentTaskManager(InMemoryTaskManager):
             try:
                 await validate_diagnosis_output(final_response)
             except ValueError as e:
-                logger.error(f"Invalid diagnosis output: {e}")
+                logger.error(f"Invalid output: {e}")
                 error_message = Message(
                     role="agent",
                     parts=[TextPart(type="text", text=f"Analysis incomplete: {str(e)}")],
@@ -206,42 +207,109 @@ class FeedbackAgentTaskManager(InMemoryTaskManager):
 
             
     # TO DO
+    from A2A.types import SendTaskStreamingResponse, TextPart, Message, Artifact, TaskStatus, TaskState
+
     async def on_send_task_subscribe(self, request: SendTaskStreamingRequest) -> AsyncIterable[SendTaskStreamingResponse]:
         """
         Handle streaming task subscription. Streams updates back to the client.
-
-        Args:
-            request: Streaming request with task info.
-
-        Yields:
-            Status updates and artifact changes as they happen.
+        Mirrors the behavior of `on_send_task`, but sends responses as a stream.
         """
         logger.info(f"Subscribing to task stream: {request.params.id}")
 
-        # Create or retrieve the task
+        # Crea o aggiorna il task nel task store
         task = await self.upsert_task(request.params)
 
-        # Dummy status update — simulate starting the task
-        yield SendTaskStreamingResponse(
-            id=request.id,
-            result={
-                "id": task.id,
-                "status": TaskStatus(state=TaskState.WORKING),
-                "updates": {"message": "Task started (fake stream)"},
-            },
-        )
+        try:
+            # Trova l’ultimo messaggio dell’utente
+            user_message = "No input"
+            if task.history:
+                for msg in reversed(task.history):
+                    if msg.role == "user":
+                        if msg.parts and isinstance(msg.parts[0], dict):
+                            user_message = msg.parts[0].get("text", "No input")
+                        elif hasattr(msg.parts[0], "text"):
+                            user_message = msg.parts[0].text
+                        break
 
-        # Simulate some processing delay
-        await asyncio.sleep(1)
+            # Primo messaggio: task iniziato
+            yield SendTaskStreamingResponse(
+                id=request.id,
+                result={
+                    "id": task.id,
+                    "status": TaskStatus(state=TaskState.WORKING),
+                    "updates": {"message": "Task started"},
+                },
+            )
 
-        # Dummy final update — simulate completion
-        yield SendTaskStreamingResponse(
-            id=request.id,
-            result={
-                "id": task.id,
-                "status": TaskStatus(state=TaskState.COMPLETED),
-                "artifacts": [Artifact(parts=[TextPart(type="text", text="Fake final response")])],
-            },
-        )
+            # Chiama l'agente (equivalente a invoke)
+            final_response = await self.invoke(user_message, task.sessionId)
+            response_text = final_response.agent_Response
+            response_data = final_response.model_dump()
 
-    
+            # Convalida del risultato (opzionale)
+            try:
+                await validate_diagnosis_output(final_response)
+            except ValueError as e:
+                logger.error(f"Output non valido: {e}")
+                yield SendTaskStreamingResponse(
+                    id=request.id,
+                    result={
+                        "id": task.id,
+                        "status": TaskStatus(
+                            state=TaskState.INPUT_REQUIRED,
+                            message=Message(
+                                role="agent",
+                                parts=[TextPart(type="text", text=f"Diagnosi incompleta: {str(e)}")]
+                            )
+                        ),
+                        "artifacts": []
+                    }
+                )
+                return
+
+            # Aggiorna lo store (opzionale per consistenza)
+            await self.update_store(
+                task_id=task.id,
+                status=TaskStatus(
+                    state=TaskState.COMPLETED,
+                    message=Message(
+                        role="agent",
+                        parts=[TextPart(type="text", text=response_text)]
+                    )
+                ),
+                artifacts=[Artifact(parts=[TextPart(type="text", text=response_data)])]
+            )
+
+            # Risposta finale
+            yield SendTaskStreamingResponse(
+                id=request.id,
+                result={
+                    "id": task.id,
+                    "status": TaskStatus(
+                        state=TaskState.COMPLETED,
+                        message=Message(
+                            role="agent",
+                            parts=[TextPart(type="text", text=response_text)]
+                        )
+                    ),
+                    "artifacts": [Artifact(parts=[
+                        TextPart(type="text", text=response_data)
+                    ])]
+                }
+            )
+
+        except Exception as e:
+            logger.error(f"Errore durante la gestione del task {task.id}: {e}")
+            error_message = Message(
+                role="agent",
+                parts=[TextPart(type="text", text=f"Errore durante l'esecuzione: {str(e)}")]
+            )
+
+            yield SendTaskStreamingResponse(
+                id=request.id,
+                result={
+                    "id": task.id,
+                    "status": TaskStatus(state=TaskState.FAILED, message=error_message),
+                    "artifacts": []
+                }
+            )

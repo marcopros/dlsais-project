@@ -76,6 +76,7 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str, ta
             response_stream = client.send_task_streaming(payload)
             print(f"[AGENT]: ", end="", flush=True)
             
+            last_result = None
             async for result in response_stream:
                 # Print full JSON of each streaming event
                 print(
@@ -84,6 +85,7 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str, ta
                     # f'\tstream event => {get_result_text(result.model_dump(exclude_none=True))}'
                 )
             print()         # New line after streaming
+            return last_result, task_id
 
         else:
             # Send a one-time request and wait for final result
