@@ -11,10 +11,10 @@ from persistent_memory import MongoMemoryService
 memory_service = MongoMemoryService()
 
 
-async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
+async def ask_agent_with_a2a(agent_url: str, session_id: str, username: str, user_text: str):
     try:
-        # Recupera memoria utente
-        memory = memory_service.search_memory(user_id=session_id, app_name="dlsais-app")
+        # Recupera memoria utente usando l'username invece dell'ID sessione
+        memory = memory_service.search_memory(username=username, app_name="dlsais-app")
         if memory:
             print("\n--- [MEMORIA UTENTE] ---")
             for e in memory:
@@ -56,31 +56,31 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
             full_response = taskResult.result.status.message.parts[0].text
             print(f'[AGENT]: {full_response}')
 
-        # Salva la sessione su MongoDB - Creazione diretta dell'oggetto Session
+        # Salva la sessione su MongoDB
         now = datetime.now().timestamp()
         
-        # Creiamo direttamente l'oggetto Session invece di usare from_dict
-        # Rimozione del campo "type" che causa errori di validazione
+        # Creazione dell'oggetto Session
         session = Session(
             id=session_id,
-            user_id=session_id,
+            user_id=session_id,  # Manteniamo l'ID sessione come user_id per compatibilità
             app_name="dlsais-app",
             events=[
                 {
                     "author": "user",
-                    "content": {"parts": [{"text": user_text}]},  # Rimosso il campo "type"
+                    "content": {"parts": [{"text": user_text}]},
                     "timestamp": now
                 },
                 {
                     "author": "agent",
-                    "content": {"parts": [{"text": full_response}]},  # Rimosso il campo "type"
+                    "content": {"parts": [{"text": full_response}]},
                     "timestamp": now
                 }
             ],
             state={}
         )
         
-        memory_service.add_session_to_memory(session)
+        # Passare sia la sessione che l'username
+        memory_service.add_session_to_memory(session, username)
     except Exception as e:
         print(f"[ERRORE]: {type(e).__name__} - {e}")
 
@@ -88,10 +88,18 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
 async def main():
     url = "http://localhost:8000/"
     session_id = str(uuid.uuid4())
-
+    
     print("Chat Client A2A with Memory Started")
     print(f"\tSession ID: {session_id}")
     print(f"\tConnected to: {url}")
+    
+    # Richiedi username all'avvio
+    username = input("Inserisci il tuo username: ").strip()
+    while not username:
+        print("Username non valido. Riprova.")
+        username = input("Inserisci il tuo username: ").strip()
+        
+    print(f"\tUsername: {username}")
     print("Type 'quit' or ':q' to exit.")
 
     while True:
@@ -100,7 +108,7 @@ async def main():
             if user_input.strip().lower() in ("quit", ":q"):
                 print("Terminated chat.")
                 break
-            await ask_agent_with_a2a(url, session_id, user_input)
+            await ask_agent_with_a2a(url, session_id, username, user_input)
         except KeyboardInterrupt:
             print("\nInterrupted by user.")
             break
