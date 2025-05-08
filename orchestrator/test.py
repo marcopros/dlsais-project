@@ -5,6 +5,11 @@ import uuid
 
 from A2A.client import A2ACardResolver, A2AClient
 
+# for persistent memory management
+from persistent_memory import MongoMemoryService
+
+memory_service = MongoMemoryService()
+
 
 async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
     """
