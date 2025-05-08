@@ -22,7 +22,7 @@
     }
   ],
   "tools": [
-    "validate_diagnosis_output",
+    "validate_diagnosis",
     "diagnosis_agent_send_task",
     "matching_agent_send_task"
   ]

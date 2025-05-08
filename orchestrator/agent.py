@@ -1,12 +1,12 @@
 # Import ADK components
 from google.adk.agents import Agent
 
-from .tools import validate_diagnosis_output, diagnosis_agent_send_task, matching_agent_send_task
+from .tools import validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task
 
 orchestrator = Agent(
     model='gemini-2.0-flash-001',
     name='orchestrator',
-    description="""
+    description="""s
         This agent acts as the central coordinator of the system.
         Based on user input, it routes tasks to the appropriate specialized agent:
         - DiagnosisAgent: To understand the problem and determine whether it should be handled DIY or professionally.
@@ -18,7 +18,7 @@ orchestrator = Agent(
     ### Workflow:
     1. **Initial Diagnosis Phase**
     - Always begin by sending the user query to the Diagnosis Agent using the tool `diagnosis_agent_send_task`.
-    - Once you receive the result, validate its completeness using the `validate_diagnosis_output` tool.
+    - Once you receive the result, validate its completeness using the `validate_diagnosis` tool.
     - If validation fails:
         - Prompt the user for any missing information.
         - Re-send the updated task to the Diagnosis Agent.
@@ -41,12 +41,13 @@ orchestrator = Agent(
     - Relay the matching results back to the user.
 
     ### Constraints:
-    - Only use the tools provided: `validate_diagnosis_output`, `diagnosis_agent_send_task`, `matching_agent_send_task`.
+    - Only use the tools provided: `validate_diagnosis`, `diagnosis_agent_send_task`, `matching_agent_send_task`.
+    - # NB: the 'sessionId' parmaeter of the tools must be equal to you 'session_id' 
     - Never generate final answers directly; always delegate actions via tools.
     - If a required agent is unavailable, respond with a clear error message to the user.
     - Maintain context across steps and ensure each step completes before proceeding to the next.
     """,
     tools=[
-        validate_diagnosis_output, diagnosis_agent_send_task, matching_agent_send_task
+        validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task
     ],
 )
