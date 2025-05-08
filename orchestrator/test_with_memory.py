@@ -50,13 +50,13 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
             response_stream = client.send_task_streaming(payload)
             full_response = ""
             async for result in response_stream:
-                text = result.output.parts[0].text
+                text = result.result.status.message.parts[0].text
                 print(text, end="", flush=True)
                 full_response += text
             print()
         else:
             taskResult = await client.send_task(payload)
-            full_response = taskResult.output.parts[0].text
+            full_response = taskResult.result.status.message.parts[0].text
             print(f'[AGENT]: {full_response}')
 
         # Salva la sessione su MongoDB
