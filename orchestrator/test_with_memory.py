@@ -1,7 +1,6 @@
 from datetime import datetime
 import asyncio
 import uuid
-from types import SimpleNamespace
 
 from A2A.client import A2ACardResolver, A2AClient
 from google.adk.sessions import Session
@@ -27,11 +26,9 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         agent_card = card_resolver.get_agent_card()
         print(f"[DEBUG] Agent Card caricata per {agent_url}")
         client = A2AClient(agent_card=agent_card)
-
         task_id = str(uuid.uuid4())
         streaming = agent_card.capabilities.streaming
         timestamp_ms = int(datetime.now().timestamp() * 1000)
-
         payload = {
             "id": task_id,
             "sessionId": session_id,
@@ -45,10 +42,10 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         }
 
         # Ricezione risposta
+        full_response = ""
         if streaming:
             print(f"[AGENT]: ", end="", flush=True)
             response_stream = client.send_task_streaming(payload)
-            full_response = ""
             async for result in response_stream:
                 text = result.result.status.message.parts[0].text
                 print(text, end="", flush=True)
@@ -59,27 +56,31 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
             full_response = taskResult.result.status.message.parts[0].text
             print(f'[AGENT]: {full_response}')
 
-        # Salva la sessione su MongoDB
+        # Salva la sessione su MongoDB - Creazione diretta dell'oggetto Session
         now = datetime.now().timestamp()
+        
+        # Creiamo direttamente l'oggetto Session invece di usare from_dict
+        # Rimozione del campo "type" che causa errori di validazione
         session = Session(
             id=session_id,
             user_id=session_id,
             app_name="dlsais-app",
             events=[
-                SimpleNamespace(
-                    author="user",
-                    content=SimpleNamespace(parts=[SimpleNamespace(text=user_text)]),
-                    timestamp=now
-                ),
-                SimpleNamespace(
-                    author="agent",
-                    content=SimpleNamespace(parts=[SimpleNamespace(text=full_response)]),
-                    timestamp=now
-                )
-            ]
+                {
+                    "author": "user",
+                    "content": {"parts": [{"text": user_text}]},  # Rimosso il campo "type"
+                    "timestamp": now
+                },
+                {
+                    "author": "agent",
+                    "content": {"parts": [{"text": full_response}]},  # Rimosso il campo "type"
+                    "timestamp": now
+                }
+            ],
+            state={}
         )
+        
         memory_service.add_session_to_memory(session)
-
     except Exception as e:
         print(f"[ERRORE]: {type(e).__name__} - {e}")
 
