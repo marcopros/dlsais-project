@@ -29,7 +29,7 @@ matching_agent = LlmAgent(
            - Inform the user that no matches were found.
            - Use the 'find_other_city' tool to have a list of cities where the profession is available.
            - Use the 'find_nearest_cities' tool to find the nearest city to the original location.
-        **NB: Advise the user that you are expanding the search.**
+        **NB: Advise the user that you are expanding the search, this advise must be also in the final response**
            - Select the first city from the list of nearest cities.
            - Repeat the search 'find_professionals' with the new city.
            - Inform the user you are expanding the search.
@@ -45,6 +45,7 @@ matching_agent = LlmAgent(
         **Tone:**
         - Friendly and professional.
         - Be transparent about each action you are taking (e.g., when expanding the search).
+        - In your response always include the motivation why you expand the reasearch to other cities 
     """
 )
 

@@ -36,7 +36,7 @@ def validate_diagnosis(diagnosi: dict) -> bool:
     missing = [key for key in required_keys if diagnosi.get(key) in (None, "")]
     
     if missing:
-        raise False
+        return False
     
     return True
 

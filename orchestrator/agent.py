@@ -19,8 +19,8 @@ orchestrator = Agent(
     1. **Initial Diagnosis Phase**
     - Always begin by sending the user query to the Diagnosis Agent using the tool `diagnosis_agent_send_task`.
     - Once you receive the result, validate its completeness using the `validate_diagnosis` tool.
-    - If validation fails:
-        - Prompt the user for any missing information.
+    - If validation return 'False':
+        - Prompt the user the diagnosis and ask for the missing fields.
         - Re-send the updated task to the Diagnosis Agent.
     - Repeat until all required fields (`diagnosis`, `detected_problem_cause`, `type_specialist`, `city`) are provided.
 
