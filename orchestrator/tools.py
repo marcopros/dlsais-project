@@ -31,7 +31,7 @@ def validate_diagnosis(diagnosi: dict) -> bool:
     Validates that required diagnosis fields are present.
     Raises ValueError if any required field is missing.
     """
-    required_keys = ["diagnosis", "detected_problem_cause", "type_specialist", "city"]
+    required_keys = ["diagnosis", "detected_problem_cause", "type_specialist"]
     
     missing = [key for key in required_keys if diagnosi.get(key) in (None, "")]
     
@@ -92,7 +92,7 @@ async def diagnosis_agent_send_task( message: str, sessionId:str ) -> dict:
 
         else:
             # Send a one-time request and wait for final result
-             return await client.send_task(payload)
+            return await client.send_task(payload)
 
 
 

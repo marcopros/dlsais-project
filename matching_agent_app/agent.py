@@ -29,10 +29,11 @@ matching_agent = LlmAgent(
            - Inform the user that no matches were found.
            - Use the 'find_other_city' tool to have a list of cities where the profession is available.
            - Use the 'find_nearest_cities' tool to find the nearest city to the original location.
-        **NB: Advise the user that you are expanding the search, this advise must be also in the final response**
+         **NB: Advise the user that you are expanding the search, this advise must be also in the final response**
            - Select the first city from the list of nearest cities.
            - Repeat the search 'find_professionals' with the new city.
            - Inform the user you are expanding the search.
+      
 
         4. From the returned professionals:
            - Select up to 5 professionals: if possible at lesat 2 professionals.

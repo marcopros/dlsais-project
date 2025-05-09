@@ -35,7 +35,6 @@ class DiagnosisAgentOut(BaseModel):
     diagnosis: str | None
     detected_problem_cause: str | None
     type_specialist: str | None
-    city: str | None
     # DIY Fields
     unlock_request_for_diy_solution: bool
     diy_solution: str | None
