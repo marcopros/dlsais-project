@@ -36,6 +36,32 @@ SESSION_ID = str(uuid.uuid4())
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "session_id": SESSION_ID})
 
+
+def extract_agent_message(task_result):
+    try:
+        # Verifica se ci sono artifacts con testo
+        artifacts = getattr(task_result.result, "artifacts", [])
+        for artifact in artifacts:
+            if hasattr(artifact, "text") and artifact.text:
+                return artifact.text
+
+        # Se non ci sono artifacts validi, passa allo status.message
+        status = getattr(task_result.result, "status", None)
+        if (
+            status and
+            hasattr(status, "message") and
+            status.message and
+            hasattr(status.message, "parts") and
+            status.message.parts
+        ):
+            return status.message.parts[0].text
+
+        return "[NESSUN MESSAGGIO RICEVUTO]"
+
+    except Exception as e:
+        return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
+
+
 # Reuse your async ask_agent_with_a2a function here
 async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
     try:
@@ -70,7 +96,7 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         else:
             taskResult = await client.send_task(payload)
             logger.info(f'RESPONSE: {taskResult}')
-            return taskResult.model_dump(exclude_none=True).get('content', '')
+            return extract_agent_message(taskResult)
 
     except Exception as e:
         return f"[ERRORE]: {type(e).__name__} - {e}"

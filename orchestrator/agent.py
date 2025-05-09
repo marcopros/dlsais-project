@@ -43,11 +43,13 @@ orchestrator = Agent(
     ### Constraints:
     - Only use the tools provided: `validate_diagnosis`, `diagnosis_agent_send_task`, `matching_agent_send_task`.
     - # NB: the 'sessionId' parmaeter of the tools must be equal to you 'session_id' 
-    - Never generate final answers directly; always delegate actions via tools.
+    - # Never generate final answers directly; always delegate actions via tools.
     - If a required agent is unavailable, respond with a clear error message to the user.
     - Maintain context across steps and ensure each step completes before proceeding to the next.
+
+    
     """,
     tools=[
         validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task
-    ],
+    ]
 )

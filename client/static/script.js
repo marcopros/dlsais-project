@@ -1,3 +1,6 @@
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds
+
 const initialScreen = document.getElementById("initial-screen");
 const chatBox = document.getElementById("chat-box");
 const chatForm = document.getElementById("chat-form");
@@ -101,15 +104,16 @@ chatForm.addEventListener("submit", async (e) => {
         const res = await fetch("/send_message", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text })
+            body: JSON.stringify({ message: text }),
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
         const data = await res.json();
-
-        // Remove typing animation
         typingEl.remove();
 
-        if (data.response) {
+        if (data) {
+            console.log(data.response)
             appendMessage("bot", data.response);
         } else {
             appendMessage("bot", "[Error: No answer received]");
@@ -117,6 +121,7 @@ chatForm.addEventListener("submit", async (e) => {
     } catch (err) {
         typingEl.remove();
         console.error("Errore to obtain an answer:", err);
-        appendMessage("bot", "[Error: Impossible to obtain an answer]");
+        appendMessage("bot", "[Error: Timeout or connection error]");
     }
+
 });

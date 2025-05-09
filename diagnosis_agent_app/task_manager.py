@@ -31,6 +31,31 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def extract_agent_message(task_result):
+    try:
+        # Verifica se ci sono artifacts con testo
+        artifacts = getattr(task_result.result, "artifacts", [])
+        for artifact in artifacts:
+            if hasattr(artifact, "text") and artifact.text:
+                return artifact.text
+
+        # Se non ci sono artifacts validi, passa allo status.message
+        status = getattr(task_result.result, "status", None)
+        if (
+            status and
+            hasattr(status, "message") and
+            status.message and
+            hasattr(status.message, "parts") and
+            status.message.parts
+        ):
+            return status.message.parts[0].text
+
+        return "[NESSUN MESSAGGIO RICEVUTO]"
+
+    except Exception as e:
+        return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
+
+
 async def validate_diagnosis_output(output: DiagnosisAgentOut):
     """
     Validates that required diagnosis fields are present.

@@ -1,37 +1,27 @@
 Orchestrator response structure:
 
 jsonrpc='2.0' 
-id='8f682c109dc14a908ebebfab765c63ea' 
+id= user id
+agent = agent that have generated the response
 result=Task(
-    id='d4478c13-303a-4770-970a-f0f807e30d77', 
-    sessionId='8dcc32f6-fd84-4cf1-a016-b3ebfecf9c81', 
+    id= task id 
+    sessionId= session id 
     status=TaskStatus(
-        state=<TaskState.COMPLETED: 'completed'>, 
+        state= COMPLETE, INPUT REQUIREDE, ... 
         message=Message(
-            role='agent', 
+            role= agent or user, who send this message, 
             parts=[TextPart(
                 type='text', 
-                text='Agent did not produce a final response.', 
-                metadata=None
+                text= text response, 
+                metadata = eventauly some extra metadata in the part
                 )
             ], 
-            metadata=None
+            metadata = eventauly some extra metadata in the message
         ), 
-        timestamp=datetime.datetime(2025, 5, 9, 11, 29, 30, 529164) 
-        artifacts=[], 
-        history=[
-            Message(
-                role='user', 
-                parts=[TextPart(
-                    type='text', 
-                    text='My sink is broken', 
-                    metadata=None
-                    )
-                ], 
-                metadata=None
-            ), 
-        ], 
-        metadata=None
+        timestamp = time in which this task is crated 
+        artifacts = return of the task 
+        history = array of message exchange between user and agent during the task, 
+        metadata = eventauly some extra metadata for the Task
     )
 ) 
-error=None
+
