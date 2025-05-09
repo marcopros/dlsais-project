@@ -103,6 +103,7 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
         Returns:
             Final response from the agent as a string.
         """
+        logger.info(f"QUERY: {query}")
         # Retrieve or create a session based on session_id
         session = self.sessions.get_session(session_id)
 
@@ -117,7 +118,8 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
         # Run the agent synchronously with the user message and session
         with trace(f"Session {session_id}"):
             result = await Runner.run( self.agent, input=query, context=session )
-        
+
+        logger.info(f"RESULT: {result}")
         return result.final_output
 
 
