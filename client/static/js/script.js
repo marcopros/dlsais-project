@@ -5,6 +5,7 @@ const initialScreen = document.getElementById("initial-screen");
 const chatBox = document.getElementById("chat-box");
 const chatForm = document.getElementById("chat-form");
 const userInput = document.getElementById("user-input");
+const loginForm = document.getElementById("login-form");
 
 let chatContainer 
 let chatStart = false
@@ -73,7 +74,7 @@ chatForm.addEventListener("submit", async (e) => {
     const text = userInput.value.trim();
     if (!text) return;
 
-    if (!chatStart){
+    if (!chatStart) {
         await startChat(); // Ensure the chat UI is ready
     }
 
@@ -90,7 +91,6 @@ chatForm.addEventListener("submit", async (e) => {
     const typingBubble = document.createElement("div");
     typingBubble.classList.add("text-bubble", "bot", "typing");
 
-    // Add 3 animated dots
     for (let i = 0; i < 3; i++) {
         const dot = document.createElement("div");
         dot.classList.add("typing-dot");
@@ -100,10 +100,15 @@ chatForm.addEventListener("submit", async (e) => {
     typingEl.appendChild(typingBubble);
     chatBoxEl.appendChild(typingEl);
 
+    const token = localStorage.getItem('access_token');
+
     try {
         const res = await fetch("/send_message", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({ message: text }),
             signal: controller.signal
         });
@@ -112,16 +117,22 @@ chatForm.addEventListener("submit", async (e) => {
         const data = await res.json();
         typingEl.remove();
 
-        if (data) {
-            console.log(data.response)
+        // If not loggen open the login pop-up
+        if (res.status === 401) {
+            // alert("Session expired. Please log in again.");
+            localStorage.removeItem("access_token");
+            loginModal.style.display = "block";
+            return;
+        }
+
+        if (res.ok && data.response) {
             appendMessage("bot", data.response);
         } else {
-            appendMessage("bot", "[Error: No answer received]");
+            appendMessage("bot", `[Error: ${data.detail || "No answer received"}]`);
         }
     } catch (err) {
         typingEl.remove();
         console.error("Errore to obtain an answer:", err);
         appendMessage("bot", "[Error: Timeout or connection error]");
     }
-
 });

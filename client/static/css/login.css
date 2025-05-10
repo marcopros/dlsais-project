@@ -1,0 +1,141 @@
+/* Modal Background */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+}
+
+/* Modal Content Box */
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+/* Close Button */
+.close-btn {
+  color: #aaa;
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close-btn:hover,
+.close-btn:focus {
+  color: black;
+}
+
+/* Form Styles */
+#login-modal h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 22px;
+}
+
+#login-form input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
+}
+#login-form input:focus {
+  border-color: #e67e22;
+  outline: none;
+}
+
+#login-form button {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  background-color: #e67e22;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#login-form button:hover {
+  background-color: #cf711f;
+}
+
+/* Register Prompt Paragraph */
+#registration-p {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+/* Register Button Below Login */
+#open-register {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #3498db; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+#open-register:hover {
+  color: #3498db;
+  background-color: white;
+}
+
+
+/* Registration Form Styles */
+#register-modal h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 22px;
+}
+
+#registration-form {
+  display: flex;
+  flex-direction: column;
+}
+
+#registration-form input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
+}
+#registration-form input:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+#registration-form button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  background-color: #3498db; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#registration-form button:hover {
+  background-color: #2980b9;
+}
+

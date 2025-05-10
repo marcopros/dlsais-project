@@ -24,6 +24,85 @@ body {
     padding: 20px;
 }
 
+/* Agent Colors */
+.diagnosi-color{
+    color: #63CAE3
+}
+
+.matching-color{
+    color: #91EC36
+}
+
+.diy-color{
+    color: #FFA62B
+}
+
+.appointment-color{
+    color: #EF6461
+}
+
+.feedback-color{
+    color: #A663CC
+}
+
+/* ############################## Header Bar ##############################*/
+#header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f4f5f6;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+#logo {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+
+#header-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#hamburger-menu {
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #333;
+}
+
+#account-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#profile-icon {
+  font-size: 24px;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+#profile-icon:hover {
+  color: #e67e22; 
+}
+
+
+
+/*############################## MAIN PAGE ################################# */
 #central-part {
     text-align: center;
     width: 50vw;

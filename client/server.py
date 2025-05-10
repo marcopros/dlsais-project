@@ -1,15 +1,20 @@
-from datetime import datetime
 import asyncio
 import uvicorn
 import logging
 import uuid
 
-from fastapi import FastAPI, Request
+from datetime import datetime
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel, EmailStr
 
+from .auth import create_access_token, decode_token
 from A2A.client import A2ACardResolver, A2AClient
+from database.utils import registerUser, loginUser
+
 
 app = FastAPI()
 
@@ -17,25 +22,27 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="client/static"), name="static")
 templates = Jinja2Templates(directory="client/template")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 # Configure basic logging to output logs at the INFO level
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
-# Agent config
-AGENT_URL = "http://localhost:8000/"
+AGENT_URL = "http://localhost:8000/"        # Agent url
+SESSION_ID = str(uuid.uuid4())              # Global session ID
 
-# Global session ID
-SESSION_ID = str(uuid.uuid4())
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "session_id": SESSION_ID})
 
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = decode_token(token)
+    if payload is None:
+        return "0"
+    return payload["id"]
 
 def extract_agent_message(task_result):
     try:
@@ -103,10 +110,44 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
 
 
 @app.post("/send_message")
-async def send_message(data: dict):
+async def send_message(data: dict, current_user: str = Depends(get_current_user)):
     user_text = data.get("message")
+    logger.info(f'USER ID SENDER: {current_user}')
     response = await ask_agent_with_a2a(AGENT_URL, SESSION_ID, user_text)
     return {"response": response}
+
+
+
+class User(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    phone: str
+
+@app.post("/register")
+async def register_user(user: User):
+    result = registerUser(user.name, user.email, user.password, user.phone)
+    if not result["success"]:
+        message = result['message']
+        logger.ERRORE(f"400 Bad Request: {message}")
+        raise HTTPException(status_code=400, detail=message)
+    return result
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+@app.post("/login")
+async def login_user(user: LoginRequest):
+    result = loginUser(user.email, user.password)
+    if not result["success"]:
+        message = result['message']
+        logger.error(f"401 Unauthorized: {message}")
+        raise HTTPException(status_code=401, detail=message)
+
+    user_data = result['user']
+    access_token = create_access_token(data={"id": user_data["id"]})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 if __name__ == "__main__":
