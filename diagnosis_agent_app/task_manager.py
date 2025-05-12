@@ -4,11 +4,10 @@ import uuid
 import logging
 from typing import AsyncIterable, Any
 
-# Google ADK imports for agent execution and session management
-from agents import Agent, Runner, trace
+# Import the direct_agent module for simple OpenAI access
+from .direct_agent import query_agent
 
 from .session import SessionService
-from .agent import DiagnosisAgentOut
 # help(Runner)                      # To see the available methods and attributes of the Runner class
 # help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
 
@@ -56,15 +55,15 @@ def extract_agent_message(task_result):
         return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
 
 
-async def validate_diagnosis_output(output: DiagnosisAgentOut):
+async def validate_diagnosis_output(output):
     """
     Validates that required diagnosis fields are present.
     Raises ValueError if any required field is missing.
     """
     required_fields = {
-        "diagnosis": output.diagnosis,
-        "detected_problem_cause": output.detected_problem_cause,
-        "type_specialist": output.type_specialist,
+        "diagnosis": output.get("diagnosis"),
+        "detected_problem_cause": output.get("detected_problem_cause"),
+        "type_specialist": output.get("type_specialist"),
     }
 
     missing = [field for field, value in required_fields.items() if value is None]
@@ -79,29 +78,29 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
     Custom Task Manager for handling tasks related to a diagnosis agent.
     Manages sessions, invokes the agent, streams responses, and updates task status.
     """
-    def __init__(self, agent: Agent):
+    def __init__(self, agent=None):
         """
         Initialize the task manager with required dependencies.
         
         Args:
-            agent: The agent that generates responses.
+            agent: Optional agent parameter (kept for compatibility)
         """
         super().__init__()
-        self.agent = agent
+        self.agent = agent  # Not used anymore, kept for compatibility
         self.sessions = SessionService()
         logger.info("DiagnosisAgentTaskManager initialized.")
     
 
-    async def invoke(self, query, session_id) -> str:
+    async def invoke(self, query, session_id) -> dict:
         """
-        Synchronously invoke the agent to get a final response for a given query and session.
+        Synchronously invoke the direct agent to get a final response for a given query and session.
 
         Args:
             query: User input as text.
             session_id: Unique identifier for the session.
 
         Returns:
-            Final response from the agent as a string.
+            Final response from the agent as a dictionary.
         """
         logger.info(f"QUERY: {query}")
         # Retrieve or create a session based on session_id
@@ -115,12 +114,14 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Session found with ID: {session_id}") 
         
         
-        # Run the agent synchronously with the user message and session
-        with trace(f"Session {session_id}"):
-            result = await Runner.run( self.agent, input=query, context=session )
-
-        logger.info(f"RESULT: {result}")
-        return result.final_output
+        # Query the direct agent with the user message and session
+        try:
+            result = await query_agent(query, session)
+            logger.info(f"RESULT: {result}")
+            return result
+        except Exception as e:
+            logger.error(f"Error during agent invocation: {e}")
+            raise
 
 
     # TO DO
@@ -164,20 +165,18 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
                             user_message = msg.parts[0].text
                         break
             
-            # Get the agent's response
-            final_response =  await self.invoke(user_message, task.sessionId)
+            # Get the agent's response (now a dictionary)
+            response_dict = await self.invoke(user_message, task.sessionId)
             
-            # Assume final_response is a DiagnosisAgentOut instance
-            summary = final_response.agent_response
-            data = final_response.model_dump()
-
+            # Extract the summary from the dictionary
+            summary = response_dict.get("agent_response", "No response available")
+            
             part_summary = [{"type": "text", "text": summary}]
-            part_data = [{"type": "data", "data": data}]
-
+            part_data = [{"type": "data", "data": response_dict}]
 
             # Check if the response is valid, else require more input 
             try:
-                await validate_diagnosis_output(final_response)
+                await validate_diagnosis_output(response_dict)
             except ValueError as e:
                 logger.error(f"Invalid diagnosis output: {e}")
                 error_message = Message(

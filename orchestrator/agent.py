@@ -1,7 +1,7 @@
 # Import ADK components
 from google.adk.agents import Agent
 
-from .tools import validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task
+from .tools import validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task, appointment_agent_send_task
 
 orchestrator = Agent(
     model='gemini-2.0-flash-001',
@@ -11,6 +11,7 @@ orchestrator = Agent(
         Based on user input, it routes tasks to the appropriate specialized agent:
         - DiagnosisAgent: To understand the problem and determine whether it should be handled DIY or professionally.
         - MatchingAgent: When professional help is needed, to find the best match.
+        - AppointmentAgent: To schedule appointments with matched professionals.
     """,
     instruction="""
         You are the intelligent Orchestrator Agent responsible for routing user requests through a multi-step decision process to ensure accurate handling of health-related queries.
@@ -18,6 +19,7 @@ orchestrator = Agent(
         ### Core Behavior:
         - Always send the user query to the Diagnosis Agent **whenever the user describes a problem or symptom**.
         - Always send a request to the Matching Agent **whenever the user asks to speak to, find, or get help from a professional**.
+        - Always send a request to the Appointment Agent **whenever the user wants to schedule an appointment with a professional**.
 
         ### Workflow:
 
@@ -46,14 +48,22 @@ orchestrator = Agent(
             - City
         - Return the matching results to the user.
 
+        4. **Appointment Phase**
+        - After a professional has been matched, if the user wants to schedule an appointment:
+            - Use `appointment_agent_send_task` with:
+                - Professional information
+                - User's availability preferences
+                - Any special requirements
+        - Return the confirmed appointment details to the user.
+
         ### Constraints:
-        - Only use the tools provided: `validate_diagnosis`, `diagnosis_agent_send_task`, `matching_agent_send_task`.
+        - Only use the tools provided: `validate_diagnosis`, `diagnosis_agent_send_task`, `matching_agent_send_task`, `appointment_agent_send_task`.
         - The `sessionId` parameter for all tools must match your own `session_id`.
         - Never generate final answers directly; always act through the appropriate tool.
         - If an agent is unavailable, return a clear and helpful error message.
         - Maintain state and context across multiple turns to ensure smooth flow.
     """,
     tools=[
-        validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task
+        validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task, appointment_agent_send_task
     ]
 )

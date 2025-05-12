@@ -54,7 +54,7 @@ async def run_server():
         task_manager = AppointmentAgentTaskManager(agent, runner, session_service, APP_NAME, USER_ID)
 
         # Determine the port and host from environment variables
-        port = int(os.getenv("PORT", "8003"))  # Using port 8003 for appointment agent
+        port = int(os.getenv("PORT_APPOINTMENT", "8003"))  # Using port 8003 for appointment agent
         host = os.getenv("HOST", "localhost")
         listen_host = "0.0.0.0"  # Allow external connections
 

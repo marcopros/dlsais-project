@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import random
+import uuid
 from typing import Optional, Dict, List, Any
 from appointment_agent.database import (
     get_user_availability,
@@ -9,8 +10,9 @@ from appointment_agent.database import (
 )
 from appointment_agent.utils import format_datetime
 
-# In a real implementation, these functions would interact with a database
-# For now, we'll simulate this behavior with mock data
+# Default IDs when not provided
+DEFAULT_USER_ID = "user_123456"
+DEFAULT_PROFESSIONAL_ID = "pro_123456"  # Luca Bianchi ID
 
 # ----------------------
 # TOOL 1: check_user_availability
@@ -32,6 +34,10 @@ def check_user_availability(user_id: str, date_range: Optional[str] = None) -> D
         }
     """
     try:
+        # If no user_id provided, use default
+        if not user_id or user_id.strip() == "":
+            user_id = DEFAULT_USER_ID
+        
         # Parse date range or use default (next 7 days)
         if date_range:
             try:
@@ -41,7 +47,8 @@ def check_user_availability(user_id: str, date_range: Optional[str] = None) -> D
             except:
                 return {
                     "status": "error",
-                    "error_message": "Invalid date range format. Please use 'YYYY-MM-DD to YYYY-MM-DD'."
+                    "error_message": "Invalid date range format. Please use 'YYYY-MM-DD to YYYY-MM-DD'.",
+                    "user_id": user_id  # Always include user_id in response
                 }
         else:
             start_date = datetime.now()
@@ -53,7 +60,8 @@ def check_user_availability(user_id: str, date_range: Optional[str] = None) -> D
         if not available_slots:
             return {
                 "status": "error",
-                "error_message": f"No availability found for user {user_id} in the specified date range. Please check the user ID or choose a different date range."
+                "error_message": f"No availability found for user {user_id} in the specified date range. Please check the user ID or choose a different date range.",
+                "user_id": user_id  # Always include user_id in response
             }
         
         # Sort the slots chronologically
@@ -62,13 +70,15 @@ def check_user_availability(user_id: str, date_range: Optional[str] = None) -> D
         return {
             "status": "success",
             "available_slots": available_slots,
-            "message": f"Found {len(available_slots)} available time slots for user {user_id}."
+            "message": f"Found {len(available_slots)} available time slots for user {user_id}.",
+            "user_id": user_id  # Always include user_id in response
         }
         
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"Database error checking user availability: {str(e)}"
+            "error_message": f"Database error checking user availability: {str(e)}",
+            "user_id": user_id if user_id else DEFAULT_USER_ID  # Always include user_id in response
         }
 
 
@@ -92,6 +102,10 @@ def check_professional_availability(professional_id: str, date_range: Optional[s
         }
     """
     try:
+        # If no professional_id provided, use default (Luca Bianchi)
+        if not professional_id or professional_id.strip() == "":
+            professional_id = DEFAULT_PROFESSIONAL_ID
+        
         # Parse date range or use default (next 7 days)
         if date_range:
             try:
@@ -101,7 +115,8 @@ def check_professional_availability(professional_id: str, date_range: Optional[s
             except:
                 return {
                     "status": "error",
-                    "error_message": "Invalid date range format. Please use 'YYYY-MM-DD to YYYY-MM-DD'."
+                    "error_message": "Invalid date range format. Please use 'YYYY-MM-DD to YYYY-MM-DD'.",
+                    "professional_id": professional_id  # Always include professional_id in response
                 }
         else:
             start_date = datetime.now()
@@ -113,7 +128,8 @@ def check_professional_availability(professional_id: str, date_range: Optional[s
         if not available_slots:
             return {
                 "status": "error",
-                "error_message": f"No availability found for professional {professional_id} in the specified date range. Please check the professional ID or choose a different date range."
+                "error_message": f"No availability found for professional {professional_id} in the specified date range. Please check the professional ID or choose a different date range.",
+                "professional_id": professional_id  # Always include professional_id in response
             }
         
         # Sort the slots chronologically
@@ -122,13 +138,15 @@ def check_professional_availability(professional_id: str, date_range: Optional[s
         return {
             "status": "success",
             "available_slots": available_slots,
-            "message": f"Found {len(available_slots)} available time slots for professional {professional_id}."
+            "message": f"Found {len(available_slots)} available time slots for professional {professional_id}.",
+            "professional_id": professional_id  # Always include professional_id in response
         }
         
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"Database error checking professional availability: {str(e)}"
+            "error_message": f"Database error checking professional availability: {str(e)}",
+            "professional_id": professional_id if professional_id else DEFAULT_PROFESSIONAL_ID  # Always include professional_id in response
         }
 
 
@@ -156,13 +174,40 @@ def schedule_appointment(appointment_details: Dict[str, Any]) -> Dict[str, Any]:
         }
     """
     try:
+        # Validate and use default values if needed
+        if not appointment_details:
+            appointment_details = {}
+            
+        # Use default IDs if not provided
+        if 'user_id' not in appointment_details or not appointment_details['user_id']:
+            appointment_details['user_id'] = DEFAULT_USER_ID
+            
+        if 'professional_id' not in appointment_details or not appointment_details['professional_id']:
+            appointment_details['professional_id'] = DEFAULT_PROFESSIONAL_ID
+            
         # Validate required fields
-        required_fields = ['user_id', 'professional_id', 'datetime', 'issue']
-        for field in required_fields:
-            if field not in appointment_details:
+        required_fields = ['datetime', 'issue']
+        missing_fields = [field for field in required_fields if field not in appointment_details]
+        
+        if missing_fields:
+            # Generate default datetime if not provided (tomorrow at noon)
+            if 'datetime' in missing_fields:
+                tomorrow = datetime.now() + timedelta(days=1)
+                appointment_details['datetime'] = tomorrow.strftime('%Y-%m-%d 12:00')
+                missing_fields.remove('datetime')
+                
+            # Generate default issue if not provided
+            if 'issue' in missing_fields:
+                appointment_details['issue'] = "General maintenance"
+                missing_fields.remove('issue')
+                
+            # If we still have missing fields, return error
+            if missing_fields:
                 return {
                     "status": "error",
-                    "error_message": f"Missing required field: {field}"
+                    "error_message": f"Missing required fields: {', '.join(missing_fields)}",
+                    "user_id": appointment_details.get('user_id', DEFAULT_USER_ID),
+                    "professional_id": appointment_details.get('professional_id', DEFAULT_PROFESSIONAL_ID)
                 }
         
         # Format datetime for readability
@@ -186,7 +231,9 @@ def schedule_appointment(appointment_details: Dict[str, Any]) -> Dict[str, Any]:
         if not appointment_id:
             return {
                 "status": "error",
-                "error_message": "Failed to create appointment in database. Please try again later."
+                "error_message": "Failed to create appointment in database. Please try again later.",
+                "user_id": appointment_details['user_id'],
+                "professional_id": appointment_details['professional_id']
             }
         
         # Update availability to remove the booked slot
@@ -230,7 +277,9 @@ def schedule_appointment(appointment_details: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"Database error scheduling appointment: {str(e)}"
+            "error_message": f"Database error scheduling appointment: {str(e)}",
+            "user_id": appointment_details.get('user_id', DEFAULT_USER_ID) if appointment_details else DEFAULT_USER_ID,
+            "professional_id": appointment_details.get('professional_id', DEFAULT_PROFESSIONAL_ID) if appointment_details else DEFAULT_PROFESSIONAL_ID
         }
 
 

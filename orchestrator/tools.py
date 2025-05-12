@@ -146,3 +146,55 @@ async def matching_agent_send_task( message: str, sessionId:str ) -> dict:
         else:
             # Send a one-time request and wait for final result
              return await client.send_task(payload)
+
+
+async def appointment_agent_send_task( message: str, sessionId:str ) -> dict:
+        """Sends a task to the Appointment Agent.
+
+        Args:
+          message: The message to send to the agent for scheduling appointments.
+          sessionId: The session id of the conversation
+
+        Yields:
+          A dictionary of JSON data.
+        """
+
+        # Get the connection with the Appointment Agent
+        card_resolver = A2ACardResolver(AGENTS.APPOINTMENT_AGENT.value)
+        card = card_resolver.get_agent_card()
+        client = A2AClient(card)
+
+        if not client:
+            raise ValueError(f'Client not available for Appointment Agent')
+        
+        # Generate a new unique task ID for this interaction
+        task_id = str(uuid.uuid4())
+
+        # Check if the agent supports streaming responses
+        streaming = card.capabilities.streaming
+        #streaming = False  # Force non-streamed mode if needed
+
+        # Prepare the task payload to be sent to the agent
+        payload = {
+            "id": task_id,
+            "sessionId": sessionId,
+            "message": {
+                "role": "user",
+                "parts": [
+                    {"type": "text", "text": message}
+                ],
+                "id": str(uuid.uuid4()),
+                "timestamp": int(datetime.now().timestamp() * 1000)         # Current time in milliseconds
+            }
+        }
+
+        # Send the task and receive the response based on streaming capability
+        if streaming:
+            full_response = {}
+            async for chunk in client.send_task_streaming(payload):
+                full_response.update(chunk)  # Merge each chunk into final result
+            return full_response
+
+        else:
+            # Send a one-time request and wait for final result
+             return await client.send_task(payload)
