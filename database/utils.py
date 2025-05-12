@@ -1,19 +1,27 @@
-from pymongo import MongoClient
-from dotenv import load_dotenv
-from pathlib import Path
 import os
+import uuid
 import bcrypt
 
-# Load the .env file from the parent directory (adjust as needed)
+from pymongo import MongoClient, errors as pymongo_errors
+from dotenv import load_dotenv
+from pathlib import Path
+from bson import ObjectId
+from bson.errors import InvalidId
+
+
+# Load environment variables
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 
-# MongoDB connection URI and database name
+# MongoDB connection setup
 MONGO_URI = os.getenv("MONGODB_URI")
 DB_NAME = "test"
 
-# Create MongoDB client and access the database
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+try:
+    client = MongoClient(MONGO_URI)
+    client.admin.command('ping')  # Test connection
+    db = client[DB_NAME]
+except pymongo_errors.ConnectionFailure as e:
+    raise RuntimeError(f"Failed to connect to MongoDB: {e}") from e
 
 
 # ----------------------
@@ -77,7 +85,6 @@ def getCities(profession: str = None) -> list:
     return cities
 
 
-
 # ----------------------
 # FUNCTION: registerUser
 # ----------------------
@@ -85,36 +92,34 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
     """
     Register a new user in the database.
 
-    Args:
-        name (str): Full name of the user.
-        email (str): Email address (must be unique).
-        password (str): Plaintext password (will be hashed).
-        phone (str): Phone number.
-
     Returns:
         dict: Result of the registration (success/failure + message).
     """
-    collection = db["users"]
-
-    # Check for existing email
-    if collection.find_one({"email": email}):
-        return {"success": False, "message": "Email already registered"}
-
-    # Hash password
-    hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-    user_data = {
-        "name": name,
-        "email": email,
-        "password": hashed_pw,
-        "phone": phone
-    }
-
     try:
-        collection.insert_one(user_data)
-        return {"success": True, "message": "User registered successfully"}
-    except Exception as e:
+        collection = db["users"]
+
+        if collection.find_one({"email": email}):
+            return {"success": False, "message": "Email already registered"}
+
+        hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        user_data = {
+            "name": name,
+            "email": email,
+            "password": hashed_pw,
+            "phone": phone
+        }
+
+        result = collection.insert_one(user_data)
+        return {
+            "success": True,
+            "message": "User registered successfully",
+            "user_id": str(result.inserted_id)
+        }
+    except pymongo_errors.PyMongoError as e:
         return {"success": False, "message": f"Database error: {e}"}
+    except Exception as e:
+        return {"success": False, "message": f"Unexpected error: {e}"}
 
 
 # ----------------------
@@ -124,28 +129,62 @@ def loginUser(email: str, password: str) -> dict:
     """
     Authenticate a user by email and password.
 
-    Args:
-        email (str): The user's email address.
-        password (str): The plaintext password provided at login.
-
     Returns:
         dict: Result of the login (success/failure, message, and optionally user data).
     """
-    collection = db["users"]
+    try:
+        collection = db["users"]
+        user = collection.find_one({"email": email})
 
-    # Fetch user by email
-    user = collection.find_one({"email": email})
-    if not user:
-        return {"success": False, "message": "Invalid email or password"}
+        if not user:
+            return {"success": False, "message": "Invalid email or password"}
 
-    # Verify password
-    if bcrypt.checkpw(password.encode('utf-8'), user["password"].encode('utf-8')):
-        user_data = {
-            "id": str(user["_id"]),
-            "name": user["name"],
-            "email": user["email"],
-            "phone": user["phone"]
-        }
-        return {"success": True, "message": "Login successful", "user": user_data}
-    else:
-        return {"success": False, "message": "Invalid email or password"}
+        if bcrypt.checkpw(password.encode('utf-8'), user["password"].encode('utf-8')):
+            user_data = {
+                "id": str(user["_id"]),
+                "name": user["name"],
+                "email": user["email"],
+                "phone": user["phone"],
+                "sessions": user["sessions"]
+            }
+            return {"success": True, "message": "Login successful", "user": user_data}
+        else:
+            return {"success": False, "message": "Invalid email or password"}
+    except pymongo_errors.PyMongoError as e:
+        return {"success": False, "message": f"Database error: {e}"}
+    except Exception as e:
+        return {"success": False, "message": f"Unexpected error: {e}"}
+
+
+# ----------------------
+# FUNCTION: createUserSession
+# ----------------------
+def createUserSession(user_id: str) -> dict:
+    """
+    Generate and store a new session ID for a user.
+
+    Returns:
+        dict: Includes success status, session ID, and optional message.
+    """
+    try:
+        # Validate user_id as a MongoDB ObjectId
+        if not ObjectId.is_valid(user_id):
+            return {"success": False, "message": "Invalid user ID format"}
+
+        collection = db["users"]
+        session_id = str(uuid.uuid4())
+
+        result = collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$push": {"sessions": session_id}}
+        )
+
+        if result.matched_count == 0:
+            return {"success": False, "message": "User not found"}
+
+        return {"success": True, "session_id": session_id}
+    
+    except errors.PyMongoError as e:
+        return {"success": False, "message": f"Database error: {e}"}
+    except Exception as e:
+        return {"success": False, "message": f"Unexpected error: {e}"}

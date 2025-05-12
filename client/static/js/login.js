@@ -1,3 +1,5 @@
+import { loadUserSessions } from './session.js';
+
 document.addEventListener("DOMContentLoaded", function () {
 const loginModal = document.getElementById("login-modal");
 const registerModal = document.getElementById("register-modal");
@@ -11,30 +13,41 @@ const profileIcon = document.getElementById("profile-icon");
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("registration-form");
 
+
 // Function to handle the login submission
 const handleLoginSubmit = async (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  let email = document.getElementById("login-email").value;
-  let password = document.getElementById("login-password").value;
+    let email = document.getElementById("login-email").value;
+    let password = document.getElementById("login-password").value;
 
-  const response = await fetch('/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-  });
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
+    console.log(data)
 
-  if (response.ok && data.access_token) {
-    alert("Login successful!");
-    loginModal.style.display = "none";
-    localStorage.setItem('access_token', data.access_token);
-  } else {
-    alert(data.detail || "Login failed."); 
-  }
+    if (response.ok && data.access_token) {
+        alert("Login successful!");
+        loginModal.style.display = "none";
+        
+        // Save access token
+        localStorage.setItem('access_token', data.access_token);
+
+        // Save sessions (if any)
+        if (data.sessions && data.sessions.length > 0) {
+            localStorage.setItem('user_sessions', JSON.stringify(data.sessions));
+            loadUserSessions(data.sessions); // Load them into the UI
+        } 
+
+    } else {
+        alert(data.detail || "Login failed.");
+    }
 };
 
 // Function to handle the registration submission

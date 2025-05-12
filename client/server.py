@@ -13,7 +13,7 @@ from pydantic import BaseModel, EmailStr
 
 from .auth import create_access_token, decode_token
 from A2A.client import A2ACardResolver, A2AClient
-from database.utils import registerUser, loginUser
+from database.utils import registerUser, loginUser, createUserSession
 
 
 app = FastAPI()
@@ -38,11 +38,18 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "session_id": SESSION_ID})
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
     payload = decode_token(token)
+    
     if payload is None:
-        return "0"
-    return payload["id"]
+        raise Exception("Invalid or expired token")
+    
+    user_id = payload.get("id")
+    
+    if not user_id:
+        raise Exception("User ID missing in token")
+
+    return user_id
 
 def extract_agent_message(task_result):
     try:
@@ -109,13 +116,54 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         return f"[ERRORE]: {type(e).__name__} - {e}"
 
 
-@app.post("/send_message")
-async def send_message(data: dict, current_user: str = Depends(get_current_user)):
-    user_text = data.get("message")
-    logger.info(f'USER ID SENDER: {current_user}')
-    response = await ask_agent_with_a2a(AGENT_URL, SESSION_ID, user_text)
-    return {"response": response}
+from fastapi import HTTPException, status
+from typing import Dict, Any
 
+@app.post("/send_message")
+async def send_message(
+    data: Dict[str, Any],
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        user_text = data.get("message")
+        session_id = data.get("session_id")
+
+        if not user_text:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Message is required"
+            )
+
+        # Use provided session ID or create a new one
+        if not session_id:
+            logger.info(f"No session_id provided, creating new one for user: {current_user}")
+            
+            # Call createUserSession and handle possible errors
+            session_result = createUserSession(current_user)
+            if not session_result["success"]:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to create session: {session_result['message']}"
+                )
+            session_id = session_result["session_id"]
+
+        logger.info(f"Using session_id: {session_id} for user: {current_user}")
+
+        # Now pass the session ID to the agent call
+        response = await ask_agent_with_a2a(AGENT_URL, session_id, user_text)
+
+        return {
+            "response": response,
+            "session_id": session_id  # Let frontend know which session was used
+        }
+
+    except Exception as e:
+        logger.error(f"Error in /send_message: {e}", exc_info=True)
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An internal server error occurred"
+        )
 
 
 class User(BaseModel):
@@ -127,9 +175,10 @@ class User(BaseModel):
 @app.post("/register")
 async def register_user(user: User):
     result = registerUser(user.name, user.email, user.password, user.phone)
+    
     if not result["success"]:
         message = result['message']
-        logger.ERRORE(f"400 Bad Request: {message}")
+        logger.error(f"400 Bad Request: {message}")
         raise HTTPException(status_code=400, detail=message)
     return result
 
@@ -140,14 +189,22 @@ class LoginRequest(BaseModel):
 @app.post("/login")
 async def login_user(user: LoginRequest):
     result = loginUser(user.email, user.password)
+
     if not result["success"]:
         message = result['message']
         logger.error(f"401 Unauthorized: {message}")
         raise HTTPException(status_code=401, detail=message)
 
     user_data = result['user']
+    # logger.info(f'LOGIN SUCESS:{user_data}')
+    
     access_token = create_access_token(data={"id": user_data["id"]})
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "sessions": user_data.get("sessions", [])  # <-- Include sessions
+    }
 
 
 if __name__ == "__main__":

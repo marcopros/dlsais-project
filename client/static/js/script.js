@@ -100,7 +100,8 @@ chatForm.addEventListener("submit", async (e) => {
     typingEl.appendChild(typingBubble);
     chatBoxEl.appendChild(typingEl);
 
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
+    const sessionId = localStorage.getItem("session_id"); // Get session_id if available
 
     try {
         const res = await fetch("/send_message", {
@@ -109,23 +110,29 @@ chatForm.addEventListener("submit", async (e) => {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({ message: text }),
-            signal: controller.signal
+            body: JSON.stringify({
+                message: text,
+                session_id: sessionId || undefined // Send session_id if exists
+            }),
         });
 
         clearTimeout(timeoutId);
         const data = await res.json();
         typingEl.remove();
 
-        // If not loggen open the login pop-up
+        // If not logged in, open the login pop-up
         if (res.status === 401) {
-            // alert("Session expired. Please log in again.");
             localStorage.removeItem("access_token");
             loginModal.style.display = "block";
             return;
         }
 
         if (res.ok && data.response) {
+            // Save new session_id if server returned one
+            if (data.session_id) {
+                localStorage.setItem("session_id", data.session_id);
+            }
+
             appendMessage("bot", data.response);
         } else {
             appendMessage("bot", `[Error: ${data.detail || "No answer received"}]`);
@@ -136,3 +143,4 @@ chatForm.addEventListener("submit", async (e) => {
         appendMessage("bot", "[Error: Timeout or connection error]");
     }
 });
+
