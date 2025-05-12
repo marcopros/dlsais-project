@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Application-wide constants
-APP_NAME = "matching_agent_app"  # Logical name for this agent app
+APP_NAME = "orchestrator"  # Logical name for this agent app
 USER_ID = "1"  # Default user ID; used when associating sessions/tasks with a user
 
 
@@ -38,7 +38,7 @@ async def run_server():
             'GOOGLE_API_KEY environment variable not set'
     )
 
-    logger.info("Starting Matching Agent A2A Server initialization...")
+    logger.info("Starting Orchestrator Agent A2A Server initialization...")
 
     try:
         # Initialize session service to store and manage user conversation states
