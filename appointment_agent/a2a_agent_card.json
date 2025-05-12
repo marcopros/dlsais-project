@@ -1,0 +1,23 @@
+{
+    "name": "Appointment Agent (A2A)",
+    "description": "Facilitates appointment scheduling between users and professionals.",
+    "url": "http://localhost:8003/",
+    "version": "1.0.0",
+    "defaultInputModes": ["text"],
+    "defaultOutputModes": ["text"],
+    "capabilities": {
+      "streaming": true
+    },
+    "skills": [
+      {
+        "id": "appointment-scheduling",
+        "name": "Appointment Scheduling",
+        "description": "Schedule appointments between users and professionals based on mutual availability.",
+        "tags": ["appointments", "scheduling", "calendar"],
+        "examples": [
+          "I need to schedule an appointment with electrician John Smith for next week",
+          "Find a suitable time for plumber Mike to fix my sink leak on Friday"
+        ]
+      }
+    ]
+} 
