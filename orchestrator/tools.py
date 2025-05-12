@@ -1,6 +1,7 @@
 import logging
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from enum import Enum
 
@@ -148,12 +149,14 @@ async def matching_agent_send_task( message: str, sessionId:str ) -> dict:
              return await client.send_task(payload)
 
 
-async def appointment_agent_send_task( message: str, sessionId:str ) -> dict:
+async def appointment_agent_send_task(message: str, sessionId: str, user_id: str = "user_123456", professional_id: Optional[str] = None) -> dict:
         """Sends a task to the Appointment Agent.
 
         Args:
           message: The message to send to the agent for scheduling appointments.
           sessionId: The session id of the conversation
+          user_id: The ID of the user requesting the appointment
+          professional_id: The ID of the professional to schedule with (if available)
 
         Yields:
           A dictionary of JSON data.
@@ -174,6 +177,13 @@ async def appointment_agent_send_task( message: str, sessionId:str ) -> dict:
         streaming = card.capabilities.streaming
         #streaming = False  # Force non-streamed mode if needed
 
+        # Enhance the message with the user_id and professional_id
+        enhanced_message = message
+        if professional_id:
+            enhanced_message = f"user_id:{user_id} professional_id:{professional_id} {message}"
+        else:
+            enhanced_message = f"user_id:{user_id} {message}"
+
         # Prepare the task payload to be sent to the agent
         payload = {
             "id": task_id,
@@ -181,7 +191,7 @@ async def appointment_agent_send_task( message: str, sessionId:str ) -> dict:
             "message": {
                 "role": "user",
                 "parts": [
-                    {"type": "text", "text": message}
+                    {"type": "text", "text": enhanced_message}
                 ],
                 "id": str(uuid.uuid4()),
                 "timestamp": int(datetime.now().timestamp() * 1000)         # Current time in milliseconds

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # MongoDB connection settings
 # Try loading from environment variables, otherwise use defaults
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/")
+MONGO_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017/")
 DB_NAME = os.environ.get("DB_NAME", "appointment_db")
 
 # Collections - allineate con i nomi definiti nei modelli Mongoose
@@ -25,20 +25,7 @@ PROFESSIONALS_COLLECTION = "professionals"  # Corrisponde a mongoose.model('Prof
 APPOINTMENTS_COLLECTION = "requests"  # Corrisponde a mongoose.model('Request', requestSchema)
 AVAILABILITY_COLLECTION = "availability"  # Non esiste un modello dedicato ma la usiamo per gestire le disponibilità
 
-# Initialize MongoDB client with a shorter timeout for quicker error detection
-try:
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-    # Verify connection
-    client.admin.command('ping')
-    db = client[DB_NAME]
-    print("Connected to MongoDB successfully!")
-except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-    print(f"MongoDB Connection Error: {str(e)}")
-    # We still define client and db, but operations will fail
-    client = MongoClient(MONGO_URI)
-    db = client[DB_NAME]
-
-# In-memory database
+# In-memory database class for fallback
 class InMemoryDB:
     def __init__(self):
         self.collections = {
@@ -112,12 +99,25 @@ class UpdateResult:
     def __init__(self, modified_count):
         self.modified_count = modified_count
 
-# Initialize in-memory database
-db = {}
-for collection in [AVAILABILITY_COLLECTION, APPOINTMENTS_COLLECTION, USERS_COLLECTION, PROFESSIONALS_COLLECTION]:
-    db[collection] = []
+# Flag to track if we're using MongoDB or in-memory
+using_mongodb = False
 
-print("Using in-memory database instead of MongoDB...")
+# Initialize database (MongoDB or in-memory)
+try:
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    # Verify connection
+    client.admin.command('ping')
+    db = client[DB_NAME]
+    using_mongodb = True
+    print("Connected to MongoDB successfully!")
+except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+    print(f"MongoDB Connection Error: {str(e)}")
+    # Initialize in-memory database
+    in_memory_db = InMemoryDB()
+    db = {}
+    for collection in [AVAILABILITY_COLLECTION, APPOINTMENTS_COLLECTION, USERS_COLLECTION, PROFESSIONALS_COLLECTION]:
+        db[collection] = []
+    print("Using in-memory database instead of MongoDB...")
 
 # Function to create availability entries for professionals if they don't exist
 def ensure_professional_availability(professional_id):
@@ -138,36 +138,31 @@ def ensure_professional_availability(professional_id):
         start_str = start_date.strftime('%Y-%m-%d')
         end_str = end_date.strftime('%Y-%m-%d')
         
-        # First try finding the date range document
-        availability = None
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == professional_id and 
-                doc.get("entity_type") == "professional" and
-                "date_range" in doc):
-                availability = doc
-                break
-        
-        # If no date range document exists, try finding individual day documents
-        if not availability:
-            day_docs = []
-            for doc in db[AVAILABILITY_COLLECTION]:
-                if (doc.get("entity_id") == professional_id and 
-                    doc.get("entity_type") == "professional" and
-                    doc.get("date", "") >= start_str and
-                    doc.get("date", "") <= end_str):
-                    day_docs.append(doc)
+        if using_mongodb:
+            # MongoDB query to find availability
+            query = {
+                "entity_id": professional_id,
+                "entity_type": "professional",
+                "$or": [
+                    {"date_range": {"$exists": True}},
+                    {"date": {"$gte": start_str, "$lte": end_str}}
+                ]
+            }
             
+            availability_docs = list(db[AVAILABILITY_COLLECTION].find(query))
+            
+            # Check if docs have slots
             has_slots = False
-            for doc in day_docs:
+            for doc in availability_docs:
                 if "slots" in doc and doc["slots"]:
                     has_slots = True
                     break
-            
+                
             # If no slots exist, create them
             if not has_slots:
                 logger.info(f"No availability found for professional {professional_id}. Creating mock availability.")
                 
-                # Generate mock slots
+                # Generate mock slots and insert into MongoDB
                 current_date = start_date
                 while current_date <= end_date:
                     # Generate slots for every day including weekends
@@ -194,13 +189,77 @@ def ensure_professional_availability(professional_id):
                         "date": date_str,
                         "slots": date_slots
                     }
-                    db[AVAILABILITY_COLLECTION].append(doc)
+                    db[AVAILABILITY_COLLECTION].insert_one(doc)
                     
                     current_date += timedelta(days=1)
                 
                 logger.info(f"Created availability slots for professional {professional_id}")
                 return True
+        else:
+            # In-memory database logic
+            # First try finding the date range document
+            availability = None
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == professional_id and 
+                    doc.get("entity_type") == "professional" and
+                    "date_range" in doc):
+                    availability = doc
+                    break
+            
+            # If no date range document exists, try finding individual day documents
+            if not availability:
+                day_docs = []
+                for doc in db[AVAILABILITY_COLLECTION]:
+                    if (doc.get("entity_id") == professional_id and 
+                        doc.get("entity_type") == "professional" and
+                        doc.get("date", "") >= start_str and
+                        doc.get("date", "") <= end_str):
+                        day_docs.append(doc)
                 
+                has_slots = False
+                for doc in day_docs:
+                    if "slots" in doc and doc["slots"]:
+                        has_slots = True
+                        break
+                
+                # If no slots exist, create them
+                if not has_slots:
+                    logger.info(f"No availability found for professional {professional_id}. Creating mock availability.")
+                    
+                    # Generate mock slots
+                    current_date = start_date
+                    while current_date <= end_date:
+                        # Generate slots for every day including weekends
+                        if current_date.weekday() < 5:  # Monday to Friday
+                            num_slots = random.randint(5, 8)  # More slots on weekdays
+                        else:
+                            num_slots = random.randint(3, 5)  # Fewer slots on weekends
+                        
+                        date_slots = []
+                        for _ in range(num_slots):
+                            hour = random.randint(8, 18)  # 8 AM to 6 PM
+                            minute = random.choice([0, 30])  # Either on the hour or half hour
+                            
+                            slot_time = current_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                            slot_str = slot_time.strftime('%Y-%m-%d %H:%M')
+                            date_slots.append(slot_str)
+                        
+                        # Insert document for this day
+                        date_str = current_date.strftime('%Y-%m-%d')
+                        doc = {
+                            "_id": str(uuid.uuid4()),
+                            "entity_id": professional_id,
+                            "entity_type": "professional",
+                            "date": date_str,
+                            "slots": date_slots
+                        }
+                        db[AVAILABILITY_COLLECTION].append(doc)
+                        
+                        current_date += timedelta(days=1)
+                    
+                    logger.info(f"Created availability slots for professional {professional_id}")
+                    return True
+        
         return True
     
     except Exception as e:
@@ -226,36 +285,31 @@ def ensure_user_availability(user_id):
         start_str = start_date.strftime('%Y-%m-%d')
         end_str = end_date.strftime('%Y-%m-%d')
         
-        # First try finding the date range document
-        availability = None
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == user_id and 
-                doc.get("entity_type") == "user" and
-                "date_range" in doc):
-                availability = doc
-                break
-        
-        # If no date range document exists, try finding individual day documents
-        if not availability:
-            day_docs = []
-            for doc in db[AVAILABILITY_COLLECTION]:
-                if (doc.get("entity_id") == user_id and 
-                    doc.get("entity_type") == "user" and
-                    doc.get("date", "") >= start_str and
-                    doc.get("date", "") <= end_str):
-                    day_docs.append(doc)
+        if using_mongodb:
+            # MongoDB query to find availability
+            query = {
+                "entity_id": user_id,
+                "entity_type": "user",
+                "$or": [
+                    {"date_range": {"$exists": True}},
+                    {"date": {"$gte": start_str, "$lte": end_str}}
+                ]
+            }
             
+            availability_docs = list(db[AVAILABILITY_COLLECTION].find(query))
+            
+            # Check if docs have slots
             has_slots = False
-            for doc in day_docs:
+            for doc in availability_docs:
                 if "slots" in doc and doc["slots"]:
                     has_slots = True
                     break
-            
+                
             # If no slots exist, create them
             if not has_slots:
                 logger.info(f"No availability found for user {user_id}. Creating mock availability.")
                 
-                # Generate mock slots
+                # Generate mock slots and insert into MongoDB
                 current_date = start_date
                 while current_date <= end_date:
                     # Skip weekends in this example
@@ -281,12 +335,75 @@ def ensure_user_availability(user_id):
                             "date": date_str,
                             "slots": date_slots
                         }
-                        db[AVAILABILITY_COLLECTION].append(doc)
+                        db[AVAILABILITY_COLLECTION].insert_one(doc)
                     
                     current_date += timedelta(days=1)
                 
                 logger.info(f"Created availability slots for user {user_id}")
                 return True
+        else:
+            # In-memory database logic
+            # First try finding the date range document
+            availability = None
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == user_id and 
+                    doc.get("entity_type") == "user" and
+                    "date_range" in doc):
+                    availability = doc
+                    break
+            
+            # If no date range document exists, try finding individual day documents
+            if not availability:
+                day_docs = []
+                for doc in db[AVAILABILITY_COLLECTION]:
+                    if (doc.get("entity_id") == user_id and 
+                        doc.get("entity_type") == "user" and
+                        doc.get("date", "") >= start_str and
+                        doc.get("date", "") <= end_str):
+                        day_docs.append(doc)
+                
+                has_slots = False
+                for doc in day_docs:
+                    if "slots" in doc and doc["slots"]:
+                        has_slots = True
+                        break
+                
+                # If no slots exist, create them
+                if not has_slots:
+                    logger.info(f"No availability found for user {user_id}. Creating mock availability.")
+                    
+                    # Generate mock slots
+                    current_date = start_date
+                    while current_date <= end_date:
+                        # Skip weekends in this example
+                        if current_date.weekday() < 5:  # Monday to Friday
+                            # Generate slots for weekdays
+                            num_slots = random.randint(4, 6)
+                            
+                            date_slots = []
+                            for _ in range(num_slots):
+                                hour = random.randint(9, 19)  # 9 AM to 7 PM
+                                minute = random.choice([0, 30])  # Either on the hour or half hour
+                                
+                                slot_time = current_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                                slot_str = slot_time.strftime('%Y-%m-%d %H:%M')
+                                date_slots.append(slot_str)
+                            
+                            # Insert document for this day
+                            date_str = current_date.strftime('%Y-%m-%d')
+                            doc = {
+                                "_id": str(uuid.uuid4()),
+                                "entity_id": user_id,
+                                "entity_type": "user",
+                                "date": date_str,
+                                "slots": date_slots
+                            }
+                            db[AVAILABILITY_COLLECTION].append(doc)
+                        
+                        current_date += timedelta(days=1)
+                    
+                    logger.info(f"Created availability slots for user {user_id}")
+                    return True
                 
         return True
     
@@ -314,34 +431,70 @@ def get_user_availability(user_id, start_date, end_date):
         start_str = start_date.strftime('%Y-%m-%d')
         end_str = end_date.strftime('%Y-%m-%d')
         
-        # First try finding the date range document
-        availability = None
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == user_id and 
-                doc.get("entity_type") == "user" and
-                "date_range" in doc):
-                availability = doc
-                break
+        if using_mongodb:
+            # MongoDB query for date range document
+            range_query = {
+                "entity_id": user_id,
+                "entity_type": "user",
+                "date_range": {"$exists": True}
+            }
+            
+            date_range_doc = db[AVAILABILITY_COLLECTION].find_one(range_query)
+            
+            if date_range_doc and "slots" in date_range_doc:
+                # Filter slots that are within our date range
+                filtered_slots = [
+                    slot for slot in date_range_doc["slots"] 
+                    if slot >= f"{start_str} 00:00" and slot <= f"{end_str} 23:59"
+                ]
+                return filtered_slots
+            
+            # If no date range document, try finding individual day documents
+            day_query = {
+                "entity_id": user_id,
+                "entity_type": "user",
+                "date": {"$gte": start_str, "$lte": end_str}
+            }
+            
+            day_docs = list(db[AVAILABILITY_COLLECTION].find(day_query))
+            
+            all_slots = []
+            for doc in day_docs:
+                if "slots" in doc:
+                    all_slots.extend(doc["slots"])
+            
+            return all_slots
         
-        if availability and "slots" in availability:
-            # Filter slots that are within our date range
-            filtered_slots = [
-                slot for slot in availability["slots"] 
-                if slot >= f"{start_str} 00:00" and slot <= f"{end_str} 23:59"
-            ]
-            return filtered_slots
-        
-        # If no date range document, try finding individual day documents
-        all_slots = []
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == user_id and 
-                doc.get("entity_type") == "user" and
-                doc.get("date", "") >= start_str and
-                doc.get("date", "") <= end_str and
-                "slots" in doc):
-                all_slots.extend(doc["slots"])
-        
-        return all_slots
+        else:
+            # In-memory database logic
+            # First try finding the date range document
+            availability = None
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == user_id and 
+                    doc.get("entity_type") == "user" and
+                    "date_range" in doc):
+                    availability = doc
+                    break
+            
+            if availability and "slots" in availability:
+                # Filter slots that are within our date range
+                filtered_slots = [
+                    slot for slot in availability["slots"] 
+                    if slot >= f"{start_str} 00:00" and slot <= f"{end_str} 23:59"
+                ]
+                return filtered_slots
+            
+            # If no date range document, try finding individual day documents
+            all_slots = []
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == user_id and 
+                    doc.get("entity_type") == "user" and
+                    doc.get("date", "") >= start_str and
+                    doc.get("date", "") <= end_str and
+                    "slots" in doc):
+                    all_slots.extend(doc["slots"])
+            
+            return all_slots
     
     except Exception as e:
         logger.error(f"Database error in get_user_availability: {str(e)}")
@@ -367,34 +520,70 @@ def get_professional_availability(professional_id, start_date, end_date):
         start_str = start_date.strftime('%Y-%m-%d')
         end_str = end_date.strftime('%Y-%m-%d')
         
-        # First try finding the date range document
-        availability = None
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == professional_id and 
-                doc.get("entity_type") == "professional" and
-                "date_range" in doc):
-                availability = doc
-                break
+        if using_mongodb:
+            # MongoDB query for date range document
+            range_query = {
+                "entity_id": professional_id,
+                "entity_type": "professional",
+                "date_range": {"$exists": True}
+            }
+            
+            date_range_doc = db[AVAILABILITY_COLLECTION].find_one(range_query)
+            
+            if date_range_doc and "slots" in date_range_doc:
+                # Filter slots that are within our date range
+                filtered_slots = [
+                    slot for slot in date_range_doc["slots"] 
+                    if slot >= f"{start_str} 00:00" and slot <= f"{end_str} 23:59"
+                ]
+                return filtered_slots
+            
+            # If no date range document, try finding individual day documents
+            day_query = {
+                "entity_id": professional_id,
+                "entity_type": "professional",
+                "date": {"$gte": start_str, "$lte": end_str}
+            }
+            
+            day_docs = list(db[AVAILABILITY_COLLECTION].find(day_query))
+            
+            all_slots = []
+            for doc in day_docs:
+                if "slots" in doc:
+                    all_slots.extend(doc["slots"])
+            
+            return all_slots
         
-        if availability and "slots" in availability:
-            # Filter slots that are within our date range
-            filtered_slots = [
-                slot for slot in availability["slots"] 
-                if slot >= f"{start_str} 00:00" and slot <= f"{end_str} 23:59"
-            ]
-            return filtered_slots
-        
-        # If no date range document, try finding individual day documents
-        all_slots = []
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == professional_id and 
-                doc.get("entity_type") == "professional" and
-                doc.get("date", "") >= start_str and
-                doc.get("date", "") <= end_str and
-                "slots" in doc):
-                all_slots.extend(doc["slots"])
-        
-        return all_slots
+        else:
+            # In-memory database logic
+            # First try finding the date range document
+            availability = None
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == professional_id and 
+                    doc.get("entity_type") == "professional" and
+                    "date_range" in doc):
+                    availability = doc
+                    break
+            
+            if availability and "slots" in availability:
+                # Filter slots that are within our date range
+                filtered_slots = [
+                    slot for slot in availability["slots"] 
+                    if slot >= f"{start_str} 00:00" and slot <= f"{end_str} 23:59"
+                ]
+                return filtered_slots
+            
+            # If no date range document, try finding individual day documents
+            all_slots = []
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == professional_id and 
+                    doc.get("entity_type") == "professional" and
+                    doc.get("date", "") >= start_str and
+                    doc.get("date", "") <= end_str and
+                    "slots" in doc):
+                    all_slots.extend(doc["slots"])
+            
+            return all_slots
     
     except Exception as e:
         logger.error(f"Database error in get_professional_availability: {str(e)}")
@@ -428,11 +617,14 @@ def create_appointment(appointment_details):
             "created_at": appointment_details["created_at"]
         }
         
-        # Insert the appointment document
-        db[APPOINTMENTS_COLLECTION].append(request_data)
-        
-        # Return the ID of the inserted document
-        return request_data["_id"]
+        if using_mongodb:
+            # Insert using MongoDB
+            result = db[APPOINTMENTS_COLLECTION].insert_one(request_data)
+            return str(result.inserted_id)
+        else:
+            # Insert using in-memory database
+            db[APPOINTMENTS_COLLECTION].append(request_data)
+            return request_data["_id"]
     
     except Exception as e:
         logger.error(f"Database error in create_appointment: {str(e)}")
@@ -449,11 +641,19 @@ def get_appointment(appointment_id):
         dict: The appointment details, or None if not found
     """
     try:
-        for appointment in db[APPOINTMENTS_COLLECTION]:
-            if appointment.get("_id") == appointment_id:
-                return appointment
-        
-        raise Exception(f"Appointment with ID {appointment_id} not found.")
+        if using_mongodb:
+            # Use MongoDB find_one
+            appointment = db[APPOINTMENTS_COLLECTION].find_one({"_id": appointment_id})
+            if not appointment:
+                raise Exception(f"Appointment with ID {appointment_id} not found.")
+            return appointment
+        else:
+            # Use in-memory search
+            for appointment in db[APPOINTMENTS_COLLECTION]:
+                if appointment.get("_id") == appointment_id:
+                    return appointment
+            
+            raise Exception(f"Appointment with ID {appointment_id} not found.")
     
     except Exception as e:
         logger.error(f"Database error in get_appointment: {str(e)}")
@@ -472,48 +672,79 @@ def update_availability_after_booking(user_id, professional_id, booked_slot):
         bool: True if successful, False otherwise
     """
     try:
-        modified_count = 0
-        
-        # Remove the booked slot from both user and professional availability in date range documents
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == user_id and 
-                doc.get("entity_type") == "user" and
-                "date_range" in doc and
-                "slots" in doc and
-                booked_slot in doc["slots"]):
-                doc["slots"].remove(booked_slot)
-                modified_count += 1
+        if using_mongodb:
+            # Update MongoDB collections
+            modified_count = 0
             
-            if (doc.get("entity_id") == professional_id and 
-                doc.get("entity_type") == "professional" and
-                "date_range" in doc and
-                "slots" in doc and
-                booked_slot in doc["slots"]):
-                doc["slots"].remove(booked_slot)
-                modified_count += 1
-        
-        # Also update individual day documents
-        slot_date = booked_slot.split(" ")[0]  # Extract just the date part
-        
-        for doc in db[AVAILABILITY_COLLECTION]:
-            if (doc.get("entity_id") == user_id and 
-                doc.get("entity_type") == "user" and
-                doc.get("date") == slot_date and
-                "slots" in doc and
-                booked_slot in doc["slots"]):
-                doc["slots"].remove(booked_slot)
-                modified_count += 1
+            # Update date range documents
+            range_query = {
+                "$or": [
+                    {"entity_id": user_id, "entity_type": "user", "date_range": {"$exists": True}},
+                    {"entity_id": professional_id, "entity_type": "professional", "date_range": {"$exists": True}}
+                ]
+            }
+            update = {"$pull": {"slots": booked_slot}}
             
-            if (doc.get("entity_id") == professional_id and 
-                doc.get("entity_type") == "professional" and
-                doc.get("date") == slot_date and
-                "slots" in doc and
-                booked_slot in doc["slots"]):
-                doc["slots"].remove(booked_slot)
-                modified_count += 1
-        
-        # If any update was successful
-        return modified_count > 0
+            result = db[AVAILABILITY_COLLECTION].update_many(range_query, update)
+            modified_count += result.modified_count
+            
+            # Update day documents
+            slot_date = booked_slot.split(" ")[0]  # Extract just the date part
+            
+            day_query = {
+                "$or": [
+                    {"entity_id": user_id, "entity_type": "user", "date": slot_date},
+                    {"entity_id": professional_id, "entity_type": "professional", "date": slot_date}
+                ]
+            }
+            
+            result = db[AVAILABILITY_COLLECTION].update_many(day_query, update)
+            modified_count += result.modified_count
+            
+            return modified_count > 0
+        else:
+            # In-memory database implementation
+            modified_count = 0
+            
+            # Remove the booked slot from both user and professional availability in date range documents
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == user_id and 
+                    doc.get("entity_type") == "user" and
+                    "date_range" in doc and
+                    "slots" in doc and
+                    booked_slot in doc["slots"]):
+                    doc["slots"].remove(booked_slot)
+                    modified_count += 1
+                
+                if (doc.get("entity_id") == professional_id and 
+                    doc.get("entity_type") == "professional" and
+                    "date_range" in doc and
+                    "slots" in doc and
+                    booked_slot in doc["slots"]):
+                    doc["slots"].remove(booked_slot)
+                    modified_count += 1
+            
+            # Also update individual day documents
+            slot_date = booked_slot.split(" ")[0]  # Extract just the date part
+            
+            for doc in db[AVAILABILITY_COLLECTION]:
+                if (doc.get("entity_id") == user_id and 
+                    doc.get("entity_type") == "user" and
+                    doc.get("date") == slot_date and
+                    "slots" in doc and
+                    booked_slot in doc["slots"]):
+                    doc["slots"].remove(booked_slot)
+                    modified_count += 1
+                
+                if (doc.get("entity_id") == professional_id and 
+                    doc.get("entity_type") == "professional" and
+                    doc.get("date") == slot_date and
+                    "slots" in doc and
+                    booked_slot in doc["slots"]):
+                    doc["slots"].remove(booked_slot)
+                    modified_count += 1
+            
+            return modified_count > 0
     
     except Exception as e:
         logger.error(f"Database error in update_availability_after_booking: {str(e)}")
