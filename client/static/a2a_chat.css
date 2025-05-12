@@ -1,0 +1,293 @@
+:root {
+    --text-primary: #ececf1; 
+    --text-secondary: #8e8ea0;
+    --bg-primary: #343541;
+    --bg-secondary: #444654;
+    --bg-input: #40414f;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --highlight-color: #10a37f;
+    --error-color: #ef4146;
+    --orchestrator-color: #10a37f;
+    --diagnosis-color: #5436da;
+    --matching-color: #1a7f64;
+    --appointment-color: #2563eb;
+    --feedback-color: #ef4146;
+    --font-family: "Söhne", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
+    --font-mono: "Söhne Mono", "Monaco", "Andale Mono", "Ubuntu Mono", monospace;
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-family);
+}
+
+body {
+    background-color: var(--bg-primary);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-primary);
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Header styles */
+header {
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+}
+
+header h1 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+header p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Chat messages area */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    scroll-behavior: smooth;
+}
+
+.message {
+    padding: 24px 16px;
+    display: flex;
+    line-height: 1.5;
+    max-width: 100%;
+}
+
+.message.agent {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 100%;
+}
+
+.message.user {
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 100%;
+}
+
+.message-content {
+    max-width: 768px;
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    padding: 0 12px;
+}
+
+.message-bubble {
+    font-size: 1rem;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    width: 100%;
+}
+
+.agent-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+    margin-right: 10px;
+    color: white;
+    letter-spacing: 0.3px;
+    position: relative;
+    top: -1px;
+}
+
+/* Agent-specific label styling */
+.agent-label[data-agent="Orchestrator"] {
+    background-color: var(--orchestrator-color);
+}
+
+.agent-label[data-agent="Diagnosis"] {
+    background-color: var(--diagnosis-color);
+}
+
+.agent-label[data-agent="Matching"] {
+    background-color: var(--matching-color);
+}
+
+.agent-label[data-agent="Appointment"] {
+    background-color: var(--appointment-color);
+}
+
+.agent-label[data-agent="Feedback"] {
+    background-color: var(--feedback-color);
+}
+
+/* Input area */
+.chat-input {
+    padding: 16px;
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    position: relative;
+}
+
+#chat-form {
+    max-width: 768px;
+    margin: 0 auto;
+    position: relative;
+}
+
+#user-input {
+    width: 100%;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px 50px 12px 16px;
+    font-size: 1rem;
+    resize: none;
+    height: 52px;
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#user-input:focus {
+    border-color: var(--highlight-color);
+}
+
+#user-input::placeholder {
+    color: var(--text-secondary);
+}
+
+button {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background-color: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+button:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Typing animation */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+}
+
+.typing {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typing-dot {
+    width: 4px;
+    height: 4px;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    animation: typing 1.5s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.6;
+    }
+    30% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+/* Avatar styles */
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.user-avatar {
+    background-color: #5b46ce;
+}
+
+.agent-avatar {
+    background-color: var(--highlight-color);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .message {
+        padding: 16px 0;
+    }
+    
+    .message-content {
+        padding: 0 16px;
+    }
+    
+    .chat-input {
+        padding: 12px;
+    }
+    
+    #user-input {
+        font-size: 0.95rem;
+    }
+    
+    header h1 {
+        font-size: 1.1rem;
+    }
+    
+    header p {
+        font-size: 0.75rem;
+    }
+} 
+} 
