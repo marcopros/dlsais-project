@@ -34,7 +34,7 @@ body {
 }
 
 .diy-color{
-    color: #91EC36
+    color: #ffa62b
 }
 
 .appointment-color{
@@ -62,8 +62,18 @@ body {
     color: black;
 }
 
-.default-agent {
+.feedback-agent {
+    background-color: #A663CC;
+    color: white;
+}
+
+.orchestrator {
     background-color: lightgrey;
+    color: white;
+}
+
+.error{
+    background-color: red;
     color: white;
 }
 
@@ -216,30 +226,44 @@ body {
 }
 
 /* Bubble styling */
-.text-bubble {
+.user .text-bubble {
     max-width: 70%;
     padding: 10px 15px;
     border-radius: 20px;
+    border-top-right-radius: 5px;
+    background-color: #f1f1f1;
+    line-height: 1.4;
+    word-wrap: break-word;
+    font-size: 1em;
+}
+
+.bot .text-bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    background-color: white;
     line-height: 1.4;
     word-wrap: break-word;
     font-size: 1em;
 }
 
 /* User bubble: right side, blue */
-.text-bubble.user {
-    background-color: #f1f1f1;
+.user .message-text{
     color: #333;
-    border-top-right-radius: 5px;
-    border-top-left-radius: 20px;
     text-align: right;
 }
 
 /* Bot bubble: left side, light gray */
-.text-bubble.bot {
-    background-color: white;
+.bot .message-text{
     color: black;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 20px;
+    text-align: left;
+}
+
+/* agent-header */
+.agent-header {
+    width: 70%;
+    padding-left: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     text-align: left;
 }
 

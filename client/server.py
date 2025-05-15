@@ -43,7 +43,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
     payload = decode_token(token)
     
     if payload is None:
-        raise Exception("Invalid or expired token")
+        return '0'
     
     user_id = payload.get("id")
     
@@ -74,15 +74,15 @@ def extract_agent_message(task_result):
         ):
             part = status.message.parts[0]
             if hasattr(part, "text") and part.text:
-                agent = getattr(part, "metadata", {}).get("agent", "Unknown Agent")
+                agent = getattr(part, "metadata", {}).get("agent", "ERROR")
                 return {"text": part.text, "agent": agent}
 
-        return {"text": "[NESSUN MESSAGGIO RICEVUTO]", "agent": "Unknown Agent"}
+        return {"text": "[NESSUN MESSAGGIO RICEVUTO]", "agent": "ERROR"}
 
     except Exception as e:
         return {
             "text": f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}",
-            "agent": "Unknown Agent"
+            "agent": "ERROR"
         }
 
 

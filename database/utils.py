@@ -13,8 +13,11 @@ from bson.errors import InvalidId
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 
 # MongoDB connection setup
-# MONGO_URI = os.getenv("MONGODB_URI")      # NON MI VA BOH
-MONGO_URI = 'mongodb+srv://marco:unitn2025@dlsais-cluster.vkxu2tc.mongodb.net/?retryWrites=true&w=majority&appName=dlsais-cluster'
+# MONGO_URI = os.getenv("MONGODB_URI")      # NON MI VA BOH (matteo)
+
+# Soluzione alternativa caricare dall'env solo la password ( quindi devi meterla in .env globale)
+MONGO_PASSWORD = os.getenv("MONGODB_PASSWORD")
+MONGO_URI = f'mongodb+srv://marco:{MONGO_PASSWORD}@dlsais-cluster.vkxu2tc.mongodb.net/?retryWrites=true&w=majority&appName=dlsais-cluster'
 DB_NAME = "test"
 
 try:

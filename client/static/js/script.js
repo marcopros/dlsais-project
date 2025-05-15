@@ -165,7 +165,7 @@ chatForm.addEventListener("submit", async (e) => {
     } catch (err) {
         typingEl.remove();
         console.error("Errore to obtain an answer:", err);
-        appendMessage("bot", "[Error: Timeout or connection error]");
+        appendMessage("ERROR", "[Error: Timeout or connection error]");
     }
 });
 
