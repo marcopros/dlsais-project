@@ -1,5 +1,5 @@
 const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds
+const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds
 
 const initialScreen = document.getElementById("initial-screen");
 const chatBox = document.getElementById("chat-box");
@@ -11,6 +11,7 @@ let chatContainer
 let chatStart = false
 
 
+// Function to handel the firs message of the user 
 async function startChat() {
     console.log('Start chat');
 
@@ -20,6 +21,7 @@ async function startChat() {
     if (heading) heading.remove();
     if (description) description.remove();
 
+    // Add the chat container
     // Check if chat-container already exists
     chatContainer = document.getElementById('chat-container');
     if (!chatContainer) {
@@ -34,7 +36,7 @@ async function startChat() {
         newChatBox.id = 'chat-box';
 
         chatContainer.appendChild(newChatBox);
-        chatContainer.appendChild(chatForm);    // move existing form below the chat box
+        chatContainer.appendChild(chatForm);        // move existing form below the chat box
         document.getElementById('central-part').appendChild(chatContainer);
     } 
 
@@ -48,7 +50,7 @@ async function startChat() {
 }
 
 
-// Aggiunge un messaggio alla chat
+// Append a message to the chat box
 function appendMessage(role, text) {
     const chatBoxEl = document.getElementById("chat-box");
     if (!chatBoxEl) {
@@ -57,32 +59,52 @@ function appendMessage(role, text) {
     }
 
     const msgDiv = document.createElement("div");
-    msgDiv.classList.add("message", role);
+    const isUser = role === "user";
 
-    const bubble = document.createElement("div");
-    bubble.classList.add("text-bubble", role);
-    bubble.textContent = text;
+    msgDiv.classList.add("message");
+    msgDiv.classList.add(isUser ? "user" : "bot");
 
-    msgDiv.appendChild(bubble);
+    const bubbleContainer = document.createElement("div");
+    bubbleContainer.classList.add("text-bubble");
+
+    if (!isUser) {
+        const agentHeader = document.createElement("div");
+        agentHeader.classList.add("agent-header");
+
+        // Sanitize agent name for class usage
+        const safeRole = role.replace(/\s+/g, "-").toLowerCase(); // e.g., "diagnosis-agent"
+        agentHeader.classList.add(safeRole); // now it's a single token
+
+        agentHeader.textContent = role; // display full name
+        bubbleContainer.appendChild(agentHeader);
+    }
+
+    const messageText = document.createElement("div");
+    messageText.classList.add("message-text");
+    messageText.textContent = text;
+
+    bubbleContainer.appendChild(messageText);
+    msgDiv.appendChild(bubbleContainer);
     chatBoxEl.appendChild(msgDiv);
     chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
 }
 
-// Gestione invio messaggio
+
+// Handel the send of a user message
 chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const text = userInput.value.trim();
+    const text = userInput.value.trim();    // Get the user input
     if (!text) return;
 
-    if (!chatStart) {
-        await startChat(); // Ensure the chat UI is ready
+    if (!chatStart) {                       // Check if chat has started, otherwise start it
+        await startChat();                  // Ensure the chat UI is ready
     }
 
-    appendMessage("user", text);
-    userInput.value = "";
+    appendMessage("user", text);            // Append the user message in the chat box
+    userInput.value = "";                   // Clear the input field    
     userInput.focus();
 
-    // Show typing indicator
+    // Show typing indicator while waiting for the agent response
     const chatBoxEl = document.getElementById("chat-box");
     const typingEl = document.createElement("div");
     typingEl.classList.add("message", "bot");
@@ -100,8 +122,8 @@ chatForm.addEventListener("submit", async (e) => {
     typingEl.appendChild(typingBubble);
     chatBoxEl.appendChild(typingEl);
 
-    const token = localStorage.getItem("access_token");
-    const sessionId = localStorage.getItem("session_id"); // Get session_id if available
+    const token = localStorage.getItem("access_token");     // Get the authentication token
+    const sessionId = localStorage.getItem("session_id");   // Get session_id if available
 
     try {
         const res = await fetch("/send_message", {
@@ -112,12 +134,13 @@ chatForm.addEventListener("submit", async (e) => {
             },
             body: JSON.stringify({
                 message: text,
-                session_id: sessionId || undefined // Send session_id if exists
+                session_id: sessionId || undefined          // Send session_id if exists
             }),
         });
 
         clearTimeout(timeoutId);
         const data = await res.json();
+        console.log("Response from server:", data);
         typingEl.remove();
 
         // If not logged in, open the login pop-up
@@ -133,10 +156,12 @@ chatForm.addEventListener("submit", async (e) => {
                 localStorage.setItem("session_id", data.session_id);
             }
 
-            appendMessage("bot", data.response);
+            // Append the bot response in the chat box
+            appendMessage(data.agent, data.response);
         } else {
-            appendMessage("bot", `[Error: ${data.detail || "No answer received"}]`);
+            appendMessage(data.agent, `[Error: ${data.detail || "No answer received"}]`);
         }
+
     } catch (err) {
         typingEl.remove();
         console.error("Errore to obtain an answer:", err);

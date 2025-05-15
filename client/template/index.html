@@ -16,39 +16,42 @@
     <div id="hamburger-menu">&#9776;</div> <!-- Hamburger Icon -->
     <div id="logo">🏠 Home Repair Assistant</div> 
     <div id="header-icons">
-      <div id="profile-icon" class="profile-dropdown-container">
-        <i id="profile-icon-img" class="fas fa-user-circle" title="Profile"></i>
+      <div id="profile" class="profile-dropdown-container">
+        <i id="profile-icon" class="fas fa-user-circle profile-icon-unlogged" title="Profile"></i>
         <div id="profile-dropdown" class="dropdown-content">
-          <button id="sign-out-btn">Sign Out</button>
+          <button id="logout-button">Sign Out</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Paige Corpus -->
-  <div id="initial-screen">
-    <div id="central-part">
-      <h1>HOME REPAIR ASSISTANT</h1>
-      <p class="description">
-        <span class="diagnosi-color">Problem diagnosis</span>, 
-        <span class="diy-color"> DIY suggestion </span>, 
-        <span class="matching-color"> Professional search</span> and 
-        <span class="appointment-color">Make an appointment</span> 
-      </p>
-      <form id="chat-form">
+  <!-- Main Content -->
+  <div id="main-content">
+
+    <!-- Right-side sessions column -->
+    <div id="sessions-container" class="hidden">
+      <h2>Sessions</h2>
+      <ul id="session-list"></ul>
+    </div>
+
+    <!-- Main reagon for the chat -->
+    <div id="chat-area">
+      <div id="central-part">
+        <h1>HOME REPAIR ASSISTANT</h1>
+        <p class="description">
+          <span class="diagnosi-color">Problem diagnosis</span>, 
+          <span class="diy-color"> DIY suggestion </span>, 
+          <span class="matching-color"> Professional search</span> and 
+          <span class="appointment-color">Make an appointment</span> 
+        </p>
+        <form id="chat-form">
           <input type="text" id="user-input" placeholder="Describe your issue .." required>
-      </form>
-      
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- Right-side sessions column -->
-  <div id="sessions-container", class="hidden">
-    <h2>Sessions</h2>
-    <ul id="session-list"></ul>
-  </div>
-
-  <script src="../static/js/script.js?v=1.0.4"></script>
+  <script src="../static/js/script.js?v=1.1.0"></script>
 
   <!-- Login Modal -->
   <div id="login-modal" class="modal" style="display: none;">

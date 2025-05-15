@@ -34,7 +34,7 @@ body {
 }
 
 .diy-color{
-    color: #FFA62B
+    color: #91EC36
 }
 
 .appointment-color{
@@ -43,6 +43,28 @@ body {
 
 .feedback-color{
     color: #A663CC
+}
+
+
+/* Agent Backgrounds */
+.diagnosis-agent {
+    background-color: #63CAE3;
+    color: white;
+}
+
+.matching-agent {
+    background-color: #91EC36;
+    color: white;
+}
+
+.appointment-agent {
+    background-color: #91EC36;
+    color: black;
+}
+
+.default-agent {
+    background-color: lightgrey;
+    color: white;
 }
 
 /* ############################## Header Bar ##############################*/
@@ -78,32 +100,33 @@ body {
   color: #333;
 }
 
-#account-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-#profile-icon {
-  font-size: 24px;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-#profile-icon:hover {
-  color: #e67e22; 
-}
-
-
 
 /*############################## MAIN PAGE ################################# */
+#main-content {
+  display: flex;
+  justify-content: center;      /* Center chat if no session is open */
+  align-items: center;
+  margin-top: 50px;             /* Space for header */
+  height: calc(100vh - 60px);   /* Subtract header height */
+}
+
+#chat-area {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#sessions-container {
+  flex: 0 0 250px;
+  width: 200px;
+  height: 100%;
+  background-color: #f4f4f4;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+  transition: margin 0.3s ease;
+}
+
 #central-part {
     text-align: center;
     width: 50vw;
