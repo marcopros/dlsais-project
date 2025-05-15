@@ -31,6 +31,7 @@ from A2A.types import (
 from A2A.server.task_manager import InMemoryTaskManager
 
 # Import our custom human-readable logger
+import orchestrator
 from orchestrator.logging import human_readable_logger
 
 # Setup basic logging to help debug and trace execution flow
@@ -114,8 +115,8 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             )
         )
 
-        # Extract agent responses and log them
-        response = ""
+        response = ""                    # Extract agent responses and log them
+        agent_name = "Orchestrator"     # The name of the agent that is being called
         if events:
             for event in events:
                 # Log function calls (agent interactions)
@@ -134,10 +135,13 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                         if hasattr(part, 'function_response') and part.function_response:
                             function_name = part.function_response.name
                             if function_name == "diagnosis_agent_send_task":
+                                agent_name = "Diagnosis Agent"
                                 human_readable_logger.log_agent_response("Diagnosis Agent", part.function_response.response)
                             elif function_name == "matching_agent_send_task":
+                                agent_name = "Matching Agent"
                                 human_readable_logger.log_agent_response("Matching Agent", part.function_response.response)
                             elif function_name == "appointment_agent_send_task":
+                                agent_name = "Appointment Agent"
                                 human_readable_logger.log_agent_response("Appointment Agent", part.function_response.response)
                             elif function_name == "validate_diagnosis":
                                 result = part.function_response.response.get("result", False)
@@ -151,10 +155,10 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Check if the last event is a final response
         if not events or not events[-1].content or not events[-1].content.parts:
             human_readable_logger.log_system_message("Agent did not produce a final response.")
-            return "Agent did not produce a final response."
+            return {'agent': agent_name, 'text':"Agent did not produce a final response."}
         
         # Extract the text from the last event's content parts
-        return '\n'.join([p.text for p in events[-1].content.parts if p.text])
+        return {'agent': agent_name, 'text':'\n'.join([p.text for p in events[-1].content.parts if p.text])}
 
 
     async def stream(self, query, session_id) -> AsyncIterable[dict[str, Any]]:
@@ -202,6 +206,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         async for event in self.runner.run_async(
             user_id=self.user_id, session_id=session.id, new_message=content
         ):
+            agent_name = "Orchestrator"    # The name of the agent that is being called  
             # Log function calls and responses
             if event.content and event.content.parts:
                 for part in event.content.parts:
@@ -219,10 +224,13 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                     if hasattr(part, 'function_response') and part.function_response:
                         function_name = part.function_response.name
                         if function_name == "diagnosis_agent_send_task":
+                            agent_name = "Diagnosis Agent"
                             human_readable_logger.log_agent_response("Diagnosis Agent", part.function_response.response)
                         elif function_name == "matching_agent_send_task":
+                            agent_name = "Matching Agent"
                             human_readable_logger.log_agent_response("Matching Agent", part.function_response.response)
                         elif function_name == "appointment_agent_send_task":
+                            agent_name = "Appointment Agent"
                             human_readable_logger.log_agent_response("Appointment Agent", part.function_response.response)
                         elif function_name == "validate_diagnosis":
                             result = part.function_response.response.get("result", False)
@@ -251,7 +259,9 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                 yield {
                     'is_task_complete': True,
                     'content': response,
+                    'agent': agent_name,
                 }
+            
             # Handle intermediate updates
             else:
                 update = ''
@@ -271,6 +281,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                 yield {
                     'is_task_complete': True,
                     'updates': update,
+                    'agent': agent_name,
                 }
 
 
@@ -303,7 +314,9 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                         break
             
             # Get the agent's response
-            final_response_text =  await self.invoke(user_message, task.sessionId)
+            final_response =  await self.invoke(user_message, task.sessionId)
+            response_text = final_response['text']
+            response_agent = final_response['agent']
 
             # Create a response message to store in the task
             response_message = Message(
@@ -311,7 +324,8 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                 parts=[
                     TextPart(
                         type="text",
-                        text=final_response_text
+                        text=response_text,
+                        metadata={ "agent": response_agent }
                     )
                 ],
                 timestamp=int(asyncio.get_running_loop().time() * 1000),

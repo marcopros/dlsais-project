@@ -13,6 +13,7 @@ class A2ACardResolver:
 
     def get_agent_card(self) -> AgentCard:
         with httpx.Client() as client:
+            print("Connecting to:", self.base_url + "/" + self.agent_card_path)
             response = client.get(self.base_url + "/" + self.agent_card_path)
             response.raise_for_status()
             try:

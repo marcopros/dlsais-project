@@ -2,10 +2,11 @@ import os
 import json
 import asyncio
 import logging
-from re import A
-from dotenv import load_dotenv
-
 import uvicorn
+
+from re import A
+from pathlib import Path
+from dotenv import load_dotenv
 
 # Import common A2A server components and types
 from A2A.server import A2AServer
@@ -22,10 +23,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Load environment variables from a .env file if present
-load_dotenv()
+# load_dotenv()
+print("PATH: ", Path(__file__).resolve().parent.parent / '.env')
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 
 # Configura OpenAI per usare direttamente OpenRouter
 openai_api_key = os.getenv("OPENAI_API_KEY")
+print(f"OpenAI API Key: {openai_api_key}")
 if openai_api_key:
     openai.api_key = openai_api_key
     openai.base_url = "https://openrouter.ai/api/v1"

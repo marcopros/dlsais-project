@@ -1,15 +1,21 @@
-from datetime import datetime
 import asyncio
 import uvicorn
 import logging
 import uuid
 
-from fastapi import FastAPI, Request
+from datetime import datetime
+from fastapi import FastAPI, Request, HTTPException, Depends, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel, EmailStr
+from typing import Dict, Any
 
+from .auth import create_access_token, decode_token
 from A2A.client import A2ACardResolver, A2AClient
+from database.utils import registerUser, loginUser, createUserSession
+
 
 app = FastAPI()
 
@@ -17,39 +23,47 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="client/static"), name="static")
 templates = Jinja2Templates(directory="client/template")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 # Configure basic logging to output logs at the INFO level
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
-# Agent config
-AGENT_URL = "http://localhost:8000/"
+AGENT_URL = "http://localhost:8000/"        # Agent url
+SESSION_ID = str(uuid.uuid4())              # Global session ID
 
-# Global session ID
-SESSION_ID = str(uuid.uuid4())
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "session_id": SESSION_ID})
 
-@app.get("/a2a", response_class=HTMLResponse)
-async def a2a_chat(request: Request):
-    return templates.TemplateResponse("a2a_chat.html", {"request": request, "session_id": SESSION_ID})
+
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
+    payload = decode_token(token)
+    
+    if payload is None:
+        raise Exception("Invalid or expired token")
+    
+    user_id = payload.get("id")
+    
+    if not user_id:
+        raise Exception("User ID missing in token")
+
+    return user_id
 
 
+# Define the format of the message to the client 
 def extract_agent_message(task_result):
     try:
-        # Verifica se ci sono artifacts con testo
+        # Try to extract from artifacts first
         artifacts = getattr(task_result.result, "artifacts", [])
         for artifact in artifacts:
             if hasattr(artifact, "text") and artifact.text:
-                return artifact.text
+                agent = getattr(artifact, "metadata", {}).get("agent", "Unknown Agent")
+                return {"text": artifact.text, "agent": agent}
 
-        # Se non ci sono artifacts validi, passa allo status.message
+        # If no artifacts, fall back to status.message.parts
         status = getattr(task_result.result, "status", None)
         if (
             status and
@@ -58,12 +72,18 @@ def extract_agent_message(task_result):
             hasattr(status.message, "parts") and
             status.message.parts
         ):
-            return status.message.parts[0].text
+            part = status.message.parts[0]
+            if hasattr(part, "text") and part.text:
+                agent = getattr(part, "metadata", {}).get("agent", "Unknown Agent")
+                return {"text": part.text, "agent": agent}
 
-        return "[NESSUN MESSAGGIO RICEVUTO]"
+        return {"text": "[NESSUN MESSAGGIO RICEVUTO]", "agent": "Unknown Agent"}
 
     except Exception as e:
-        return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
+        return {
+            "text": f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}",
+            "agent": "Unknown Agent"
+        }
 
 
 # Reuse your async ask_agent_with_a2a function here
@@ -106,11 +126,102 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         return f"[ERRORE]: {type(e).__name__} - {e}"
 
 
+
+
 @app.post("/send_message")
-async def send_message(data: dict):
-    user_text = data.get("message")
-    response = await ask_agent_with_a2a(AGENT_URL, SESSION_ID, user_text)
-    return {"response": response}
+async def send_message(
+    data: Dict[str, Any],
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        user_text = data.get("message")
+        session_id = data.get("session_id")
+
+        if not user_text:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Message is required"
+            )
+
+        # Use provided session ID or create a new one
+        if not session_id:
+            logger.info(f"No session_id provided, creating new one for user: {current_user}")
+            
+            # Call createUserSession and handle possible errors
+            session_result = createUserSession(current_user)
+            if not session_result["success"]:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to create session: {session_result['message']}"
+                )
+            session_id = session_result["session_id"]
+
+        logger.info(f"Using session_id: {session_id} for user: {current_user}")
+
+        # Get both text and agent from agent call
+        result = await ask_agent_with_a2a(AGENT_URL, session_id, user_text)
+        
+        return {
+            "response": result["text"],         # <-- From agent response
+            "agent": result["agent"],           # <-- New field
+            "session_id": session_id
+        }
+
+    except Exception as e:
+        logger.error(f"Error in /send_message: {e}", exc_info=True)
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An internal server error occurred"
+        )
+
+
+
+class User(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    phone: str
+
+@app.post("/register")
+async def register_user(user: User):
+    result = registerUser(user.name, user.email, user.password, user.phone)
+    
+    if not result["success"]:
+        message = result['message']
+        logger.error(f"400 Bad Request: {message}")
+        raise HTTPException(status_code=400, detail=message)
+    return result
+
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+@app.post("/login")
+async def login_user(user: LoginRequest):
+    result = loginUser(user.email, user.password)
+
+    if not result["success"]:
+        message = result['message']
+        logger.error(f"401 Unauthorized: {message}")
+        raise HTTPException(status_code=401, detail=message)
+
+    user_data = result['user']
+    
+    access_token = create_access_token(data={"id": user_data["id"]})
+    
+    return {
+        "user": {
+            "name": user_data["name"],
+            "email": user_data["email"],
+            "phone": user_data["phone"]
+        },
+        "access_token": access_token,
+        "token_type": "bearer",
+        "sessions": user_data.get("sessions", [])  # <-- Include sessions
+    }
 
 
 if __name__ == "__main__":
