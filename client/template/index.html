@@ -16,8 +16,11 @@
     <div id="hamburger-menu">&#9776;</div> <!-- Hamburger Icon -->
     <div id="logo">🏠 Home Repair Assistant</div> 
     <div id="header-icons">
-      <div id="profile-icon">
-        <i class="fas fa-user-circle" title="Click to login"></i>
+      <div id="profile-icon" class="profile-dropdown-container">
+        <i id="profile-icon-img" class="fas fa-user-circle" title="Profile"></i>
+        <div id="profile-dropdown" class="dropdown-content">
+          <button id="sign-out-btn">Sign Out</button>
+        </div>
       </div>
     </div>
   </div>
@@ -45,7 +48,7 @@
     <ul id="session-list"></ul>
   </div>
 
-  <script src="../static/js/script.js?v=1.0.3"></script>
+  <script src="../static/js/script.js?v=1.0.4"></script>
 
   <!-- Login Modal -->
   <div id="login-modal" class="modal" style="display: none;">
