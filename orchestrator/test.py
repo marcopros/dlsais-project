@@ -93,7 +93,7 @@ async def main():
                 print("Terminated chat.")
                 break
             
-            # Send the user’s message to the agent
+            # Send the user's message to the agent
             await ask_agent_with_a2a(url, session_id, user_input)
 
         except KeyboardInterrupt:

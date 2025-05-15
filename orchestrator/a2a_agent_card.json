@@ -12,18 +12,20 @@
     {
       "id": "orchestration",
       "name": "Task Routing & Coordination",
-      "description": "Routes user queries between DiagnosisAgent and MatchingAgent based on the nature of the request.",
-      "tags": ["orchestration", "routing", "coordination"],
+      "description": "Routes user queries between DiagnosisAgent, MatchingAgent, and AppointmentAgent based on the nature of the request.",
+      "tags": ["orchestration", "routing", "coordination", "scheduling"],
       "examples": [
         "I think my sink is leaking, but I'm not sure how bad it is.",
         "Can I fix this broken outlet myself or should I call an electrician?",
-        "Find me a plumber in Boston if it's not a DIY job."
+        "Find me a plumber in Boston if it's not a DIY job.",
+        "I'd like to schedule an appointment with the electrician you found."
       ]
     }
   ],
   "tools": [
     "validate_diagnosis",
     "diagnosis_agent_send_task",
-    "matching_agent_send_task"
+    "matching_agent_send_task",
+    "appointment_agent_send_task"
   ]
 }

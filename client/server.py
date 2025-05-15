@@ -37,6 +37,10 @@ SESSION_ID = str(uuid.uuid4())              # Global session ID
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "session_id": SESSION_ID})
 
+@app.get("/a2a", response_class=HTMLResponse)
+async def a2a_chat(request: Request):
+    return templates.TemplateResponse("a2a_chat.html", {"request": request, "session_id": SESSION_ID})
+
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
     payload = decode_token(token)

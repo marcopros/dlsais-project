@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 
 class SessionSettings(BaseModel):
@@ -15,18 +15,33 @@ class SessionSettings(BaseModel):
 
 class SessionService:
     def __init__(self):
-        self.sessions: dict[str, SessionSettings] = {}
+        self.sessions: dict[str, Dict[str, Any]] = {}
 
-    def create_session(self, session_id: str, session_data: Optional[dict] = None) -> SessionSettings:
+    def create_session(self, session_id: str, session_data: Optional[dict] = None) -> Dict[str, Any]:
         """
-        Creates a new session from a dictionary of settings. Uses defaults if no data is provided.
+        Creates a new session with default values or provided session data.
         """
-        # Create a new SessionSettings using the provided data
-        settings = SessionSettings(**(session_data or {}))
-        self.sessions[session_id] = settings
-        return settings
+        # Create default session dictionary
+        default_session = {
+            "search_for_diy_solution": False,
+            "user_location": None,
+            "user_diy_skills": None,
+            "user_diy_tools": [],
+            "home_type": None,
+            "solution_preferences": None,
+            "time_available_for_repair": None,
+            "favourite_language": "English"
+        }
+        
+        # Update with provided data if any
+        if session_data:
+            default_session.update(session_data)
+            
+        # Store in the sessions dictionary
+        self.sessions[session_id] = default_session
+        return default_session
 
-    def get_session(self, session_id: str) -> Optional[SessionSettings]:
+    def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
         return self.sessions.get(session_id)
 
     def delete_session(self, session_id: str) -> bool:

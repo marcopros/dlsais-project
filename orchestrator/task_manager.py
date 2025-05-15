@@ -30,6 +30,9 @@ from A2A.types import (
 )
 from A2A.server.task_manager import InMemoryTaskManager
 
+# Import our custom human-readable logger
+from orchestrator.logging import human_readable_logger
+
 # Setup basic logging to help debug and trace execution flow
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,7 +61,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         self.session_service = session_service
         self.app_name = app_name
         self.user_id = user_id
-        logger.info("MatchingAgentTaskManager initialized.")
+        logger.info("OrchestratorTaskManager initialized.")
     
 
     async def invoke(self, query, session_id) -> str:
@@ -72,6 +75,9 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         Returns:
             Final response from the agent as a string.
         """
+        # Log user query in human-readable format
+        human_readable_logger.log_user_message(query)
+        
         # Retrieve or create a session based on session_id
         session = self.runner.session_service.get_session(
             app_name=self.app_name,
@@ -96,6 +102,9 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             role='user', parts=[types.Part.from_text(text=query)]
         )
 
+        # Let the user know the orchestrator is processing
+        human_readable_logger.log_system_message("Processing your request...")
+
         # Run the agent synchronously with the user message and session
         events = list(
             self.runner.run(
@@ -105,8 +114,43 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             )
         )
 
+        # Extract agent responses and log them
+        response = ""
+        if events:
+            for event in events:
+                # Log function calls (agent interactions)
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if hasattr(part, 'function_call') and part.function_call:
+                            function_name = part.function_call.name
+                            if function_name == "diagnosis_agent_send_task":
+                                human_readable_logger.log_agent_call("Diagnosis Agent", part.function_call.args.get("message", ""))
+                            elif function_name == "matching_agent_send_task":
+                                human_readable_logger.log_agent_call("Matching Agent", part.function_call.args.get("message", ""))
+                            elif function_name == "appointment_agent_send_task":
+                                human_readable_logger.log_agent_call("Appointment Agent", part.function_call.args.get("message", ""))
+                        
+                        # Log function responses
+                        if hasattr(part, 'function_response') and part.function_response:
+                            function_name = part.function_response.name
+                            if function_name == "diagnosis_agent_send_task":
+                                human_readable_logger.log_agent_response("Diagnosis Agent", part.function_response.response)
+                            elif function_name == "matching_agent_send_task":
+                                human_readable_logger.log_agent_response("Matching Agent", part.function_response.response)
+                            elif function_name == "appointment_agent_send_task":
+                                human_readable_logger.log_agent_response("Appointment Agent", part.function_response.response)
+                            elif function_name == "validate_diagnosis":
+                                result = part.function_response.response.get("result", False)
+                                human_readable_logger.log_system_message(f"Diagnosis validation: {'✅ Valid' if result else '❌ Invalid'}")
+                        
+                        # Log text responses
+                        if hasattr(part, 'text') and part.text:
+                            human_readable_logger.log_system_message(part.text)
+                            response += part.text + "\n"
+
         # Check if the last event is a final response
         if not events or not events[-1].content or not events[-1].content.parts:
+            human_readable_logger.log_system_message("Agent did not produce a final response.")
             return "Agent did not produce a final response."
         
         # Extract the text from the last event's content parts
@@ -124,6 +168,9 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         Yields:
             Dictionary containing either intermediate updates or final response.
         """
+        # Log user query in human-readable format
+        human_readable_logger.log_user_message(query)
+        
         # Retrieve or create a session based on session_id
         session = self.runner.session_service.get_session(
             app_name=self.app_name,
@@ -148,10 +195,43 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             role='user', parts=[types.Part.from_text(text=query)]
         )
 
+        # Let the user know the orchestrator is processing
+        human_readable_logger.log_system_message("Processing your request...")
+
         # Run the agent asynchronously and process each event
         async for event in self.runner.run_async(
             user_id=self.user_id, session_id=session.id, new_message=content
         ):
+            # Log function calls and responses
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    # Log function calls (agent interactions)
+                    if hasattr(part, 'function_call') and part.function_call:
+                        function_name = part.function_call.name
+                        if function_name == "diagnosis_agent_send_task":
+                            human_readable_logger.log_agent_call("Diagnosis Agent", part.function_call.args.get("message", ""))
+                        elif function_name == "matching_agent_send_task":
+                            human_readable_logger.log_agent_call("Matching Agent", part.function_call.args.get("message", ""))
+                        elif function_name == "appointment_agent_send_task":
+                            human_readable_logger.log_agent_call("Appointment Agent", part.function_call.args.get("message", ""))
+                    
+                    # Log function responses
+                    if hasattr(part, 'function_response') and part.function_response:
+                        function_name = part.function_response.name
+                        if function_name == "diagnosis_agent_send_task":
+                            human_readable_logger.log_agent_response("Diagnosis Agent", part.function_response.response)
+                        elif function_name == "matching_agent_send_task":
+                            human_readable_logger.log_agent_response("Matching Agent", part.function_response.response)
+                        elif function_name == "appointment_agent_send_task":
+                            human_readable_logger.log_agent_response("Appointment Agent", part.function_response.response)
+                        elif function_name == "validate_diagnosis":
+                            result = part.function_response.response.get("result", False)
+                            human_readable_logger.log_system_message(f"Diagnosis validation: {'✅ Valid' if result else '❌ Invalid'}")
+                    
+                    # Log text responses
+                    if hasattr(part, 'text') and part.text:
+                        human_readable_logger.log_system_message(part.text)
+            
             # Handle final response
             if event.is_final_response():
                 response = ''
@@ -249,6 +329,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
 
         except Exception as e:
             logger.error(f"Error while processing task {task.id}: {e}")
+            human_readable_logger.log_system_message(f"❌ Error: {str(e)}")
 
             error_message = Message(
                 role="agent",
@@ -262,7 +343,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                 id=str(uuid.uuid4())
             )
 
-            # Aggiorna lo stato con errore
+            # Update status with error
             failed_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.FAILED, message=error_message),
@@ -324,6 +405,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                                 )
                             except json.JSONDecodeError as e:
                                 logger.error(f"Failed to decode JSON response: {e}")
+                                human_readable_logger.log_system_message(f"❌ Error decoding response: {str(e)}")
                                 data = {"error": "Invalid JSON response"}
                             task_state = TaskState.INPUT_REQUIRED
                         else:
@@ -375,6 +457,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                 )
         except Exception as e:
             logger.error(f'An error occurred while streaming the response: {e}')
+            human_readable_logger.log_system_message(f"❌ Error while streaming response: {str(e)}")
             yield  JSONRPCResponse(id=request.id, error=TaskNotFoundError())
 
     
