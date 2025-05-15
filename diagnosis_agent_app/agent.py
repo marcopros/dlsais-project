@@ -8,14 +8,7 @@ from agents import Agent, function_tool, WebSearchTool
 from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 from pydantic import BaseModel
 
-# Importa OpenAI
-import openai
 
-# Configura OpenAI per usare il proxy LiteLLM locale
-openai_api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = openai_api_key
-openai.base_url = "http://localhost:4000/v1"  # Proxy LiteLLM locale
-print(f"Using OpenAI with local LiteLLM proxy on http://localhost:4000/v1")
 
 # --- OUTPUT DEF ---
 class DiagnosisAgentOut(BaseModel):
@@ -88,7 +81,7 @@ diy_agent = Agent[SessionSettings](
         "Search the web for a solution and provide a link to a video tutorial from YouTube."
         "Follow the settings provided in the context."
     ),
-    model="gpt-3.5-turbo",  # Use standard model name, OpenRouter routing is handled by litellm
+    model="gpt-4.1",
     tools=[WebSearchTool(), search_video_tutorial],
     output_type=DiagnosisAgentOut,
 )
@@ -106,13 +99,13 @@ diagnosis_agent = Agent[SessionSettings](
         "\n"
         "If the issue is unclear, ask clarifying questions before proceeding. Once diagnosed:\n"
         "- Summarize the issue and its cause clearly\n"
-        "- Consider if a DIY solution is appropriate based on the user's skills, tools, and preferences\n"
+        "- Consider if a DIY solution is appropriate based on the user’s skills, tools, and preferences\n"
         "- If suitable, use the 'propose_diy_solution' tool to fetch a video tutorial-based DIY guide\n"
-        "\n"
+        "\n"      
         "Always respect context from the session settings such as language, location, available time, and DIY capabilities. "
         "Your output must strictly follow the DiagnosisAgentOut schema."
     ),
-    model="gpt-3.5-turbo",  # Use standard model name, OpenRouter routing is handled by litellm
+    model="gpt-4.1",
     tools=[diy_agent.as_tool(
         tool_name="propose_diy_solution",
         tool_description="Search the web for a DIY solution with a YouTube video link."

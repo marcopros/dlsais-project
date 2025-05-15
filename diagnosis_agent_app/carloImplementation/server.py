@@ -2,25 +2,41 @@ import os
 import json
 import asyncio
 import logging
-from re import A
-from dotenv import load_dotenv
-
 import uvicorn
+
+from re import A
+from pathlib import Path
+from dotenv import load_dotenv
 
 # Import common A2A server components and types
 from A2A.server import A2AServer
 from A2A.types import AgentCard, MissingAPIKeyError  # AgentCard defines metadata and capabilities of this agent
 
-# Local imports for the agent logic and task manager
-from .agent import diagnosis_agent
-from .task_manager import DiagnosisAgentTaskManager
+# Local imports for the task manager
+from ..task_manager import DiagnosisAgentTaskManager
+
+# Configure OpenAI for tracing
+import openai
 
 # Configure basic logging to output logs at the INFO level
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Load environment variables from a .env file if present
-load_dotenv()
+# load_dotenv()
+print("PATH: ", Path(__file__).resolve().parent.parent / '.env')
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
+
+# Configura OpenAI per usare direttamente OpenRouter
+openai_api_key = os.getenv("OPENAI_API_KEY")
+print(f"OpenAI API Key: {openai_api_key}")
+if openai_api_key:
+    openai.api_key = openai_api_key
+    openai.base_url = "https://openrouter.ai/api/v1"
+    logger.info("Using OpenAI with OpenRouter API directly: https://openrouter.ai/api/v1")
+
+# Read the SERPAPI_API_KEY from the environment
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
 
 # Application-wide constants
 APP_NAME = "diagnosis_agent_app"  # Logical name for this agent app
@@ -39,11 +55,8 @@ async def run_server():
     logger.info("Starting Matching Diagnosis A2A Server initialization...")
 
     try:
-        # The agent instance that will process user inputs and generate responses
-        agent = diagnosis_agent
-
         # Instantiate the custom task manager that handles A2A streaming and task execution 
-        task_manager = DiagnosisAgentTaskManager(agent)
+        task_manager = DiagnosisAgentTaskManager()  # No longer passing the agent here
 
         # Determine the port and host from environment variables
         port = int(os.getenv("PORT", "8001"))

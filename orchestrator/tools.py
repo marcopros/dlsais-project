@@ -5,6 +5,8 @@ from typing import Optional
 
 from enum import Enum
 
+from charset_normalizer import detect
+
 
 from diagnosis_agent_app.agent import DiagnosisAgentOut
 
@@ -37,6 +39,9 @@ def validate_diagnosis(diagnosi: dict) -> bool:
     missing = [key for key in required_keys if diagnosi.get(key) in (None, "")]
     
     if missing:
+        return False
+    
+    if diagnosi['detected_problem_cause'] == "Unknown":
         return False
     
     return True

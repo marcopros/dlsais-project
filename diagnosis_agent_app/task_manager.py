@@ -4,12 +4,11 @@ import uuid
 import logging
 from typing import AsyncIterable, Any
 
-# Import the direct_agent module for simple OpenAI access
-from .direct_agent import query_agent
+# Google ADK imports for agent execution and session management
+from agents import Agent, Runner, trace
 
 from .session import SessionService
-# help(Runner)                      # To see the available methods and attributes of the Runner class
-# help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
+from .agent import DiagnosisAgentOut
 
 # Import common A2A server components and types
 from A2A.types import (
@@ -55,15 +54,15 @@ def extract_agent_message(task_result):
         return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
 
 
-async def validate_diagnosis_output(output):
+async def validate_diagnosis_output(output: DiagnosisAgentOut):
     """
     Validates that required diagnosis fields are present.
     Raises ValueError if any required field is missing.
     """
     required_fields = {
-        "diagnosis": output.get("diagnosis"),
-        "detected_problem_cause": output.get("detected_problem_cause"),
-        "type_specialist": output.get("type_specialist"),
+        "diagnosis": output.diagnosis,
+        "detected_problem_cause": output.detected_problem_cause,
+        "type_specialist": output.type_specialist,
     }
 
     missing = [field for field, value in required_fields.items() if value is None]
@@ -78,29 +77,29 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
     Custom Task Manager for handling tasks related to a diagnosis agent.
     Manages sessions, invokes the agent, streams responses, and updates task status.
     """
-    def __init__(self, agent=None):
+    def __init__(self, agent: Agent):
         """
         Initialize the task manager with required dependencies.
         
         Args:
-            agent: Optional agent parameter (kept for compatibility)
+            agent: The agent that generates responses.
         """
         super().__init__()
-        self.agent = agent  # Not used anymore, kept for compatibility
+        self.agent = agent
         self.sessions = SessionService()
         logger.info("DiagnosisAgentTaskManager initialized.")
     
 
-    async def invoke(self, query, session_id) -> dict:
+    async def invoke(self, query, session_id) -> str:
         """
-        Synchronously invoke the direct agent to get a final response for a given query and session.
+        Synchronously invoke the agent to get a final response for a given query and session.
 
         Args:
             query: User input as text.
             session_id: Unique identifier for the session.
 
         Returns:
-            Final response from the agent as a dictionary.
+            Final response from the agent as a string.
         """
         logger.info(f"QUERY: {query}")
         # Retrieve or create a session based on session_id
@@ -114,14 +113,12 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Session found with ID: {session_id}") 
         
         
-        # Query the direct agent with the user message and session
-        try:
-            result = await query_agent(query, session)
-            logger.info(f"RESULT: {result}")
-            return result
-        except Exception as e:
-            logger.error(f"Error during agent invocation: {e}")
-            raise
+        # Run the agent synchronously with the user message and session
+        with trace(f"Session {session_id}"):
+            result = await Runner.run( self.agent, input=query, context=session )
+
+        logger.info(f"RESULT: {result}")
+        return result.final_output
 
 
     # TO DO
@@ -165,36 +162,37 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
                             user_message = msg.parts[0].text
                         break
             
-            # Get the agent's response (now a dictionary)
-            response_dict = await self.invoke(user_message, task.sessionId)
+            # Get the agent's response
+            final_response =  await self.invoke(user_message, task.sessionId)
             
-            # Extract the summary from the dictionary
-            summary = response_dict.get("agent_response", "No response available")
-            
+            # Assume final_response is a DiagnosisAgentOut instance
+            summary = final_response.agent_response
+            data = final_response.model_dump()
+
             part_summary = [{"type": "text", "text": summary}]
-            part_data = [{"type": "data", "data": response_dict}]
+            part_data = [{"type": "data", "data": data}]
+
 
             # Check if the response is valid, else require more input 
             try:
-                await validate_diagnosis_output(response_dict)
+                await validate_diagnosis_output(final_response)
+
             except ValueError as e:
                 logger.error(f"Invalid diagnosis output: {e}")
-                error_message = Message(
-                    role="agent",
-                    parts=[TextPart(type="text", text=f"Diagnosis incomplete: {str(e)}")],
-                )
+
                 failed_task = await self.update_store(
                     task_id=task.id,
-                    status=TaskStatus(state=TaskState.INPUT_REQUIRED, message=Message(role='agent', parts=part_summary)),
+                    status=TaskStatus(state=TaskState.INPUT_REQUIRED, message=Message(role='agent', parts=part_summary, metadata={"data": data})),
                     artifacts=[]
                 )
+
                 return SendTaskResponse(id=request.id, result=failed_task)
             
             # Update task as completed
             updated_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.COMPLETED, message=Message(role='agent', parts=part_summary)),
-                artifacts=[Artifact(parts=part_data)]
+                artifacts=[Artifact(parts=part_data, metadata={"data": data})]
             )
 
             return SendTaskResponse(id=request.id, result=updated_task)

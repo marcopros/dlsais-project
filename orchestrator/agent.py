@@ -61,19 +61,12 @@ orchestrator = Agent(
 
         ### Constraints:
         - Only use the tools provided: `validate_diagnosis`, `diagnosis_agent_send_task`, `matching_agent_send_task`, `appointment_agent_send_task`.
-        - The `sessionId` parameter for all tools must match your own `session_id`.
+        - **The `sessionId` parameter for all tools must match your own `session_id`.**
         - Never generate final answers directly; always act through the appropriate tool.
         - If an agent is unavailable, return a clear and helpful error message.
         - Maintain state and context across multiple turns to ensure smooth flow.
         - Always extract and pass professional_id from the matching agent to the appointment agent - NEVER ask the user for IDs.
 
-        ### Home Repair Problems
-        - Be responsive to common home repair issues such as:
-          - Plumbing problems (leaking faucets, broken pipes, clogged drains)
-          - Electrical issues (power outages, faulty wiring, broken outlets)
-          - Appliance failures (refrigerator, washing machine, AC units)
-          - Structural problems (roof leaks, door/window issues, flooring damage)
-        - Always route these problems to the Diagnosis Agent rather than dismissing them as outside your scope.
     """,
     tools=[
         validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task, appointment_agent_send_task
