@@ -9,7 +9,7 @@ from google.genai import types
 from google.adk.runners import Runner
 from google.adk.agents import Agent
 
-from persistent_memory.persistent_memory import MongoSessionService
+from database.persistent_memory import MongoSessionService
 
 # Import common A2A server components and types
 from A2A.types import (

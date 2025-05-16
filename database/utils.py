@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 from bson import ObjectId
 from bson.errors import InvalidId
+from datetime import datetime, timezone
+from typing import Optional, List, Dict, Any
 
 
 # Load environment variables
@@ -28,9 +30,11 @@ except pymongo_errors.ConnectionFailure as e:
     raise RuntimeError(f"Failed to connect to MongoDB: {e}") from e
 
 
-# ----------------------
-# FUNCTION: getProfessionals
-# ----------------------
+
+
+# -----------------------------------------------------------------------------------------------------------
+# PROFESSIONAL DATABASE FUNCTIONS
+# -----------------------------------------------------------------------------------------------------------
 def getProfessionals(profession: str = None, location: str = None) -> list:
     """
     Retrieve professionals from the database, optionally filtering by profession and/or location.
@@ -65,9 +69,6 @@ def getProfessionals(profession: str = None, location: str = None) -> list:
     return professionals
 
 
-# ----------------------
-# FUNCTION: getCities
-# ----------------------
 def getCities(profession: str = None) -> list:
     """
     Retrieve a list of unique cities where professionals are available,
@@ -89,9 +90,11 @@ def getCities(profession: str = None) -> list:
     return cities
 
 
-# ----------------------
-# FUNCTION: registerUser
-# ----------------------
+
+
+# ---------------------------------------------------------------------------------------------------------
+# USER DATABASE FUNCTIONS
+# ---------------------------------------------------------------------------------------------------------
 def registerUser(name: str, email: str, password: str, phone: str) -> dict:
     """
     Register a new user in the database.
@@ -126,9 +129,6 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
         return {"success": False, "message": f"Unexpected error: {e}"}
 
 
-# ----------------------
-# FUNCTION: loginUser
-# ----------------------
 def loginUser(email: str, password: str) -> dict:
     """
     Authenticate a user by email and password.
@@ -188,7 +188,127 @@ def createUserSession(user_id: str) -> dict:
 
         return {"success": True, "session_id": session_id}
     
-    except errors.PyMongoError as e:
+    except pymongo_errors.PyMongoError as e:
         return {"success": False, "message": f"Database error: {e}"}
     except Exception as e:
         return {"success": False, "message": f"Unexpected error: {e}"}
+    
+
+
+
+# ---------------------------------------------------------------------------------------------------------
+# SESSIONS DATABASE FUNCTIONS
+# ---------------------------------------------------------------------------------------------------------
+def get_mongo_collection(collection_name: str = "sessions") -> MongoClient:
+    db = client[DB_NAME]
+    collection = db[collection_name]
+
+    # Ensure index on _id for fast access
+    collection.create_index([("_id", 1)], name="session_id_index")
+
+    return collection
+
+
+def create_session_in_db(
+    session_id: str,
+    app_name: str,
+    user_id: str,
+    state: dict,
+) -> dict:
+    collection = get_mongo_collection("sessions")
+    now = datetime.now(timezone.utc).timestamp()
+
+    session_data = {
+        "_id": session_id,
+        "app_name": app_name,
+        "user_id": user_id,
+        "state": state,
+        "events": [],
+        "created_at": now,
+        "updated_at": now
+    }
+
+    collection.insert_one(session_data)
+    return session_data
+
+
+def get_session_from_db(
+    session_id: str,
+    app_name: str,
+    user_id: str,
+    num_recent_events: Optional[int] = None,
+) -> Optional[dict]:
+    collection = get_mongo_collection("sessions")
+    doc = collection.find_one({"_id": session_id})
+    if not doc or doc["app_name"] != app_name or doc["user_id"] != user_id:
+        return None
+
+    if num_recent_events:
+        doc["events"] = doc.get("events", [])[-num_recent_events:]
+
+    return doc
+
+
+def list_sessions_for_user(app_name: str, user_id: str) -> List[dict]:
+    collection = get_mongo_collection("sessions")
+    docs = collection.find({
+        "app_name": app_name,
+        "user_id": user_id
+    })
+    return list(docs)
+
+
+def delete_session_from_db(session_id: str, app_name: str, user_id: str):
+    collection = get_mongo_collection("sessions")
+    collection.delete_one({
+        "_id": session_id,
+        "app_name": app_name,
+        "user_id": user_id
+    })
+
+
+def list_events_from_db(session_id: str, app_name: str, user_id: str) -> List[Dict[str, Any]]:
+    collection = get_mongo_collection("sessions")
+    doc = collection.find_one({
+        "_id": session_id,
+        "app_name": app_name,
+        "user_id": user_id
+    })
+
+    return doc.get("events", []) if doc else []
+
+
+def append_event_to_db(session_id: str, event: dict, updated_state: dict):
+    collection = get_mongo_collection("sessions")
+    sanitized_event = sanitize_mongo_input(event)
+
+    collection.update_one(
+        {"_id": session_id},
+        {
+            "$push": {"events": sanitized_event},
+            "$set": {
+                "state": updated_state,
+                "updated_at": datetime.now(timezone.utc).timestamp()
+            }
+        }
+    )
+
+
+def sanitize_mongo_input(data):
+    """
+    Recursively converts unsupported types to MongoDB-compatible ones.
+    - Converts sets to lists
+    - Removes None values from dicts (optional)
+    """
+    if isinstance(data, dict):
+        return {
+            key: sanitize_mongo_input(value)
+            for key, value in data.items()
+            if value is not None
+        }
+    elif isinstance(data, list):
+        return [sanitize_mongo_input(item) for item in data]
+    elif isinstance(data, set):
+        return [sanitize_mongo_input(item) for item in data]
+    else:
+        return data

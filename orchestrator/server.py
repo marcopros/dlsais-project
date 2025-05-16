@@ -17,7 +17,7 @@ from A2A.types import AgentCard, MissingAPIKeyError
 # Local imports for the agent logic and task manager
 from .agent import orchestrator
 from .task_manager import OrchestratorTaskManager
-from persistent_memory.persistent_memory import MongoSessionService
+from database.persistent_memory import MongoSessionService
 
 # Configure basic logging to output logs at the INFO level
 logging.basicConfig(level=logging.INFO)
@@ -42,7 +42,7 @@ async def run_server():
     logger.info("Starting Orchestrator Agent A2A Server initialization...")
 
     try:
-        # Initialize session service to store and manage user conversation states
+        # Initialize session service to store sand manage user conversation states
         session_service = MongoSessionService()
 
         # The agent instance that will process user inputs and generate responses

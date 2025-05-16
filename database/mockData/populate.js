@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const User = require('./models/User');
-const Professional = require('./models/Professional');
-const Request = require('./models/Request');
+const User = require('../models/User');
+const Professional = require('../models/Professional');
+const Request = require('../models/Request');
 
 require('dotenv').config({ path: '.env' });
 
