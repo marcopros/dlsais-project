@@ -6,17 +6,21 @@ from A2A.client import A2ACardResolver, A2AClient
 from google.adk.sessions import Session
 
 # for persistent memory management
-from persistent_memory import MongoMemoryService
+from persistent_memory.old_implementation.persistent_memory import MongoMemoryService
 
 memory_service = MongoMemoryService()
 
 
-async def ask_agent_with_a2a(agent_url: str, session_id: str, username: str, user_text: str):
+async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
+    """
+    Sends a message to the agent via A2A protocol, stores conversation in MongoDB using session_id.
+    """
+
     try:
-        # Recupera memoria utente usando l'username invece dell'ID sessione
-        memory = memory_service.search_memory(username=username, app_name="dlsais-app")
+        # Recupera memoria usando il session_id invece dell'username
+        memory = memory_service.search_memory(session_id=session_id)
         if memory:
-            print("\n--- [MEMORIA UTENTE] ---")
+            print("\n--- [MEMORIA SESSIONE] ---")
             for e in memory:
                 print(f"{e['author']}: {e['text']}")
             print("--- FINE MEMORIA ---\n")
@@ -56,13 +60,11 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, username: str, use
             full_response = taskResult.result.status.message.parts[0].text
             print(f'[AGENT]: {full_response}')
 
-        # Salva la sessione su MongoDB
-        now = datetime.now().timestamp()
-        
         # Creazione dell'oggetto Session
+        now = datetime.now().timestamp()
         session = Session(
             id=session_id,
-            user_id=session_id,  # Manteniamo l'ID sessione come user_id per compatibilità
+            user_id="unknown",  # Potrebbe essere opzionale o ricavato da payload futuri
             app_name="dlsais-app",
             events=[
                 {
@@ -76,30 +78,23 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, username: str, use
                     "timestamp": now
                 }
             ],
-            state={}
+            state={}  # Stato della sessione vuoto per ora
         )
-        
-        # Passare sia la sessione che l'username
-        memory_service.add_session_to_memory(session, username)
+
+        # Salva la sessione su MongoDB usando solo session_id
+        memory_service.add_session_to_memory(session, session_id)
+
     except Exception as e:
         print(f"[ERRORE]: {type(e).__name__} - {e}")
 
 
 async def main():
     url = "http://localhost:8000/"
-    session_id = str(uuid.uuid4())
-    
+    session_id = str(uuid.uuid4())  # Generiamo un ID unico per questa sessione
+
     print("Chat Client A2A with Memory Started")
     print(f"\tSession ID: {session_id}")
     print(f"\tConnected to: {url}")
-    
-    # Richiedi username all'avvio
-    username = input("Inserisci il tuo username: ").strip()
-    while not username:
-        print("Username non valido. Riprova.")
-        username = input("Inserisci il tuo username: ").strip()
-        
-    print(f"\tUsername: {username}")
     print("Type 'quit' or ':q' to exit.")
 
     while True:
@@ -108,7 +103,7 @@ async def main():
             if user_input.strip().lower() in ("quit", ":q"):
                 print("Terminated chat.")
                 break
-            await ask_agent_with_a2a(url, session_id, username, user_input)
+            await ask_agent_with_a2a(url, session_id, user_input)
         except KeyboardInterrupt:
             print("\nInterrupted by user.")
             break

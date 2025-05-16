@@ -6,7 +6,7 @@ import uuid
 from A2A.client import A2ACardResolver, A2AClient
 
 # for persistent memory management
-from persistent_memory import MongoMemoryService
+from persistent_memory.old_implementation.persistent_memory import MongoMemoryService
 
 memory_service = MongoMemoryService()
 

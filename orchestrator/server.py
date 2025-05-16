@@ -8,7 +8,7 @@ import uvicorn
 
 # Import core components from Google ADK for running agents and managing sessions
 from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
+# from google.adk.sessions.in_memory_session_service import InMemorySessionService
 
 # Import common A2A server components and types
 from A2A.server import A2AServer
@@ -17,6 +17,7 @@ from A2A.types import AgentCard, MissingAPIKeyError
 # Local imports for the agent logic and task manager
 from .agent import orchestrator
 from .task_manager import OrchestratorTaskManager
+from persistent_memory.persistent_memory import MongoSessionService
 
 # Configure basic logging to output logs at the INFO level
 logging.basicConfig(level=logging.INFO)
@@ -42,7 +43,7 @@ async def run_server():
 
     try:
         # Initialize session service to store and manage user conversation states
-        session_service = InMemorySessionService()
+        session_service = MongoSessionService()
 
         # The agent instance that will process user inputs and generate responses
         agent = orchestrator

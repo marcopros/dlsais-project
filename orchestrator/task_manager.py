@@ -8,9 +8,8 @@ from typing import AsyncIterable, Any
 from google.genai import types
 from google.adk.runners import Runner
 from google.adk.agents import Agent
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-# help(Runner)                      # To see the available methods and attributes of the Runner class
-# help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
+
+from persistent_memory.persistent_memory import MongoSessionService
 
 # Import common A2A server components and types
 from A2A.types import (
@@ -45,7 +44,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
     Custom Task Manager for handling tasks related to the orchestrator.
     Manages sessions, invokes the agent, streams responses, and updates task status.
     """
-    def __init__(self, agent: Agent, runner: Runner, session_service: InMemorySessionService, app_name: str, user_id: str):
+    def __init__(self, agent: Agent, runner: Runner, session_service: MongoSessionService, app_name: str, user_id: str):
         """
         Initialize the task manager with required dependencies.
         
