@@ -186,7 +186,10 @@ async def appointment_agent_send_task(message: str, sessionId: str, user_id: str
         enhanced_message = message
         if professional_id:
             enhanced_message = f"user_id:{user_id} professional_id:{professional_id} {message}"
+            logger.info(f"Enhanced message with IDs: user_id:{user_id} professional_id:{professional_id}")
         else:
+            # Log a warning that professional_id is missing, which is expected in the workflow
+            logger.warning(f"Missing professional_id when calling appointment agent. This may cause issues in appointment scheduling.")
             enhanced_message = f"user_id:{user_id} {message}"
 
         # Prepare the task payload to be sent to the agent

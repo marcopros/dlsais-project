@@ -1,6 +1,8 @@
 import os
 import uuid
+import logging
 import bcrypt
+import time
 
 from pymongo import MongoClient, errors as pymongo_errors
 from dotenv import load_dotenv
@@ -9,23 +11,86 @@ from bson import ObjectId
 from bson.errors import InvalidId
 
 
+# Configurazione logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Load environment variables
-load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
-# MongoDB connection setup
-# MONGO_URI = os.getenv("MONGODB_URI")      # NON MI VA BOH (matteo)
+# MongoDB connection setup with retry logic
+def get_mongodb_connection(max_retries=3, retry_delay=2):
+    """
+    Establish a connection to MongoDB with retry logic.
+    
+    Args:
+        max_retries: Maximum number of connection attempts
+        retry_delay: Delay between retry attempts in seconds
+        
+    Returns:
+        tuple: (client, db) MongoDB client and database objects
+        
+    Raises:
+        Exception: If connection fails after all retries
+    """
+    retry_count = 0
+    last_error = None
+    
+    while retry_count < max_retries:
+        try:
+            # Try to get URI from environment variables in different formats
+            MONGO_URI = os.getenv("MONGODB_URI")
+            
+            # If not available, try to construct it from components
+            if not MONGO_URI:
+                MONGO_USERNAME = os.getenv("MONGODB_USERNAME")
+                MONGO_PASSWORD = os.getenv("MONGODB_PASSWORD")
+                MONGO_HOST = os.getenv("MONGODB_HOST")
+                
+                if all([MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST]):
+                    MONGO_URI = f'mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}/?retryWrites=true&w=majority'
+                else:
+                    # Fallback to hardcoded URI if necessary (for backward compatibility)
+                    logger.warning("Variabili d'ambiente MongoDB non trovate. Utilizzo configurazione di fallback.")
+                    MONGO_PASSWORD = os.getenv("MONGODB_PASSWORD", "unitn2025")
+                    MONGO_URI = f'mongodb+srv://marco:{MONGO_PASSWORD}@dlsais-cluster.vkxu2tc.mongodb.net/?retryWrites=true&w=majority&appName=dlsais-cluster'
+            
+            DB_NAME = os.getenv("MONGODB_DB_NAME", "test")
+            
+            # Connection with timeout to avoid blocking
+            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+            client.admin.command('ping')  # Test connection
+            db = client[DB_NAME]
+            
+            logger.info(f"Connessione MongoDB stabilita con successo al database: {DB_NAME}")
+            return client, db
+            
+        except pymongo_errors.ServerSelectionTimeoutError as e:
+            retry_count += 1
+            last_error = e
+            logger.warning(f"Tentativo {retry_count}/{max_retries} fallito: {e}")
+            if retry_count < max_retries:
+                time.sleep(retry_delay)
+                
+        except (pymongo_errors.ConnectionFailure, pymongo_errors.OperationFailure) as e:
+            last_error = e
+            logger.error(f"Errore di connessione MongoDB: {e}")
+            break
+    
+    # If we've exhausted retries or hit a fatal error
+    error_message = f"Impossibile connettersi a MongoDB dopo {retry_count} tentativi: {last_error}"
+    logger.error(error_message)
+    raise Exception(error_message)
 
-# Soluzione alternativa caricare dall'env solo la password ( quindi devi meterla in .env globale)
-MONGO_PASSWORD = os.getenv("MONGODB_PASSWORD")
-MONGO_URI = f'mongodb+srv://marco:{MONGO_PASSWORD}@dlsais-cluster.vkxu2tc.mongodb.net/?retryWrites=true&w=majority&appName=dlsais-cluster'
-DB_NAME = "test"
-
+# Try to establish the connection
 try:
-    client = MongoClient(MONGO_URI)
-    client.admin.command('ping')  # Test connection
-    db = client[DB_NAME]
-except pymongo_errors.ConnectionFailure as e:
-    raise RuntimeError(f"Failed to connect to MongoDB: {e}") from e
+    mongo_client, db = get_mongodb_connection()
+except Exception as e:
+    logger.error(f"Errore fatale nella connessione al database: {e}")
+    # Don't raise the exception here to allow the module to be imported 
+    # Set db to None, individual functions will handle this case
+    db = None
 
 
 # ----------------------
@@ -43,26 +108,37 @@ def getProfessionals(profession: str = None, location: str = None) -> list:
         list: A list of professionals matching the criteria.
         
     """
-    collection = db["professionals"]
-    query = {}
+    try:
+        # Verify db connection is available
+        if db is None:
+            logger.error("Database connection not available in getProfessionals")
+            return []
+            
+        collection = db["professionals"]
+        query = {}
 
-    # Add profession filter if provided
-    if profession:
-        query["profession"] = {"$regex": f"^{profession}$", "$options": "i"}
+        # Add profession filter if provided
+        if profession:
+            query["profession"] = {"$regex": f"^{profession}$", "$options": "i"}
 
-    # Add location filter if provided
-    if location:
-        query["location"] = {"$regex": f".*{location}.*", "$options": "i"}
+        # Add location filter if provided
+        if location:
+            query["location"] = {"$regex": f".*{location}.*", "$options": "i"}
 
-    # Execute the query
-    response = collection.find(query)
-    professionals = []
+        # Execute the query
+        response = collection.find(query)
+        professionals = []
 
-    for doc in response:
-        doc["_id"] = str(doc["_id"])  # Convert ObjectId to string
-        professionals.append(doc)
+        for doc in response:
+            doc["_id"] = str(doc["_id"])  # Convert ObjectId to string
+            professionals.append(doc)
 
-    return professionals
+        logger.debug(f"Trovati {len(professionals)} professionisti - Professione: {profession}, Località: {location}")
+        return professionals
+        
+    except Exception as e:
+        logger.error(f"Errore nel recupero dei professionisti: {e}")
+        return []
 
 
 # ----------------------
@@ -79,14 +155,25 @@ def getCities(profession: str = None) -> list:
     Returns:
         list: A list of unique city names.
     """
-    collection = db["professionals"]
-    query = {}
+    try:
+        # Verify db connection is available
+        if db is None:
+            logger.error("Database connection not available in getCities")
+            return []
+            
+        collection = db["professionals"]
+        query = {}
 
-    if profession:
-        query["profession"] = {"$regex": f"^{profession}$", "$options": "i"}
+        if profession:
+            query["profession"] = {"$regex": f"^{profession}$", "$options": "i"}
 
-    cities = collection.distinct("location", query)
-    return cities
+        cities = collection.distinct("location", query)
+        logger.debug(f"Trovate {len(cities)} città per la professione: {profession}")
+        return cities
+        
+    except Exception as e:
+        logger.error(f"Errore nel recupero delle città: {e}")
+        return []
 
 
 # ----------------------
@@ -100,6 +187,11 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
         dict: Result of the registration (success/failure + message).
     """
     try:
+        # Verify db connection is available
+        if db is None:
+            logger.error("Database connection not available in registerUser")
+            return {"success": False, "message": "Database connection error"}
+            
         collection = db["users"]
 
         if collection.find_one({"email": email}):
@@ -111,7 +203,8 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
             "name": name,
             "email": email,
             "password": hashed_pw,
-            "phone": phone
+            "phone": phone,
+            "sessions": []  # Initialize with empty sessions array
         }
 
         result = collection.insert_one(user_data)
@@ -121,8 +214,10 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
             "user_id": str(result.inserted_id)
         }
     except pymongo_errors.PyMongoError as e:
+        logger.error(f"Errore database durante la registrazione utente: {e}")
         return {"success": False, "message": f"Database error: {e}"}
     except Exception as e:
+        logger.error(f"Errore imprevisto durante la registrazione utente: {e}")
         return {"success": False, "message": f"Unexpected error: {e}"}
 
 
@@ -137,11 +232,21 @@ def loginUser(email: str, password: str) -> dict:
         dict: Result of the login (success/failure, message, and optionally user data).
     """
     try:
+        # Verify db connection is available
+        if db is None:
+            logger.error("Database connection not available in loginUser")
+            return {"success": False, "message": "Database connection error"}
+            
         collection = db["users"]
         user = collection.find_one({"email": email})
 
         if not user:
             return {"success": False, "message": "Invalid email or password"}
+
+        # Ensure user has a sessions array
+        if "sessions" not in user:
+            collection.update_one({"_id": user["_id"]}, {"$set": {"sessions": []}})
+            user["sessions"] = []
 
         if bcrypt.checkpw(password.encode('utf-8'), user["password"].encode('utf-8')):
             user_data = {
@@ -149,14 +254,16 @@ def loginUser(email: str, password: str) -> dict:
                 "name": user["name"],
                 "email": user["email"],
                 "phone": user["phone"],
-                "sessions": user["sessions"]
+                "sessions": user.get("sessions", [])
             }
             return {"success": True, "message": "Login successful", "user": user_data}
         else:
             return {"success": False, "message": "Invalid email or password"}
     except pymongo_errors.PyMongoError as e:
+        logger.error(f"Errore database durante il login: {e}")
         return {"success": False, "message": f"Database error: {e}"}
     except Exception as e:
+        logger.error(f"Errore imprevisto durante il login: {e}")
         return {"success": False, "message": f"Unexpected error: {e}"}
 
 
@@ -171,8 +278,14 @@ def createUserSession(user_id: str) -> dict:
         dict: Includes success status, session ID, and optional message.
     """
     try:
+        # Verify db connection is available
+        if db is None:
+            logger.error("Database connection not available in createUserSession")
+            return {"success": False, "message": "Database connection error"}
+            
         # Validate user_id as a MongoDB ObjectId
         if not ObjectId.is_valid(user_id):
+            logger.error(f"ID utente non valido: {user_id}")
             return {"success": False, "message": "Invalid user ID format"}
 
         collection = db["users"]
@@ -184,11 +297,14 @@ def createUserSession(user_id: str) -> dict:
         )
 
         if result.matched_count == 0:
+            logger.error(f"Utente non trovato con ID: {user_id}")
             return {"success": False, "message": "User not found"}
 
         return {"success": True, "session_id": session_id}
     
-    except errors.PyMongoError as e:
+    except pymongo_errors.PyMongoError as e:
+        logger.error(f"Errore database durante la creazione della sessione: {e}")
         return {"success": False, "message": f"Database error: {e}"}
     except Exception as e:
+        logger.error(f"Errore imprevisto durante la creazione della sessione: {e}")
         return {"success": False, "message": f"Unexpected error: {e}"}

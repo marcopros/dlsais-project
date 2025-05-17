@@ -44,6 +44,16 @@ appointment_agent = LlmAgent(
            - You can use natural language dates like "tomorrow" or "next Monday" in the datetime field
            - Include the issue description in the appointment details
 
+        6. After the appointment is successfully scheduled:
+           - Provide the user with a confirmation summary including:
+             - The date and time of the appointment
+             - The professional's name and contact details if available
+             - The issue to be addressed
+             - The appointment ID for reference
+           - IMPORTANT: End your response with a confirmation line in this format:
+             "APPOINTMENT_CONFIRMED: <appointment_id> USER: <user_id> PROFESSIONAL: <professional_id>"
+           - This format is crucial for the orchestrator to process the appointment correctly
+
         **Important Notes:**
         - ALWAYS extract and use the user_id and professional_id from the message - never ask the user for these
         - Message format: "user_id:XXXX professional_id:YYYY [actual message]" 
@@ -52,6 +62,7 @@ appointment_agent = LlmAgent(
         - If the date is ambiguous, suggest a specific time and ask for confirmation
         - Always confirm all details with the user before finalizing the appointment
         - After booking, always provide a summary of the scheduled appointment
+        - Always include the structured confirmation line at the end of successful bookings
 
         **Tone:**
         - Friendly and professional.

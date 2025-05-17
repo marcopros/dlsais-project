@@ -46,8 +46,13 @@ orchestrator = Agent(
             - Diagnosis
             - Type of specialist (plumber, electrician, carpenter, etc.)
             - City
+        - When `matching_agent_send_task` returns, look carefully for:
+            - The professional data, especially the professional_id
+            - This data may be in the artifacts or in a data structure in the response
+            - Look for a line like "SELECTED_PROFESSIONAL: <professional_id> USER: <user_id>"
         - Return the matching results to the user.
-        - IMPORTANT: Store the professional_id from the matching response for use in the Appointment Phase
+        - CRITICAL: ALWAYS store the professional_id from the matching response for use in the Appointment Phase
+        - If you don't find the professional_id, tell the user there was an issue and ask them to select a professional again
 
         4. **Appointment Phase**
         - After a professional has been matched, if the user wants to schedule an appointment:
@@ -56,7 +61,9 @@ orchestrator = Agent(
                 - User's ID (default is "user_123456")
                 - User's availability preferences
                 - Any special requirements
-        - IMPORTANT: When calling the appointment agent, always pass the user_id and professional_id parameters to ensure the appointment agent has this information
+        - IMPORTANT: When calling the appointment agent, ALWAYS pass the user_id and professional_id parameters to ensure the appointment agent has this information
+        - The appointment agent will return a confirmation with appointment details
+        - Look for a line like "APPOINTMENT_CONFIRMED: <appointment_id> USER: <user_id> PROFESSIONAL: <professional_id>"
         - Return the confirmed appointment details to the user.
 
         ### Constraints:
@@ -66,6 +73,7 @@ orchestrator = Agent(
         - If an agent is unavailable, return a clear and helpful error message.
         - Maintain state and context across multiple turns to ensure smooth flow.
         - Always extract and pass professional_id from the matching agent to the appointment agent - NEVER ask the user for IDs.
+        - Be persistent in extracting the required IDs from agent responses - search responses thoroughly
 
     """,
     tools=[

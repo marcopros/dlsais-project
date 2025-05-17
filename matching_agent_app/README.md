@@ -1,4 +1,5 @@
 # 🧩 **Matching Agent**
+
 The Matching Agent is a smart assistant designed to connect users with the best professionals based on their specific needs. Whether you need an electrician, plumber, or other professionals, the agent helps find the most qualified individuals to address your issue, ensuring they are located in your area or nearby cities.
 
 <br>
@@ -13,7 +14,9 @@ The Matching Agent is a smart assistant designed to connect users with the best 
 <br>
 
 ## Tools
+
 The Matching Agent uses the following tools to provide its service:
+
 <ol>
 <li><b><em>find_professionals()</em></b>: Finds available professionals based on the profession, issue, and location.</li>
 
@@ -24,20 +27,19 @@ The Matching Agent uses the following tools to provide its service:
 <br>
 <br>
 
-
 ## A2A Protocol
+
 This agent is implemented using the A2A Protocol; more precicsly the directory contain:
 matching_agent_app
-|-__init__.py
+|-**init**.py
 |-agent.py
 
-
-
 ## Workflow Overview
+
 <ol>
 <li><b>User Input Analysis</b>
 The agent begins by extracting key information from the user's request. This includes:
-<ul> 
+<ul>
 
 <li><b>Profession</b>: The type of professional the user is looking for (e.g., electrician, plumber).
 

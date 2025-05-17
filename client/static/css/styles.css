@@ -48,33 +48,41 @@ body {
 
 /* Agent Backgrounds */
 .diagnosis-agent {
-    background-color: #63CAE3;
+    background-color: #5436da;
     color: white;
 }
 
 .matching-agent {
-    background-color: #91EC36;
+    background-color: #1a7f64;
     color: white;
 }
 
 .appointment-agent {
-    background-color: #91EC36;
+    background-color: #2563eb;
     color: black;
 }
 
 .feedback-agent {
-    background-color: #A663CC;
+    background-color: #ef4146;
     color: white;
 }
 
 .orchestrator {
-    background-color: lightgrey;
+    background-color: #10a37f;
     color: white;
 }
 
-.error{
-    background-color: red;
+.system {
+    background-color: #777;
+}
+
+.error {
+    background-color: #ff4444;
     color: white;
+}
+
+.agent {
+    background-color: #555;
 }
 
 /* ############################## Header Bar ##############################*/
@@ -265,6 +273,9 @@ body {
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     text-align: left;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8em;
 }
 
 /* Dont waiting animation */

@@ -25,6 +25,44 @@ def find_professionals(profession: str, location: str) -> dict:
     matching = getProfessionals(profession, location)
 
     if not matching:
+        # LOGICA DI FALLBACK 1: Se non troviamo il professionista specifico, cerchiamo qualsiasi professionista nella stessa città
+        any_professionals = getProfessionals(None, location)
+        
+        if any_professionals:
+            # Abbiamo trovato altri professionisti nella stessa città
+            professions_available = set(p["profession"] for p in any_professionals)
+            return {
+                "status": "alternate_found",
+                "professionals": any_professionals,
+                "alternate_professions": list(professions_available),
+                "message": f"Non ho trovato professionisti di tipo '{profession}' a {location}, ma ho trovato professionisti di tipo: {', '.join(professions_available)}."
+            }
+        
+        # LOGICA DI FALLBACK 2: Se non troviamo nessun professionista nella città, cerchiamo città con il professionista richiesto
+        cities_with_profession = getCities(profession)
+        
+        if cities_with_profession:
+            return {
+                "status": "cities_found",
+                "professionals": [],
+                "cities": cities_with_profession,
+                "message": f"Non ho trovato '{profession}' a {location}. Ho trovato '{profession}' nelle seguenti città: {', '.join(cities_with_profession)}."
+            }
+        
+        # LOGICA DI FALLBACK 3: Se non troviamo il professionista in nessuna città, elenchiamo tutte le città con qualsiasi professionista
+        all_cities = getCities(None)
+        all_professions = set(p["profession"] for p in getProfessionals())
+        
+        if all_cities:
+            return {
+                "status": "all_options",
+                "professionals": [],
+                "cities": all_cities,
+                "professions": list(all_professions),
+                "message": f"Non ho trovato '{profession}' in nessuna città. Ecco le città disponibili: {', '.join(all_cities)} e le professioni disponibili: {', '.join(all_professions)}."
+            }
+            
+        # Nessun risultato trovato in nessun modo
         return {
             "status": "error",
             "professionals": [],

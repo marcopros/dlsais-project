@@ -71,11 +71,31 @@ function appendMessage(role, text) {
         const agentHeader = document.createElement("div");
         agentHeader.classList.add("agent-header");
 
-        // Sanitize agent name for class usage
-        const safeRole = role.replace(/\s+/g, "-").toLowerCase(); // e.g., "diagnosis-agent"
-        agentHeader.classList.add(safeRole); // now it's a single token
-
-        agentHeader.textContent = role; // display full name
+        // Convert agent name to lowercase with hyphens for CSS class naming convention
+        const safeRole = (typeof role === 'string') 
+            ? role.replace(/\s+/g, "-").toLowerCase() 
+            : "unknown-agent";
+            
+        // Add the appropriate class based on the agent type
+        if (safeRole.includes("diagnosis")) {
+            agentHeader.classList.add("diagnosis-agent");
+        } else if (safeRole.includes("matching")) {
+            agentHeader.classList.add("matching-agent");
+        } else if (safeRole.includes("appointment")) {
+            agentHeader.classList.add("appointment-agent");
+        } else if (safeRole.includes("feedback")) {
+            agentHeader.classList.add("feedback-agent");
+        } else if (safeRole.includes("orchestrator")) {
+            agentHeader.classList.add("orchestrator");
+        } else if (safeRole.includes("system")) {
+            agentHeader.classList.add("system");
+        } else if (safeRole.includes("error")) {
+            agentHeader.classList.add("error");
+        } else {
+            agentHeader.classList.add("agent");
+        }
+        
+        agentHeader.textContent = role || "Agent"; // Display the actual agent name
         bubbleContainer.appendChild(agentHeader);
     }
 
@@ -166,6 +186,27 @@ chatForm.addEventListener("submit", async (e) => {
         typingEl.remove();
         console.error("Errore to obtain an answer:", err);
         appendMessage("ERROR", "[Error: Timeout or connection error]");
+    }
+});
+
+// Display a welcome message when the page loads
+// Using a variable to track if welcome message has been displayed
+let welcomeMessageDisplayed = false;
+
+window.addEventListener('DOMContentLoaded', async () => {
+    // Only display welcome message if it hasn't been displayed yet
+    if (!welcomeMessageDisplayed) {
+        welcomeMessageDisplayed = true;
+        
+        // Wait a short time to ensure everything is loaded
+        setTimeout(() => {
+            if (!chatStart) {
+                startChat().then(() => {
+                    // After chat is initialized, add welcome message
+                    appendMessage("Orchestrator", "Hello! I'm your home repair assistant. What problem are you experiencing with your home today?");
+                });
+            }
+        }, 500);
     }
 });
 

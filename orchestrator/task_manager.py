@@ -2,6 +2,7 @@ import asyncio
 import json
 import uuid
 import logging
+import re
 from typing import AsyncIterable, Any
 
 # Google ADK imports for agent execution and session management
@@ -64,6 +65,47 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         self.user_id = user_id
         logger.info("OrchestratorTaskManager initialized.")
     
+    def extract_professional_id(self, text: str) -> str:
+        """
+        Extract professional ID from Matching Agent response.
+        
+        Args:
+            text: The response text from Matching Agent.
+            
+        Returns:
+            The professional ID if found, empty string otherwise.
+        """
+        pattern = r"SELECTED_PROFESSIONAL:\s*(\S+)\s*USER:\s*(\S+)"
+        match = re.search(pattern, text)
+        if match:
+            prof_id = match.group(1)
+            logger.info(f"Extracted professional ID: {prof_id}")
+            human_readable_logger.log_system_message(f"Found professional ID: {prof_id}")
+            return prof_id
+        return ""
+    
+    def extract_appointment_info(self, text: str) -> dict:
+        """
+        Extract appointment information from Appointment Agent response.
+        
+        Args:
+            text: The response text from Appointment Agent.
+            
+        Returns:
+            Dictionary with appointment details if found, empty dict otherwise.
+        """
+        pattern = r"APPOINTMENT_CONFIRMED:\s*(\S+)\s*USER:\s*(\S+)\s*PROFESSIONAL:\s*(\S+)"
+        match = re.search(pattern, text)
+        if match:
+            info = {
+                "appointment_id": match.group(1),
+                "user_id": match.group(2),
+                "professional_id": match.group(3)
+            }
+            logger.info(f"Extracted appointment info: {info}")
+            human_readable_logger.log_system_message(f"Appointment confirmed: {info['appointment_id']}")
+            return info
+        return {}
 
     async def invoke(self, query, session_id) -> str:
         """
@@ -117,6 +159,11 @@ class OrchestratorTaskManager(InMemoryTaskManager):
 
         response = ""                    # Extract agent responses and log them
         agent_name = "Orchestrator"     # The name of the agent that is being called
+        
+        # Variables to store extracted IDs and info
+        professional_id = ""
+        appointment_info = {}
+        
         if events:
             for event in events:
                 # Log function calls (agent interactions)
@@ -140,9 +187,45 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                             elif function_name == "matching_agent_send_task":
                                 agent_name = "Matching Agent"
                                 human_readable_logger.log_agent_response("Matching Agent", part.function_response.response)
+                                
+                                # Extract professional ID from matching agent response
+                                if isinstance(part.function_response.response, dict) and "status" in part.function_response.response:
+                                    response_text = part.function_response.response.get("result", {}).get("status", {}).get("message", {}).get("text", "")
+                                    professional_id = self.extract_professional_id(response_text)
+                                    
+                                    # Check for artifacts that might contain the professional ID
+                                    artifacts = part.function_response.response.get("result", {}).get("artifacts", [])
+                                    for artifact in artifacts:
+                                        if "parts" in artifact:
+                                            for artifact_part in artifact["parts"]:
+                                                if artifact_part.get("type") == "data" and "data" in artifact_part:
+                                                    data = artifact_part["data"]
+                                                    if "professional_id" in data:
+                                                        professional_id = data["professional_id"]
+                                                        logger.info(f"Found professional_id in artifacts: {professional_id}")
+                                                        human_readable_logger.log_system_message(f"Found professional ID in data: {professional_id}")
+                                
                             elif function_name == "appointment_agent_send_task":
                                 agent_name = "Appointment Agent"
                                 human_readable_logger.log_agent_response("Appointment Agent", part.function_response.response)
+                                
+                                # Extract appointment information from appointment agent response
+                                if isinstance(part.function_response.response, dict) and "status" in part.function_response.response:
+                                    response_text = part.function_response.response.get("result", {}).get("status", {}).get("message", {}).get("text", "")
+                                    appointment_info = self.extract_appointment_info(response_text)
+                                    
+                                    # Check for artifacts that might contain the appointment info
+                                    artifacts = part.function_response.response.get("result", {}).get("artifacts", [])
+                                    for artifact in artifacts:
+                                        if "parts" in artifact:
+                                            for artifact_part in artifact["parts"]:
+                                                if artifact_part.get("type") == "data" and "data" in artifact_part:
+                                                    data = artifact_part["data"]
+                                                    if "appointment_id" in data and "professional_id" in data:
+                                                        appointment_info = data
+                                                        logger.info(f"Found appointment info in artifacts: {appointment_info}")
+                                                        human_readable_logger.log_system_message(f"Found appointment info in data: {appointment_info}")
+                                
                             elif function_name == "validate_diagnosis":
                                 result = part.function_response.response.get("result", False)
                                 human_readable_logger.log_system_message(f"Diagnosis validation: {'✅ Valid' if result else '❌ Invalid'}")
@@ -158,7 +241,15 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             return {'agent': agent_name, 'text':"Agent did not produce a final response."}
         
         # Extract the text from the last event's content parts
-        return {'agent': agent_name, 'text':'\n'.join([p.text for p in events[-1].content.parts if p.text])}
+        result = {'agent': agent_name, 'text':'\n'.join([p.text for p in events[-1].content.parts if p.text])}
+        
+        # Add extracted IDs if available
+        if professional_id:
+            result['professional_id'] = professional_id
+        if appointment_info:
+            result['appointment_info'] = appointment_info
+            
+        return result
 
 
     async def stream(self, query, session_id) -> AsyncIterable[dict[str, Any]]:

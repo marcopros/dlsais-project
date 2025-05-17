@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import re
 from typing import AsyncIterable, Any, Dict, Optional, List, Union
 
 # Google ADK imports for agent execution and session management
@@ -16,6 +17,7 @@ from A2A.types import (
     Message,
     Artifact,
     TextPart,
+    DataPart,
     TaskStatus,
     TaskState,
     TaskNotFoundError,
@@ -57,6 +59,31 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
         self.user_id = user_id
         logger.info("AppointmentAgentTaskManager initialized.")
     
+    def extract_appointment_data(self, response_text: str) -> dict:
+        """
+        Extract appointment confirmation data from the response text.
+        Expects a line in format: 
+        "APPOINTMENT_CONFIRMED: appt_id USER: user_id PROFESSIONAL: professional_id"
+        
+        Args:
+            response_text: The agent's response text.
+            
+        Returns:
+            Dictionary with appointment_id, user_id and professional_id if found, empty dict otherwise.
+        """
+        # Use regex to find the confirmation line
+        pattern = r"APPOINTMENT_CONFIRMED:\s*(\S+)\s*USER:\s*(\S+)\s*PROFESSIONAL:\s*(\S+)"
+        match = re.search(pattern, response_text)
+        
+        if match:
+            return {
+                "appointment_id": match.group(1),
+                "user_id": match.group(2),
+                "professional_id": match.group(3),
+                "status": "confirmed"
+            }
+        return {}
+        
     def _create_or_update_task(self, task_id, session_id=None, status=None, history=None, artifacts=None):
         """
         Create or update a task with the given parameters.
@@ -261,50 +288,76 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
         Handle non-streaming task submission.
 
         Args:
-            request: The A2A send task request.
+            request: Contains the task details.
 
         Returns:
-            Task response with the agent's answer.
+            Response with updated task state and result.
         """
-        logger.info(f"Handling send task request: {request.params.id}")
+        logger.info(f"Received task submission: {request.params.id}")
+
+        # Save the task to the store
+        task = await self.upsert_task(request.params)
 
         try:
-            # Extract the last message content from the user
-            message_content = request.params.message.parts[0].text
-            session_id = request.params.sessionId
-
-            # Invoke the agent to get a response
-            response_text = await self.invoke(message_content, session_id)
+            # Find the latest user message from the task
+            user_message = "No input"
+            if task.history:
+                for msg in reversed(task.history):
+                    if msg.role == "user":
+                        if msg.parts and len(msg.parts) > 0 and isinstance(msg.parts[0], dict):
+                            user_message = msg.parts[0].get("text", "No input")
+                        elif hasattr(msg.parts[0], "text"):
+                            user_message = msg.parts[0].text
+                        break
             
-            # Create a task status with the 'completed' state
-            task_status = TaskStatus(
-                state=TaskState.COMPLETED,
-                message=Message(
-                    role="agent",
-                    parts=[TextPart(type="text", text=response_text)]
-                )
+            # Get the agent's response
+            final_response_text = await self.invoke(user_message, task.sessionId)
+            
+            # Extract appointment data if present
+            appointment_data = self.extract_appointment_data(final_response_text)
+            
+            # Create text part for the response
+            text_part = TextPart(type="text", text=final_response_text)
+            parts = [text_part]
+            
+            # Create artifacts with appointment data if available
+            artifacts = []
+            if appointment_data:
+                data_part = DataPart(type="data", data=appointment_data)
+                artifacts = [Artifact(parts=[data_part])]
+                logger.info(f"Extracted appointment data from response: {appointment_data}")
+
+            # Create a response message
+            response_message = Message(
+                role="agent",
+                parts=parts
             )
 
-            # Create a full task response
-            task = self._create_or_update_task(
-                task_id=request.params.id,
-                session_id=session_id,
-                status=task_status,
-                history=[request.params.message]  # Add the user message to history
+            # Update task as completed
+            updated_task = await self.update_store(
+                task_id=task.id,
+                status=TaskStatus(state=TaskState.COMPLETED, message=response_message),
+                artifacts=artifacts
             )
 
-            logger.info(f"Task completed: {request.params.id}")
-            return SendTaskResponse(
-                id=request.id,
-                result=task
-            )
+            return SendTaskResponse(id=request.id, result=updated_task)
 
         except Exception as e:
-            logger.error(f"Error processing task: {e}")
-            return SendTaskResponse(
-                id=request.id,
-                error=self._create_error_response(e)
+            logger.error(f"Error while processing task {task.id}: {e}")
+            
+            # Create an error response
+            error_message = Message(
+                role="agent",
+                parts=[TextPart(type="text", text=f"Error occurred: {str(e)}")]
             )
+            
+            # Update task as failed
+            failed_task = await self.update_store(
+                task_id=task.id,
+                status=TaskStatus(state=TaskState.FAILED, message=error_message)
+            )
+            
+            return SendTaskResponse(id=request.id, result=failed_task)
 
 
     async def on_send_task_subscribe(self, request: SendTaskStreamingRequest) -> AsyncIterable[SendTaskStreamingResponse]:
