@@ -232,65 +232,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatContainer = document.getElementById('chat-container');
   const appointmentsList = document.getElementById('appointments-list');
 
-  const appointments = [
-    {
-      id: 'appt-1',
-      timestamp: '2025-05-07T09:00:00Z',
-      comments: 'John was very professional and fixed our leaky faucet quickly.',
-      satisfaction: 'high',
-      rating: 4.5,
-      professional: 'John Doe'
-    },
-    {
-      id: 'appt-2',
-      timestamp: '2025-05-12T11:30:00Z',
-      comments: null,
-      satisfaction: null,
-      rating: null,
-      professional: 'Alice Smith'
-    },
-    {
-      id: 'appt-3',
-      timestamp: '2025-05-15T15:00:00Z',
-      comments: 'Quick and reliable service. Highly recommended!',
-      satisfaction: 'high',
-      rating: 5,
-      professional: 'Bob Johnson'
-    },
-    {
-      id: 'appt-4',
-      timestamp: '2025-05-20T10:00:00Z',
-      comments: null,
-      satisfaction: null,
-      rating: null,
-      professional: 'Emma Lee'
-    }
-  ];
+  async function fetchAppointments() {
+    const res = await fetch("/appointments");
+    const raw = await res.json();
+    return JSON.parse(raw); // bson.dumps restituisce stringa JSON
+ }
 
-  function renderAppointments() {
+  async function renderAppointments() {
     appointmentsList.innerHTML = '';
+
+    const appointments = await fetchAppointments();
+
     appointments.forEach(appt => {
-      const card = document.createElement('div');
-      card.className = 'p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10';
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10';
 
-      const date = new Date(appt.timestamp).toLocaleString();
+        const date = new Date(appt.scheduledTime.$date).toLocaleString();
+        const professional = appt.professionalDetails.name;
+        const professionalId = appt.professionalDetails.id;
+        const job = appt.problemSummary;
+        const hasFeedback = appt.rating || appt.comments;
+        const status = appt.status;
 
-      card.innerHTML = `
+        let content = `
         <div class="font-semibold text-white/80 text-xs">${date}</div>
-        <div class="text-white text-base font-semibold mt-1">${appt.professional}</div>
-        ${appt.comments ? `
-          <div class="text-white/90 text-sm mt-1">${appt.comments}</div>
-          <div class="mt-2 text-xs text-green-400">✅ Feedback submitted — ${appt.rating}⭐</div>
-        ` : `
-          <div class="mt-2 text-xs text-yellow-400">⏳ Awaiting feedback</div>
-          <a href="/feedback" class="mt-2 inline-block text-sm bg-accent text-white px-3 py-1 rounded-lg hover:bg-orange-500 transition">
-            Leave a Review
-          </a>
-        `}
-      `;
-      appointmentsList.appendChild(card);
+        <div class="text-white text-base font-semibold mt-1">${professional}</div>
+        <div class="text-white/90 text-sm mt-1">${job}</div>
+        `;
+
+        if (status === "pending_confirmation") {
+            content += `
+                <div class="mt-2 text-xs text-yellow-400">🕒 Awaiting confirmation</div>
+                <button data-id="${appt.id}" data-action="confirm" class="mt-2 bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition text-sm">Confirm Appointment</button>
+            `;
+            } else if (status === "confirmed") {
+            content += `
+                <div class="mt-2 text-xs text-blue-300">✅ Confirmed</div>
+                <button data-id="${appt.id}" data-action="complete" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition text-sm">Complete Job</button>
+            `;
+            } else if (status === "completed") {
+            if (hasFeedback) {
+                content += `
+                <div class="text-white/90 text-sm mt-2">${appt.comments}</div>
+                <div class="mt-2 text-xs text-green-400">✅ Feedback submitted — ${appt.rating ?? "?"}⭐</div>
+                `;
+            } else {
+                content += `
+                <div class="mt-2 text-xs text-yellow-400">⏳ Awaiting feedback</div>
+                <a href="/feedback?professional_id=${encodeURIComponent(professionalId)}&job=${encodeURIComponent(job)}&name=${encodeURIComponent(professional)}" class="mt-2 inline-block text-sm bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition">
+                    Leave a Review
+                </a>
+                `;
+            }
+            }
+
+
+        card.innerHTML = content;
+        appointmentsList.appendChild(card);
     });
-  }
+
+    // Event listener per i bottoni "confirm" e "complete"
+    appointmentsList.querySelectorAll("button[data-action]").forEach(button => {
+        button.addEventListener("click", async () => {
+        const id = button.dataset.id;
+        const action = button.dataset.action;
+        const newStatus = action === "confirm" ? "confirmed" : "completed";
+        await updateAppointmentStatus(id, newStatus);
+        await renderAppointments(); // Ricarica la lista aggiornata
+        });
+    });
+    }
+
+    async function updateAppointmentStatus(id, newStatus) {
+        try {
+            await fetch(`/appointments/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+            });
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("Failed to update appointment.");
+        }
+    }
+
 
   openSidebarBtn.addEventListener('click', () => {
     renderAppointments();

@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict
 from fastapi.middleware.cors import CORSMiddleware
-from agent import feedback_agent
+from .agent import feedback_agent
 from agents import Runner, MessageOutputItem, ItemHelpers, trace
 
 app = FastAPI(title="Feedback Sentiment API")
@@ -40,3 +40,7 @@ async def analyze_feedback(req: FeedbackRequest):
 
 # to run the server, use the command:
 # uvicorn server_feedback:app --reload
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("server:app", host="0.0.0.0", port=8009, reload=True)

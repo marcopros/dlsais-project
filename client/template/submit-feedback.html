@@ -188,18 +188,18 @@
       };
 
       try {
-        const res = await fetch("http://localhost:8001/analyze", {
+        const res = await fetch("http://localhost:8009/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ feedback })
         });
         const data = await res.json();
         const summary = `
-🧠 Numeric rating: ${data.rating_scoring ?? "N/A"}
-🏷️ Tag score: ${data.tag_scoring ?? "N/A"}
-🕓 Time decay: ${data.time_decay ?? "N/A"}
-💬 Sentiment: ${data.sentiment_scoring ?? "N/A"}
-✅ Updated trust score: ${data.updated_trust_score ?? "N/A"}
+            🧠 Numeric rating: ${data.rating_scoring ?? "N/A"}
+            🏷️ Tag score: ${data.tag_scoring ?? "N/A"}
+            🕓 Time decay: ${data.time_decay ?? "N/A"}
+            💬 Sentiment: ${data.sentiment_scoring ?? "N/A"}
+            ✅ Updated trust score: ${data.updated_trust_score ?? "N/A"}
         `;
         document.getElementById('resultOutput').textContent = summary;
         document.getElementById('resultBox').classList.remove('hidden');

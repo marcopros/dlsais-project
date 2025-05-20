@@ -46,14 +46,42 @@ def get_trust_score(rating_scoring: float, tag_scoring: float, time_decay: float
         weights["time_decay"] * time_decay +
         weights["sentiment_scoring"] * (semtiment_scoring - 0.5)  # Normalizing sentiment score to be between -0.5 and 0.5
     )
-    
+  
+  
+from pymongo import MongoClient
+
+client = MongoClient("mongodb://localhost:27017/")
+db = client["your_database_name"]
+professionals = db["professionals"]  # o il nome corretto della tua collection
+
+  
 @function_tool
-def update_professional_trust_score(professional_id: str, trust_score: float) -> float:
+def update_professional_trust_score(professional_id: str, new_score: float) -> float:
     print("5. Updating professional trust score...")
-    
-    #it should retrieve the professional's current trust score from the database
-    # For this example, let's assume the current trust score is 0.5
-    current_trust_score = 0.5
-    alpha = 0.8 # Weight for the new trust score #! can be audited via A/B testing or online learning
-    
-    return alpha * current_trust_score + (1 - alpha) * trust_score  # Weighted average of current and new trust score
+
+    # Recupera il professionista dal DB
+    prof = professionals.find_one({"id": professional_id})
+
+    if not prof:
+        raise ValueError(f"Professional with id '{professional_id}' not found.")
+
+    # Usa il valore attuale se esiste, altrimenti default 0.5
+    current_score = prof.get("trust_score", 0.5)
+    alpha = 0.8  # peso per lo score precedente
+
+    # Calcolo nuova media pesata
+    updated_score = alpha * current_score + (1 - alpha) * new_score
+
+    # Aggiorna il documento nel DB
+    professionals.update_one(
+        {"id": professional_id},
+        {
+            "$set": {
+                "trust_score": updated_score,
+                "updatedAt": datetime.utcnow()  # opzionale: aggiorna anche updatedAt
+            }
+        }
+    )
+
+    print(f"Updated trust score for {professional_id}: {updated_score:.3f}")
+    return updated_score

@@ -30,13 +30,13 @@ Make sure the key is valid and has access to GPT-4 (or GPT-4o).
 ## 🚀 3) Run the FastAPI server
 
 ```bash
-uvicorn server_feedback:app --reload --host 0.0.0.0 --port 8001
+uvicorn server_feedback:app --reload --host 0.0.0.0 --port 8009
 ```
 
 This will start the backend API at:
 
 ```
-http://localhost:8001/analyze
+http://localhost:8009/analyze
 ```
 
 ---

@@ -4,12 +4,20 @@ import uvicorn
 import logging
 import uuid
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
+from typing import Optional
 from A2A.client import A2ACardResolver, A2AClient
+
+from pymongo import MongoClient
+from bson.json_util import dumps
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -25,6 +33,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+mongo_uri = os.getenv("MONGODB_URI")
+client_mongo = MongoClient(mongo_uri)
+db = client_mongo["home_repair_assistant"]  # <-- cambia con il nome vero
+appointments_col = db["appointments"]
 
 # Agent config
 AGENT_URL = "http://localhost:8000/"
@@ -45,8 +57,28 @@ async def signup(request: Request):
     return templates.TemplateResponse("register.html", {"request": request, "session_id": SESSION_ID})
 
 @app.get("/feedback", response_class=HTMLResponse)
-async def signup(request: Request):
-    return templates.TemplateResponse("submit-feedback.html", {"request": request, "session_id": SESSION_ID})
+async def feedback_page(
+    request: Request,
+    professional_id: str,
+    job: str,
+    name: Optional[str] = None,
+):
+    return templates.TemplateResponse(
+        "submit-feedback.html",
+        {
+            "request": request,
+            "professional_id": professional_id,
+            "job": job,
+            "name": name or "Professional",
+        }
+    )
+
+from fastapi.responses import JSONResponse
+
+@app.get("/appointments")
+async def get_appointments():
+    appointments = list(appointments_col.find())
+    return JSONResponse(content=dumps(appointments), media_type="application/json")
 
 
 def extract_agent_message(task_result):
@@ -72,6 +104,29 @@ def extract_agent_message(task_result):
 
     except Exception as e:
         return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
+
+
+from fastapi import Path
+from pydantic import BaseModel
+
+class AppointmentUpdate(BaseModel):
+    status: str
+
+@app.patch("/appointments/{appointment_id}")
+async def update_appointment_status(appointment_id: str, payload: AppointmentUpdate):
+    result = appointments_col.update_one(
+        {"id": appointment_id},
+        {
+            "$set": {
+                "status": payload.status,
+                "updatedAt": datetime.utcnow()
+            }
+        }
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    return {"success": True, "updated": result.modified_count}
+
 
 
 # Reuse your async ask_agent_with_a2a function here
