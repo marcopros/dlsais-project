@@ -1,25 +1,211 @@
 <!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Repair Assistant</title>
-    <link rel="stylesheet" href="../static/styles.css">
-</head>
-<body>
 
-    <div id="initial-screen">
-      <div id="central-part">
-        <h1>HOME REPAIR ASSISTANT</h1>
-        <p class="description">Problem diagnosis, DYS solution suggestion, professional search and booking.</p>
-        
-        <form id="chat-form">
-            <input type="text" id="user-input" placeholder="Describe your issue .." required>
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Manrope', 'sans-serif'],
+            },
+            colors: {
+              primary: '#1E3A8A',
+              accent: '#F97316',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: 0, transform: 'translateY(20px)' },
+                '100%': { opacity: 1, transform: 'translateY(0)' },
+              },
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.8s ease-out forwards',
+            },
+          },
+          darkMode: 'class',
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500 text-white min-h-screen font-sans">
+    <header class="absolute top-4 right-6 flex items-center gap-4">
+      <a
+        href="/signup"
+        class="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-sm font-medium transition"
+      >
+        Sign Up
+      </a>
+      <button
+        id="theme-toggle"
+        class="p-2 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition"
+      >
+        <svg
+          id="theme-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          class="w-6 h-6"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-12.66l-.71.71M4.05 19.95l-.71.71m16.97-.71l-.71-.71M4.05 4.05l-.71-.71M21 12h1M2 12H1" />
+        </svg>
+      </button>
+    </header>
+
+    <main class="flex flex-col items-center justify-center text-center min-h-screen px-4">
+      <div
+        class="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl max-w-xl w-full p-8 space-y-6 animate-fade-in"
+      >
+        <h1 class="font-display text-4xl md:text-5xl font-extrabold text-white">
+          A trusted assistant<br /><span id="animated-subtitle" class="text-accent">for every home repair need</span>
+        </h1>
+        <p class="text-white/80 text-lg">Describe your issue. We'll handle the rest.</p>
+        <form id="chat-form" class="flex flex-col sm:flex-row gap-4">
+          <input
+            id="user-input"
+            type="text"
+            required
+            placeholder="e.g. Dishwasher is leaking"
+            class="flex-1 px-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          />
+          <button
+            type="submit"
+            class="px-6 py-3 rounded-full bg-accent text-white font-semibold hover:bg-orange-400 transition"
+          >
+            Start
+          </button>
         </form>
-        
-      </div>
-    </div>
 
-    <script src="../static/script.js?v=1.0.3"></script>
-</body>
+        <div class="flex justify-center gap-4 pt-4 text-white/90">
+          <button
+            id="how-it-works"
+            class="underline hover:text-white"
+          >
+            How it works?
+          </button>
+        </div>
+      </div>
+
+      <!-- Overlay: How it works -->
+      <div
+        id="info-panel"
+        class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-6"
+      >
+        <div class="bg-white text-black max-w-md w-full p-6 rounded-2xl shadow-xl space-y-4">
+          <h2 class="text-2xl font-display font-bold">How it works</h2>
+          <ul class="space-y-2">
+            <li class="flex items-start gap-2">
+              <svg class="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 10a1 1 0 011-1h5.586a1 1 0 01.707.293l1.414 1.414a1 1 0 00.707.293h8.586a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" /></svg>
+              <span><strong>Describe:</strong> Tell us what's wrong.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span><strong>Find:</strong> We match the right professional.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 10h10m-9 4h8m2 0a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h14z" /></svg>
+              <span><strong>Schedule:</strong> Set up an appointment.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 11V9a4 4 0 118 0v2a4 4 0 01-8 0zm0 4v2a4 4 0 11-8 0v-2a4 4 0 018 0z" /></svg>
+              <span><strong>Rate:</strong> Share your feedback.</span>
+            </li>
+          </ul>
+          <div class="text-right">
+            <button id="close-info" class="text-sm text-blue-700 hover:underline">Close</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const toggleBtn = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+      toggleBtn.addEventListener('click', () => {
+        html.classList.toggle('dark');
+      });
+
+      const infoBtn = document.getElementById('how-it-works');
+      const infoPanel = document.getElementById('info-panel');
+      const closeInfo = document.getElementById('close-info');
+
+      infoBtn.addEventListener('click', () => {
+        infoPanel.classList.remove('hidden');
+        infoPanel.classList.add('flex');
+      });
+
+      closeInfo.addEventListener('click', () => {
+        infoPanel.classList.add('hidden');
+        infoPanel.classList.remove('flex');
+      });
+
+      // Typing effect for subtitle
+      const subtitle = document.getElementById("animated-subtitle");
+      const phrases = [
+        "My faucet is leaking",
+        "Power socket not working",
+        "Heating system failure",
+        "The fridge isn't cooling",
+        "Lights keep flickering",
+        "Broken bathroom tiles",
+        "The door won't close",
+        "Strange noise from boiler",
+        "Washing machine issue",
+        "Unusual smell from sink"
+      ];
+      const defaultText = "for every home repair need";
+
+      let phraseIndex = 0;
+      let charIndex = 0;
+      let isDeleting = false;
+
+      const typeEffect = () => {
+        const currentPhrase = phraseIndex < phrases.length ? phrases[phraseIndex] : defaultText;
+        const currentText = subtitle.textContent;
+
+        if (!isDeleting && charIndex <= currentPhrase.length) {
+          subtitle.textContent = currentPhrase.substring(0, charIndex++);
+        } else if (isDeleting && charIndex > -1) {
+          subtitle.textContent = currentPhrase.substring(0, charIndex--);
+          if (charIndex < 0){
+            subtitle.textContent = "... ";
+          }
+        } else {
+          if (!isDeleting && phraseIndex < phrases.length) {
+            isDeleting = true;
+            setTimeout(typeEffect, 5000);
+            return;
+          } else if (isDeleting && phraseIndex < phrases.length) {
+            isDeleting = false;
+            phraseIndex++;
+            setTimeout(typeEffect, 2000);
+            return;
+          } else {
+            subtitle.textContent = defaultText;
+            return;
+          }
+        }
+        setTimeout(typeEffect, isDeleting ? 50 : 70);
+      };
+
+      typeEffect();
+    </script>
+
+
+
+    
+  </body>
 </html>

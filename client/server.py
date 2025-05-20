@@ -40,6 +40,14 @@ async def read_root(request: Request):
 async def a2a_chat(request: Request):
     return templates.TemplateResponse("a2a_chat.html", {"request": request, "session_id": SESSION_ID})
 
+@app.get("/signup", response_class=HTMLResponse)
+async def signup(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request, "session_id": SESSION_ID})
+
+@app.get("/feedback", response_class=HTMLResponse)
+async def signup(request: Request):
+    return templates.TemplateResponse("submit-feedback.html", {"request": request, "session_id": SESSION_ID})
+
 
 def extract_agent_message(task_result):
     try:

@@ -9,7 +9,7 @@ import openai
 logger = logging.getLogger(__name__)
 
 # Configura OpenAI per usare direttamente OpenRouter
-openai_api_key = os.getenv("OPENAI_API_KEY")
+openai_api_key = os.getenv("OPENROUTER_API_KEY")
 openai.api_key = openai_api_key
 openai.base_url = "https://openrouter.ai/api/v1"  # URL diretto di OpenRouter
 print(f"Using OpenAI with OpenRouter API: {openai.base_url}")
