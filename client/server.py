@@ -62,6 +62,7 @@ async def feedback_page(
     professional_id: str,
     job: str,
     name: Optional[str] = None,
+    appointment_id: Optional[str] = None
 ):
     return templates.TemplateResponse(
         "submit-feedback.html",
@@ -70,6 +71,7 @@ async def feedback_page(
             "professional_id": professional_id,
             "job": job,
             "name": name or "Professional",
+            "appointment_id": appointment_id,
         }
     )
 

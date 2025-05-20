@@ -77,12 +77,26 @@
   </div>
 
   <script>
+    async function updateAppointmentStatus(id, newStatus) {
+        try {
+            await fetch(`/appointments/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+            });
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("Failed to update appointment.");
+        }
+    }
+
     function getQueryParams() {
       const urlParams = new URLSearchParams(window.location.search);
       return {
         professionalId: urlParams.get("professional_id"),
         professionalName: urlParams.get("name"),
-        jobTitle: urlParams.get("job")
+        jobTitle: urlParams.get("job"),
+        appointmentId: urlParams.get("appointment_id"),
       };
     }
 
@@ -220,6 +234,13 @@
         `;
         document.getElementById('resultOutput').textContent = summary;
         document.getElementById('resultBox').classList.remove('hidden');
+
+        updateAppointmentStatus(query.appointmentId, "terminated");
+
+        // ⏳ Aspetta 3 secondi e poi vai alla chat
+        setTimeout(() => {
+          window.location.href = "/chat";
+        }, 3000);
       } catch (err) {
         alert("Error: " + err.message);
       } finally {

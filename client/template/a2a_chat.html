@@ -240,7 +240,7 @@ function renderStatusBadge(status) {
           pending_confirmation: "Awaiting Confirmation",
           confirmed: "Confirmed",
           job_completed: "Completed",
-          terminated: "Finished"
+          terminated: "Concluded 🎉"
         };
 
         return `<span class="inline-block px-2 py-1 text-xs text-white font-medium rounded ${badgeClasses[status] || "bg-gray-400"}">${text[status] || "Unknown"}</span>`;
@@ -273,6 +273,7 @@ function renderStatusBadge(status) {
       const job = appt.problemSummary;
       const status = appt.status;
       const hasFeedback = appt.rating || appt.comments;
+      const appointmentId = appt.id;
 
       let content = `
         <div class="font-semibold text-white/80 text-xs">${date}</div>
@@ -302,12 +303,12 @@ function renderStatusBadge(status) {
           content += `
             <div class="mt-2 text-xs text-green-400">✅ Feedback submitted — ${appt.rating ?? "?"}⭐</div>
             <div class="text-white/90 text-sm mt-1">${appt.comments}</div>
-            <div class="mt-2 text-xs text-gray-300">🎉 Status: Finished</div>
+            <div class="mt-2 text-xs text-gray-300">🎉 Status: Concluded</div>
           `;
         } else {
           content += `
             <div class="mt-2 text-xs text-yellow-400">📝 Job completed, awaiting feedback</div>
-            <a href="/feedback?professional_id=${encodeURIComponent(professionalId)}&job=${encodeURIComponent(job)}&name=${encodeURIComponent(professional)}" class="mt-2 inline-block text-sm bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition">
+            <a href="/feedback?professional_id=${encodeURIComponent(professionalId)}&job=${encodeURIComponent(job)}&name=${encodeURIComponent(professional)}&appointment_id=${appointmentId}" class="mt-2 inline-block text-sm bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition">
               ✍️ Leave a Review
             </a>
             <button data-id="${appt.id}" data-action="terminate" class="mt-2 ml-2 text-sm bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600 transition">✅ Finalize</button>
