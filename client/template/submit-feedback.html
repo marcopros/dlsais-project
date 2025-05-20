@@ -29,9 +29,10 @@
   <div class="w-full max-w-2xl bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 space-y-6 animate-fade-in">
 
     <div>
-      <h1 class="text-3xl font-display font-extrabold text-white">Electrical System Repair</h1>
-      <p class="text-white/70 text-sm mt-1">Marco Bianchi, Electrician — April 28, 2025</p>
+      <h1 id="jobTitle" class="text-3xl font-display font-extrabold text-white"></h1>
+      <p id="professionalInfo" class="text-white/70 text-sm mt-1"></p>
     </div>
+
 
     <div id="step1" class="space-y-4">
       <label class="block text-lg font-semibold">1. How would you rate the service?</label>
@@ -76,6 +77,21 @@
   </div>
 
   <script>
+    function getQueryParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return {
+        professionalId: urlParams.get("professional_id"),
+        professionalName: urlParams.get("name"),
+        jobTitle: urlParams.get("job")
+      };
+    }
+
+    const query = getQueryParams();
+
+    document.getElementById("jobTitle").textContent = query.jobTitle || "Home Repair Job";
+    document.getElementById("professionalInfo").textContent = `${query.professionalName || "Unknown Professional"}`;
+
+
     let selectedRating = 0;
     let inputMethod = null;
     let selectedChips = [];
@@ -177,9 +193,10 @@
 
       const feedback = {
         jobInfo: {
-          jobTitle: "Electrical System Repair",
-          professional: "Marco Bianchi, Electrician",
-          date: "2025-04-28"
+          jobTitle: query.jobTitle || "Unknown job",
+          professional: query.professionalName || "Unknown",
+          professionalId: query.professionalId || null,
+          date: new Date().toISOString().split("T")[0]
         },
         rating: selectedRating,
         feedbackType: inputMethod,

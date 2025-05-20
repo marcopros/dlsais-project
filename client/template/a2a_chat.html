@@ -223,9 +223,29 @@ document.addEventListener('DOMContentLoaded', () => {
     addMessage('agent', "Hello! I'm your home repair assistant. What problem are you experiencing with your home today?", 'Orchestrator');
   }, 500);
 });
+
 </script>
 
 <script>
+
+function renderStatusBadge(status) {
+        const badgeClasses = {
+          pending_confirmation: "bg-yellow-500",
+          confirmed: "bg-blue-600",
+          job_completed: "bg-purple-600",
+          terminated: "bg-gray-500"
+        };
+
+        const text = {
+          pending_confirmation: "Awaiting Confirmation",
+          confirmed: "Confirmed",
+          job_completed: "Completed",
+          terminated: "Finished"
+        };
+
+        return `<span class="inline-block px-2 py-1 text-xs text-white font-medium rounded ${badgeClasses[status] || "bg-gray-400"}">${text[status] || "Unknown"}</span>`;
+      }
+
   const sidebar = document.getElementById('sidebar');
     const openSidebarBtn = document.getElementById('open-sidebar');
     const closeSidebarBtn = document.getElementById('close-sidebar');
@@ -244,64 +264,103 @@ document.addEventListener('DOMContentLoaded', () => {
     const appointments = await fetchAppointments();
 
     appointments.forEach(appt => {
-        const card = document.createElement('div');
-        card.className = 'p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10';
+      const card = document.createElement('div');
+      card.className = 'p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10';
 
-        const date = new Date(appt.scheduledTime.$date).toLocaleString();
-        const professional = appt.professionalDetails.name;
-        const professionalId = appt.professionalDetails.id;
-        const job = appt.problemSummary;
-        const hasFeedback = appt.rating || appt.comments;
-        const status = appt.status;
+      const date = new Date(appt.scheduledTime.$date).toLocaleString();
+      const professional = appt.professionalDetails.name;
+      const professionalId = appt.professionalDetails.id;
+      const job = appt.problemSummary;
+      const status = appt.status;
+      const hasFeedback = appt.rating || appt.comments;
 
-        let content = `
+      let content = `
         <div class="font-semibold text-white/80 text-xs">${date}</div>
         <div class="text-white text-base font-semibold mt-1">${professional}</div>
         <div class="text-white/90 text-sm mt-1">${job}</div>
+      `;
+
+      // ⬇️ Stato: pending_confirmation
+      if (status === "pending_confirmation") {
+        content += `
+          <div class="mt-2 text-xs text-yellow-400">🕒 Awaiting confirmation</div>
+          <button data-id="${appt.id}" data-action="confirm" class="mt-2 bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition text-sm">✅ Confirm</button>
         `;
+      }
 
-        if (status === "pending_confirmation") {
-            content += `
-                <div class="mt-2 text-xs text-yellow-400">🕒 Awaiting confirmation</div>
-                <button data-id="${appt.id}" data-action="confirm" class="mt-2 bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition text-sm">Confirm Appointment</button>
-            `;
-            } else if (status === "confirmed") {
-            content += `
-                <div class="mt-2 text-xs text-blue-300">✅ Confirmed</div>
-                <button data-id="${appt.id}" data-action="complete" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition text-sm">Complete Job</button>
-            `;
-            } else if (status === "completed") {
-            if (hasFeedback) {
-                content += `
-                <div class="text-white/90 text-sm mt-2">${appt.comments}</div>
-                <div class="mt-2 text-xs text-green-400">✅ Feedback submitted — ${appt.rating ?? "?"}⭐</div>
-                `;
-            } else {
-                content += `
-                <div class="mt-2 text-xs text-yellow-400">⏳ Awaiting feedback</div>
-                <a href="/feedback?professional_id=${encodeURIComponent(professionalId)}&job=${encodeURIComponent(job)}&name=${encodeURIComponent(professional)}" class="mt-2 inline-block text-sm bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition">
-                    Leave a Review
-                </a>
-                `;
-            }
-            }
+      // ⬇️ Stato: confirmed
+      else if (status === "confirmed") {
+        content += `
+          <div class="mt-2 text-xs text-blue-300">📅 Appointment scheduled for: ${date}</div>
+          <button data-id="${appt.id}" data-action="complete" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition text-sm">🛠️ Complete Job</button>
+        `;
+      }
 
+      // ⬇️ Stato: job_completed
+      else if (status === "job_completed") {
+        if (hasFeedback) {
+          content += `
+            <div class="mt-2 text-xs text-green-400">✅ Feedback submitted — ${appt.rating ?? "?"}⭐</div>
+            <div class="text-white/90 text-sm mt-1">${appt.comments}</div>
+            <div class="mt-2 text-xs text-gray-300">🎉 Status: Finished</div>
+          `;
+        } else {
+          content += `
+            <div class="mt-2 text-xs text-yellow-400">📝 Job completed, awaiting feedback</div>
+            <a href="/feedback?professional_id=${encodeURIComponent(professionalId)}&job=${encodeURIComponent(job)}&name=${encodeURIComponent(professional)}" class="mt-2 inline-block text-sm bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition">
+              ✍️ Leave a Review
+            </a>
+            <button data-id="${appt.id}" data-action="terminate" class="mt-2 ml-2 text-sm bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600 transition">✅ Finalize</button>
+          `;
+        }
+      }
 
-        card.innerHTML = content;
-        appointmentsList.appendChild(card);
+      // ⬇️ Stato: terminated
+      else if (status === "terminated") {
+        content += `
+          <div class="mt-2 text-xs text-gray-300">✅ Process completed. No further action required.</div>
+        `;
+      }
+
+      // ✅ AGGIUNGI QUI il badge finale
+      content += `<div class="mt-2">${renderStatusBadge(status)}</div>`;
+
+      card.innerHTML = content;
+      appointmentsList.appendChild(card);
     });
+
+
 
     // Event listener per i bottoni "confirm" e "complete"
     appointmentsList.querySelectorAll("button[data-action]").forEach(button => {
-        button.addEventListener("click", async () => {
+      button.addEventListener("click", async () => {
         const id = button.dataset.id;
         const action = button.dataset.action;
-        const newStatus = action === "confirm" ? "confirmed" : "completed";
+
+        const stateMap = {
+          confirm: "confirmed",
+          complete: "job_completed",
+          terminate: "terminated"
+        };
+
+        const newStatus = stateMap[action];
+        if (!newStatus) return;
+
+        // Disabilita il bottone per evitare click multipli
+        button.disabled = true;
+        button.textContent = "Processing...";
+
         await updateAppointmentStatus(id, newStatus);
-        await renderAppointments(); // Ricarica la lista aggiornata
-        });
+        const toast = document.createElement("div");
+        toast.className = "fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-xl shadow-xl animate-fade-in z-50";
+        toast.textContent = "✅ Appointment updated!";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+
+        await renderAppointments();
+      });
     });
-    }
+  }
 
     async function updateAppointmentStatus(id, newStatus) {
         try {
@@ -316,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    
 
   openSidebarBtn.addEventListener('click', () => {
     renderAppointments();

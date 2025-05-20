@@ -1,3 +1,4 @@
+import datetime
 from agents import function_tool
 from typing import List, Dict, Any
 import math
@@ -49,9 +50,17 @@ def get_trust_score(rating_scoring: float, tag_scoring: float, time_decay: float
   
   
 from pymongo import MongoClient
+from datetime import datetime
+from dotenv import load_dotenv
+import os
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["your_database_name"]
+# Load environment variables from a .env file if present
+load_dotenv()
+# MongoDB connection
+mongo_uri = os.getenv("MONGODB_URI")
+
+client = MongoClient(mongo_uri)
+db = client["home_repair_assistant"]
 professionals = db["professionals"]  # o il nome corretto della tua collection
 
   
@@ -64,24 +73,32 @@ def update_professional_trust_score(professional_id: str, new_score: float) -> f
 
     if not prof:
         raise ValueError(f"Professional with id '{professional_id}' not found.")
-
+    
     # Usa il valore attuale se esiste, altrimenti default 0.5
     current_score = prof.get("trust_score", 0.5)
     alpha = 0.8  # peso per lo score precedente
 
     # Calcolo nuova media pesata
     updated_score = alpha * current_score + (1 - alpha) * new_score
-
-    # Aggiorna il documento nel DB
-    professionals.update_one(
-        {"id": professional_id},
-        {
-            "$set": {
-                "trust_score": updated_score,
-                "updatedAt": datetime.utcnow()  # opzionale: aggiorna anche updatedAt
+    
+    try:
+        # Aggiorna il documento nel DB
+        res = professionals.update_one(
+            {"id": professional_id},
+            {
+                "$set": {
+                    "trust_score": updated_score,
+                    "updatedAt": datetime.utcnow()  # opzionale: aggiorna anche updatedAt
+                }
             }
-        }
-    )
-
-    print(f"Updated trust score for {professional_id}: {updated_score:.3f}")
+        )
+    
+        #print(f"Matched count: {res.matched_count}")
+        #print(f"Modified count: {res.modified_count}")
+        print(f"Old score: {current_score:.4f}")
+        print(f"New score: {updated_score:.4f}")
+    except Exception as e:
+        print(f"Error updating trust score: {e}")
+        raise
+        
     return updated_score
