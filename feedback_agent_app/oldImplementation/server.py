@@ -15,36 +15,17 @@ from A2A.types import AgentCard, MissingAPIKeyError  # AgentCard defines metadat
 from .agent import feedback_agent, FeedbackOut
 from .task_manager import FeedbackAgentTaskManager
 
-# Load environment variables from .env file
-load_dotenv()
-
 # Configure basic logging to output logs at the INFO level
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Load environment variables from a .env file if present
+load_dotenv()
 
 # Application-wide constants
 APP_NAME = "feedback_agent_app"  # Logical name for this agent app
 USER_ID = "1"  # Default user ID; used when associating sessions/tasks with a user
 
-# Forza l'uso di OpenAI e non OpenRouter
-# Rimuovi variabili OpenRouter se presenti
-if "OPENAI_API_BASE" in os.environ:
-    logger.info("Removing custom OPENAI_API_BASE")
-    del os.environ["OPENAI_API_BASE"]
-if "OPENAI_MODEL_NAME" in os.environ:
-    logger.info("Removing custom OPENAI_MODEL_NAME")
-    del os.environ["OPENAI_MODEL_NAME"]
-if "OPENROUTER_API_KEY" in os.environ:
-    logger.info("Removing OPENROUTER_API_KEY")
-    del os.environ["OPENROUTER_API_KEY"]
-
-# Stampa le variabili d'ambiente rilevanti per debug
-if os.getenv("OPENAI_API_KEY"):
-    logger.info(f"OPENAI_API_KEY is set")
-if os.environ.get("OPENAI_API_BASE"):
-    logger.info(f"OPENAI_API_BASE: {os.environ.get('OPENAI_API_BASE')}")
-if os.environ.get("OPENAI_MODEL_NAME"):
-    logger.info(f"OPENAI_MODEL_NAME: {os.environ.get('OPENAI_MODEL_NAME')}")
 
 async def run_server():
     """Initializes services and starts the A2AServer."""
@@ -55,7 +36,7 @@ async def run_server():
     )
 
 
-    logger.info("Starting Feedback A2A Server initialization...")
+    logger.info("Starting Feedback analysis A2A Server initialization...")
 
     try:
         # The agent instance that will process user inputs and generate responses
@@ -65,7 +46,7 @@ async def run_server():
         task_manager = FeedbackAgentTaskManager(agent)
 
         # Determine the port and host from environment variables
-        port = int(os.getenv("PORT", "8009"))
+        port = int(os.getenv("PORT", "8003"))
         host = os.getenv("HOST", "localhost")
         listen_host = "0.0.0.0"  # Allow external connections
 

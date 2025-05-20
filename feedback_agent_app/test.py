@@ -3,6 +3,8 @@ from datetime import datetime
 import asyncio
 import uuid
 
+import test
+
 from A2A.client import A2ACardResolver, A2AClient
 from A2A.types import TaskState
 
@@ -76,7 +78,6 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str, ta
             response_stream = client.send_task_streaming(payload)
             print(f"[AGENT]: ", end="", flush=True)
             
-            last_result = None
             async for result in response_stream:
                 # Print full JSON of each streaming event
                 print(
@@ -85,10 +86,10 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str, ta
                     # f'\tstream event => {get_result_text(result.model_dump(exclude_none=True))}'
                 )
             print()         # New line after streaming
-            return last_result, task_id
 
         else:
             # Send a one-time request and wait for final result
+            print("invio task")
             taskResult = await client.send_task(payload)
             print(f"[AGENT]: ")
             print_organized(taskResult.model_dump())
@@ -100,13 +101,15 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str, ta
         print(f"[ERRORE]: {type(e).__name__} - {e}")
         return None, task_id
 
+test_review = {"jobInfo":{"jobTitle":"Electrical Repair","professional":"Marco Bianchi, Electrician","date":"2025-04-28"},"rating":4,"feedbackType":"chips","textFeedback":"","selectedTags":[{"id":"p1","text":"👍 Professional","category":"positive"},{"id":"p7","text":"📱 Excellent communication","category":"positive"},{"id":"n2","text":"💸 Too expensive","category":"negative"}]}
+
 
 async def main():
     """
     Interactive chat client that communicates with an A2A agent.
     Keeps the session alive across multiple messages.
     """
-    url = "http://localhost:8003/"      # URL of the agent service
+    url = "http://localhost:8009/"      # URL of the agent service
     session_id = str(uuid.uuid4())      # Unique ID for the entire chat session
 
     print("Chat Client A2A Started")
@@ -119,7 +122,10 @@ async def main():
     while True:
         try:
             # Prompt the user for input
-            user_input = input("[User]: ")
+            #user_input = input("[User]: ")
+            
+            user_input = str(test_review)
+            print(f"[User]: {user_input}")
             if user_input.strip().lower() in ("quit", ":q"):
                 print("Terminated chat.")
                 break
@@ -134,6 +140,7 @@ async def main():
             else:
                 print('TASK ID: ', task_id)
 
+            quit()
 
         except KeyboardInterrupt:
         # Handle user interruption gracefully

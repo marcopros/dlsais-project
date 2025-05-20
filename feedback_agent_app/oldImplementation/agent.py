@@ -7,9 +7,9 @@ from agents import (
   TResponseInputItem,
   function_tool
 )
-from agents.extensions.visualization import draw_graph
 from dotenv import load_dotenv
-from .tools import (
+from feedback_agent_app.agent2 import SYSTEM_PROMPT
+from feedback_agent_app.tools import (
     get_rating_scoring,
     get_tag_scoring,
     get_time_decay,
@@ -79,14 +79,7 @@ sentiment_agent = Agent(
 
 feedback_agent = Agent(
     name="Agent to orchestrate the analysis of feedback on a service provided by a professional",
-    instructions="""You are a helpful assistant that will orchestrate the analysis of feedback on a service provided by a professional in order to compute and update the trust score of the professional. 
-                    You must follow this flow:
-                    1. compute the rating scoring by using the tool 'get_rating_scoring'
-                    2. compute the tag scoring by using the tool 'get_tag_scoring' by providing the number of positive and negative tags (see the field 'category' in each tag to determine if it is positive or negative)
-                    3. compute time decay by using the tool 'get_time_decay'
-                    4. If the field 'feedbackType' is 'text' and the field 'textFeedback' is not empty, then compute the sentiment score by using the handoff 'sentiment_agent'. Otherwise set the sentiment score to 0.5 (neutral).
-                    5. Finally, compute the trust score by using the tool 'get_trust_score', update professional's score by using 'update_professional_trust_score'.
-                    """,
+    instructions=SYSTEM_PROMPT,
     model="gpt-4.1",
     tools=[get_rating_scoring, get_tag_scoring, get_time_decay, get_trust_score, update_professional_trust_score],
     handoffs=[sentiment_agent],
@@ -94,23 +87,39 @@ feedback_agent = Agent(
 )
 
 
+async def main():
+    
+    result = await Runner.run(feedback_agent, str(test_review))
+    print(result.final_output)
 
-async def query_agent(query: str = test_review) -> FeedbackOut | None:
+async def main():
     input_items: list[TResponseInputItem] = []
-    output = None
+    
+    # incoming_review =  FeedbackInContext(
+    #     jobTitle="Electrical Repair",
+    #     professional="Marco Bianchi, Electrician",
+    #     date="2025-04-28",
+    #     rating=4,
+    #     feedbackType="chips",
+    #     textFeedback=None,
+    #     selectedTags=[
+    #         {"id": "p1", "text": "👍 Professional", "category": "positive"},
+    #         {"id": "p7", "text": "📱 Excellent communication", "category": "positive"},
+    #         {"id": "n2", "text": "💸 Too expensive", "category": "negative"}
+    #     ]
+    # )
     
     with trace("Feedback analysis workflow"):
-        input_items.append({"content": query, "role": "user"})
+        input_items.append({"content": test_review, "role": "user"})
         result = await Runner.run(feedback_agent, input=input_items)
             
-        
         for new_item in result.new_items:
             agent_name = new_item.agent.name
                 
             if isinstance(new_item, MessageOutputItem):
                 parsed = json.loads(ItemHelpers.text_message_output(new_item))
                 if parsed["rating_scoring"] != None:
-                    print(f"Rating scoring: {parsed["rating_scoring"]}")
+                    print(f"Rating scoring: {result.final_output}")
                 if parsed["tag_scoring"] != None:
                     print(f"Tag scoring: {parsed["tag_scoring"]}")
                 if parsed["time_decay"] != None:
@@ -119,26 +128,13 @@ async def query_agent(query: str = test_review) -> FeedbackOut | None:
                     print(f"Sentiment scoring: {parsed["sentiment_scoring"]}")
                 if parsed["updated_trust_score"] != None:
                     print(f"Updated trust score: {parsed["updated_trust_score"]}")
+                    break
                 
-                output = FeedbackOut(
-                    jobTitle=parsed["jobTitle"],
-                    professional=parsed["professional"],
-                    date=parsed["date"],
-                    rating_scoring=parsed["rating_scoring"],
-                    tag_scoring=parsed["tag_scoring"],
-                    time_decay=parsed["time_decay"],
-                    sentiment_scoring=parsed["sentiment_scoring"],
-                    updated_trust_score=parsed["updated_trust_score"]
-                )
+                #print("debug:", parsed)
             
         input_items = result.to_input_list()
-        #current_agent = result.last_agent
-    print(f"---------- Output: {output} ---------- \n")    
-    return output
+        #current_agent = result.last_agent           
             
-async def main():
-    await query_agent(test_review)
-
 
 if __name__ == "__main__":
     asyncio.run(main())

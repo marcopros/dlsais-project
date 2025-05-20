@@ -1,24 +1,32 @@
 {
   "name": "Feedback Agent (A2A)",
-  "description": "Provides professional matching based on user queries.",
-  "url": "http://localhost:8003/",
+  "description": "Analyzes user reviews and feedback to compute trust metrics for professionals.",
+  "url": "http://localhost:8009/",
   "version": "1.0.0",
-  "defaultInputModes": ["text"],
-  "defaultOutputModes": ["text"],
   "capabilities": {
-    "streaming": true
+    "streaming": false
   },
   "skills": [
     {
-      "id": "analysis",
-      "name": "Feedback anlysis",
-      "description": "Recevies a feedback from the user and analyses it to updates professional's trust score.",
-      "tags": ["professionals", "feedback", "analysis", "trust", "score"],
+      "id": "trust_scoring",
+      "name": "TrustScoring",
+      "description": "Calculates a trust score for a professional based on rating, feedback tags, and review date.",
       "outputs": [
-          {
-              "name": "AnalysisResult",
-              "type": "object"
-          }
+        {
+          "name": "TrustScore",
+          "type": "object"
+        }
+      ]
+    },
+    {
+      "id": "trust_update",
+      "name": "TrustUpdate",
+      "description": "Updates the stored trust score of a professional.",
+      "outputs": [
+        {
+          "name": "UpdateResult",
+          "type": "object"
+        }
       ]
     }
   ]
