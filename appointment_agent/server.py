@@ -6,10 +6,6 @@ from dotenv import load_dotenv
 
 import uvicorn
 
-# Import core components from Google ADK for running agents and managing sessions
-from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-
 # Import common A2A server components and types
 from A2A.server import A2AServer
 from A2A.types import AgentCard, MissingAPIKeyError  # AgentCard defines metadata and capabilities of this agent
@@ -25,6 +21,14 @@ logger = logging.getLogger(__name__)
 # Load environment variables from a .env file if present
 load_dotenv()
 
+# Import e configura OpenAI per OpenRouter
+import openai
+openai_api_key = os.getenv("OPENROUTER_API_KEY")
+if openai_api_key:
+    openai.api_key = openai_api_key
+    openai.base_url = "https://openrouter.ai/api/v1"
+    logger.info("Using OpenAI with OpenRouter API directly: https://openrouter.ai/api/v1")
+
 # Application-wide constants
 APP_NAME = "appointment_agent_app"  # Logical name for this agent app
 USER_ID = "1"  # Default user ID; used when associating sessions/tasks with a user
@@ -33,28 +37,31 @@ USER_ID = "1"  # Default user ID; used when associating sessions/tasks with a us
 async def run_server():
     """Initializes services and starts the A2AServer."""
 
-    if not os.getenv('GOOGLE_API_KEY'):
+    # Verifica che la chiave OpenRouter API sia configurata
+    if not os.getenv('OPENROUTER_API_KEY'):
         raise MissingAPIKeyError(
-            'GOOGLE_API_KEY environment variable not set'
+            'OPENROUTER_API_KEY environment variable not set'
     )
 
     logger.info("Starting Appointment Agent A2A Server initialization...")
 
     try:
         # Initialize session service to store and manage user conversation states
+        from google.adk.sessions.in_memory_session_service import InMemorySessionService
         session_service = InMemorySessionService()
 
         # The agent instance that will process user inputs and generate responses
         agent = appointment_agent
 
         # Create a Runner to execute the agent logic using the session state
+        from google.adk.runners import Runner
         runner = Runner(app_name=APP_NAME, agent=agent, session_service=session_service)
 
         # Instantiate the custom task manager that handles A2A streaming and task execution 
         task_manager = AppointmentAgentTaskManager(agent, runner, session_service, APP_NAME, USER_ID)
 
         # Determine the port and host from environment variables
-        port = 8003  # Porta fissa per il servizio Appointment
+        port = int(os.getenv("PORT_APPOINTMENT", "8003"))  # Using port 8003 for appointment agent
         host = os.getenv("HOST", "localhost")
         listen_host = "0.0.0.0"  # Allow external connections
 
