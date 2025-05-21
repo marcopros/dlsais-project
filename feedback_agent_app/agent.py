@@ -110,15 +110,15 @@ async def query_agent(query: str = test_review) -> FeedbackOut | None:
             if isinstance(new_item, MessageOutputItem):
                 parsed = json.loads(ItemHelpers.text_message_output(new_item))
                 if parsed["rating_scoring"] != None:
-                    print(f"Rating scoring: {parsed["rating_scoring"]}")
+                    print(f"Rating scoring: {parsed['rating_scoring']}")
                 if parsed["tag_scoring"] != None:
-                    print(f"Tag scoring: {parsed["tag_scoring"]}")
+                    print(f"Tag scoring: {parsed['tag_scoring']}")
                 if parsed["time_decay"] != None:
-                    print(f"Time decay: {parsed["time_decay"]}")
+                    print(f"Time decay: {parsed['time_decay']}")
                 if parsed["sentiment_scoring"] != None:
-                    print(f"Sentiment scoring: {parsed["sentiment_scoring"]}")
+                    print(f"Sentiment scoring: {parsed['sentiment_scoring']}")
                 if parsed["updated_trust_score"] != None:
-                    print(f"Updated trust score: {parsed["updated_trust_score"]}")
+                    print(f"Updated trust score: {parsed['updated_trust_score']}")
                 
                 output = FeedbackOut(
                     jobTitle=parsed["jobTitle"],
