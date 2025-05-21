@@ -219,9 +219,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   userInput.focus();
 
-  setTimeout(() => {
-    addMessage('agent', "Hello! I'm your home repair assistant. What problem are you experiencing with your home today?", 'Orchestrator');
-  }, 500);
+  const initialMessage = localStorage.getItem('initialMessage');
+    if (initialMessage) {
+      localStorage.removeItem('initialMessage');
+      addMessage('user', initialMessage);
+      const typing = addTypingIndicator();
+      sendMessage(initialMessage).then(response => {
+        removeTypingIndicator();
+        const agent = extractAgentName(response);
+        const text = extractMainContent(response);
+        addMessage('agent', text, agent);
+      });
+    } else {
+      setTimeout(() => {
+        addMessage('agent', "Hello! I'm your home repair assistant. What problem are you experiencing with your home today?", 'Orchestrator');
+      }, 500);
+    }
+
 });
 
 </script>

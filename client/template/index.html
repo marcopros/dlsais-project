@@ -203,6 +203,22 @@
 
       typeEffect();
     </script>
+    <script>
+      const chatForm = document.getElementById('chat-form');
+      const userInput = document.getElementById('user-input');
+
+      chatForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        // Salva temporaneamente il messaggio nel localStorage
+        localStorage.setItem('initialMessage', message);
+
+        // Reindirizza a a2a_chat.html
+        window.location.href = '/chat';
+      });
+    </script>
 
 
 
