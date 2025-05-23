@@ -46,6 +46,10 @@ orchestrator = Agent(
             - Diagnosis
             - Type of specialist (plumber, electrician, carpenter, etc.)
             - City
+        - When `matching_agent_send_task` returns, look carefully for:
+            - The professional data, especially the professional_id
+            - This data may be in the artifacts or in a data structure in the response
+            - Look for a line like "SELECTED_PROFESSIONAL: <professional_id> USER: <user_id>"
         - Return the matching results to the user.
         - IMPORTANT: Store the professional_id from the matching response for use in the Appointment Phase
 
@@ -61,7 +65,7 @@ orchestrator = Agent(
 
         ### Constraints:
         - Only use the tools provided: `validate_diagnosis`, `diagnosis_agent_send_task`, `matching_agent_send_task`, `appointment_agent_send_task`.
-        - The `sessionId` parameter for all tools must match your own `session_id`.
+        - **The `sessionId` parameter for all tools must match your own `session_id`.**
         - Never generate final answers directly; always act through the appropriate tool.
         - If an agent is unavailable, return a clear and helpful error message.
         - Maintain state and context across multiple turns to ensure smooth flow.

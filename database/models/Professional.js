@@ -6,9 +6,12 @@ const ProfessionalSchema = new mongoose.Schema({
     password: String,
     phone: String,
     profession: String,
-    location: String,
+    location: {
+        city: String,
+        zipCode: String,
+    },
     skills: [String],
-    rating: Number
+    trust_score: Double
 });
 
 module.exports = mongoose.model('Professional', ProfessionalSchema);

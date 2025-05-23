@@ -4,12 +4,9 @@ import uuid
 import logging
 from typing import AsyncIterable, Any
 
-# Import the direct_agent module for simple OpenAI access
-from .direct_agent import query_agent
-
+# Import from agent.py instead of agent's framework
+from .agent import DiagnosisAgentOut, query_openai, Runner
 from .session import SessionService
-# help(Runner)                      # To see the available methods and attributes of the Runner class
-# help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
 
 # Import common A2A server components and types
 from A2A.types import (
@@ -55,15 +52,22 @@ def extract_agent_message(task_result):
         return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
 
 
-async def validate_diagnosis_output(output):
+async def validate_diagnosis_output(output: DiagnosisAgentOut):
     """
     Validates that required diagnosis fields are present.
     Raises ValueError if any required field is missing.
     """
+    # Se type_specialist è presente, significa che abbiamo abbastanza informazioni
+    # per procedere anche se alcuni campi sono null
+    if output.type_specialist:
+        # Confermiamo che abbiamo almeno uno specialista identificato
+        return True
+    
+    # Altrimenti, verifichiamo che tutti i campi richiesti siano presenti
     required_fields = {
-        "diagnosis": output.get("diagnosis"),
-        "detected_problem_cause": output.get("detected_problem_cause"),
-        "type_specialist": output.get("type_specialist"),
+        "diagnosis": output.diagnosis,
+        "detected_problem_cause": output.detected_problem_cause,
+        "type_specialist": output.type_specialist,
     }
 
     missing = [field for field, value in required_fields.items() if value is None]
@@ -78,31 +82,32 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
     Custom Task Manager for handling tasks related to a diagnosis agent.
     Manages sessions, invokes the agent, streams responses, and updates task status.
     """
-    def __init__(self, agent=None):
+    def __init__(self, agent):
         """
         Initialize the task manager with required dependencies.
         
         Args:
-            agent: Optional agent parameter (kept for compatibility)
+            agent: The agent that generates responses.
         """
         super().__init__()
-        self.agent = agent  # Not used anymore, kept for compatibility
+        self.agent = agent
         self.sessions = SessionService()
         logger.info("DiagnosisAgentTaskManager initialized.")
     
 
-    async def invoke(self, query, session_id) -> dict:
+    async def invoke(self, query, session_id) -> DiagnosisAgentOut:
         """
-        Synchronously invoke the direct agent to get a final response for a given query and session.
+        Invoke the agent to get a response for a given query and session.
 
         Args:
             query: User input as text.
             session_id: Unique identifier for the session.
 
         Returns:
-            Final response from the agent as a dictionary.
+            A DiagnosisAgentOut instance with the agent's response.
         """
         logger.info(f"QUERY: {query}")
+        
         # Retrieve or create a session based on session_id
         session = self.sessions.get_session(session_id)
 
@@ -113,29 +118,23 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
         else:
             logger.info(f"Session found with ID: {session_id}") 
         
-        
-        # Query the direct agent with the user message and session
         try:
-            result = await query_agent(query, session)
-            logger.info(f"RESULT: {result}")
+            # Call our direct OpenAI function (no ADK dependency)
+            result = await query_openai(query, session)
+            logger.info(f"RESULT TYPE: {type(result)}")
             return result
         except Exception as e:
-            logger.error(f"Error during agent invocation: {e}")
-            raise
-
-
-    # TO DO
-    async def stream(self, query, session_id) -> AsyncIterable[dict[str, Any]]:
-        """
-        Stream partial results from the agent asynchronously.
-
-        Args:
-            query: User input as text.
-            session_id: Unique identifier for the session.
-
-        Yields:
-            Dictionary containing either intermediate updates or final response.
-        """
+            logger.error(f"Error during agent execution: {e}", exc_info=True)
+            # Return a fallback response
+            return DiagnosisAgentOut(
+                agent_response=f"Mi dispiace, si è verificato un errore durante l'analisi: {str(e)}",
+                diagnosis="Errore durante l'analisi",
+                detected_problem_cause="Errore di elaborazione",
+                type_specialist="Supporto tecnico",
+                unlock_request_for_diy_solution=False,
+                diy_solution=None,
+                diy_links=None
+            )
 
 
     async def on_send_task(self, request: SendTaskRequest) -> SendTaskResponse:
@@ -165,42 +164,72 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
                             user_message = msg.parts[0].text
                         break
             
-            # Get the agent's response (now a dictionary)
-            response_dict = await self.invoke(user_message, task.sessionId)
+            # Aggiungi il messaggio dell'utente alla cronologia della sessione
+            self.sessions.add_message_to_history(task.sessionId, "user", user_message)
             
-            # Extract the summary from the dictionary
-            summary = response_dict.get("agent_response", "No response available")
+            # Get the agent's response
+            final_response = await self.invoke(user_message, task.sessionId)
             
+            # Aggiungi anche la risposta dell'agente alla cronologia
+            self.sessions.add_message_to_history(task.sessionId, "assistant", final_response.agent_response)
+            
+            # Safety check - make sure we have a DiagnosisAgentOut instance
+            if not isinstance(final_response, DiagnosisAgentOut):
+                logger.warning(f"Response is not a DiagnosisAgentOut instance: {type(final_response)}")
+                if isinstance(final_response, str):
+                    final_response = DiagnosisAgentOut(
+                        agent_response=final_response,
+                        diagnosis="Non determinato",
+                        detected_problem_cause="Non determinato",
+                        type_specialist="Idraulico",  # Default value
+                        unlock_request_for_diy_solution=False,
+                        diy_solution=None,
+                        diy_links=None
+                    )
+                else:
+                    final_response = DiagnosisAgentOut(
+                        agent_response=str(final_response),
+                        diagnosis="Non determinato",
+                        detected_problem_cause="Non determinato",
+                        type_specialist="Idraulico",  # Default value
+                        unlock_request_for_diy_solution=False,
+                        diy_solution=None,
+                        diy_links=None
+                    )
+            
+            summary = final_response.agent_response
+            data = final_response.model_dump()
+
             part_summary = [{"type": "text", "text": summary}]
-            part_data = [{"type": "data", "data": response_dict}]
+            part_data = [{"type": "data", "data": data}]
+
 
             # Check if the response is valid, else require more input 
             try:
-                await validate_diagnosis_output(response_dict)
+                await validate_diagnosis_output(final_response)
+
             except ValueError as e:
                 logger.error(f"Invalid diagnosis output: {e}")
-                error_message = Message(
-                    role="agent",
-                    parts=[TextPart(type="text", text=f"Diagnosis incomplete: {str(e)}")],
-                )
+
                 failed_task = await self.update_store(
                     task_id=task.id,
-                    status=TaskStatus(state=TaskState.INPUT_REQUIRED, message=Message(role='agent', parts=part_summary)),
+                    status=TaskStatus(state=TaskState.INPUT_REQUIRED, message=Message(role='agent', parts=part_summary, metadata={"data": data})),
                     artifacts=[]
                 )
+
                 return SendTaskResponse(id=request.id, result=failed_task)
             
             # Update task as completed
             updated_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.COMPLETED, message=Message(role='agent', parts=part_summary)),
-                artifacts=[Artifact(parts=part_data)]
+                artifacts=[Artifact(parts=part_data, metadata={"data": data})]
             )
 
             return SendTaskResponse(id=request.id, result=updated_task)
 
         except Exception as e:
-            logger.error(f"Error while processing task {task.id}: {e}")
+            logger.error(f"Error while processing task {task.id}: {e}", exc_info=True)
 
             error_message = Message(
                 role="agent",
@@ -263,5 +292,4 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
                 "artifacts": [Artifact(parts=[TextPart(type="text", text="Fake final response")])],
             },
         )
-
     

@@ -6,50 +6,54 @@ import openai
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
 
+
 # Configura il logging
 logger = logging.getLogger(__name__)
 
 # Configura OpenAI per usare direttamente OpenRouter
-<<<<<<< HEAD
-# Se hai già un'API key valida, inseriscila direttamente qui
-# altrimenti sarà usata quella presente nella variabile d'ambiente
-openai_api_key = os.getenv("OPENROUTER_API_KEY") or "INSERT_YOUR_API_KEY_HERE"
-=======
-# Usa la chiave API dall'ambiente
-openai_api_key = os.getenv("OPENROUTER_API_KEY")
->>>>>>> main
+openai_api_key = os.getenv("OPENAI_API_KEY")
 openai.api_key = openai_api_key
 openai.base_url = "https://openrouter.ai/api/v1"  # URL diretto di OpenRouter
 print(f"Using OpenAI with OpenRouter API: {openai.base_url}")
-print(f"API Key configured: {'Yes' if openai_api_key else 'No'}")
+
+ 
 
 # Sistema di prompt per l'agente di diagnosi
 SYSTEM_PROMPT = """
-You are a home diagnosis expert. Your role is to analyze user-reported home issues, determine the likely cause,
-and provide a structured diagnosis.
+    You are a **Home Diagnosis Expert**. Your role is to analyze user-reported household issues, identify likely causes, and provide a structured and actionable diagnosis.
 
-If the issue is unclear, ask clarifying questions before proceeding. Once diagnosed:
-- Summarize the issue and its cause clearly
-- Consider if a DIY solution is appropriate based on the user's skills, tools, and preferences
-- If suitable, suggest a DIY solution with links to video tutorials
+    ## GENERAL INSTRUCTIONS
+    1. Try to **understand the user's issue** as clearly as possible while deriving a diagnosis, cause and type_specialist
+    1. If the issue is unclear, ask **explicit and clear follow-up questions** to gather essential details before proceeding.
+    2. Once the problem is understood, your response MUST include all of the following:
 
-Always respect context from the session settings such as language, location, available time, and DIY capabilities.
+    ### STRUCTURED OUTPUT (JSON format)
+    Return your response as a **valid JSON** with these fields:
 
-Your response MUST include:
-1. A clear diagnosis of the issue
-2. The detected problem cause
-3. The type of specialist needed (electrician, plumber, etc.)
+    - `"agent_response"`  A concise summary of your diagnosis. If more information is needed, specify exactly what is missing.
+    - `"diagnosis"`  A clear and specific diagnosis of the issue. Use `null` if the issue is not yet diagnosed.
+    - `"detected_problem_cause"` The most likely root cause of the issue. Use `null` if undetermined.
+    - `"type_specialist"`  The type of professional required (e.g., electrician, plumber). Use `null` if undetermined.
+    - `"unlock_request_for_diy_solution"` A boolean indicating whether a DIY solution is possible based on the user’s context (skills, tools, preferences).
+    - `"diy_solution"`  A DIY fix, if applicable and safe. Use `null` if not applicable.
+    - `"diy_links"`  Video tutorial links that guide the user through the DIY process. Use `null` if not applicable.
 
-Always return a valid JSON structure with these fields.
+    ## EVALUATION & RESPONSE STRATEGY
+    - Always respect the session context: user location, time availability, DIY experience, and language.
+    - If the issue **can be safely resolved** by the user:
+        - Provide a clear step-by-step DIY solution.
+        - Include **reliable video tutorials** as support.
+    - If the issue **requires a specialist**, state the type and explain why.
 """
 
+# Define the output structure for the diagnosis agent
 def get_diagnosis_template():
     """Returns a template with default values for the diagnosis response"""
     return {
-        "agent_response": "",          # summary of the diagnosis agent 
-        "diagnosis": "Unable to determine",  # brief diagnosis (default provided)
-        "detected_problem_cause": "Unknown",  # what caused the problem (default provided) 
-        "type_specialist": "General handyman",  # type of specialist needed (default provided)
+        "agent_response": None,             # summary of the diagnosis agent 
+        "diagnosis": None,                  # brief diagnosis (default provided)
+        "detected_problem_cause": None,     # what caused the problem (default provided) 
+        "type_specialist": None,            # type of specialist needed (default provided)
         "unlock_request_for_diy_solution": False,
         "diy_solution": None,
         "diy_links": None
@@ -145,16 +149,6 @@ async def query_agent(user_message: str, session_data: Optional[Dict[str, Any]] 
             for key in template:
                 if key not in diagnosis_data:
                     diagnosis_data[key] = template[key]
-            
-            # Set defaults for required fields if they are None
-            if diagnosis_data["diagnosis"] is None:
-                diagnosis_data["diagnosis"] = "Unable to determine"
-                
-            if diagnosis_data["detected_problem_cause"] is None:
-                diagnosis_data["detected_problem_cause"] = "Unknown"
-                
-            if diagnosis_data["type_specialist"] is None:
-                diagnosis_data["type_specialist"] = "General handyman"
             
             # Return the filled template
             return diagnosis_data

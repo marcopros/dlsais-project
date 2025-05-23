@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Repair Assistant</title>
+<<<<<<< HEAD
 
     <!-- Fonts -->
     <link
@@ -224,4 +225,88 @@
 
     
   </body>
+=======
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="../static/css/login.css">
+    <link rel="stylesheet" href="../static/css/session.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css ">
+</head>
+<body>
+
+  <!-- Header Bar -->
+  <div id="header-bar">
+    <div id="hamburger-menu">&#9776;</div> <!-- Hamburger Icon -->
+    <div id="logo">🏠 Home Repair Assistant</div> 
+    <div id="header-icons">
+      <div id="profile" class="profile-dropdown-container">
+        <i id="profile-icon" class="fas fa-user-circle profile-icon-unlogged" title="Profile"></i>
+        <div id="profile-dropdown" class="dropdown-content">
+          <button id="logout-button">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main-content">
+
+    <!-- Right-side sessions column -->
+    <div id="sessions-container" class="hidden">
+      <h2>Sessions</h2>
+      <ul id="session-list"></ul>
+    </div>
+
+    <!-- Main reagon for the chat -->
+    <div id="chat-area">
+      <div id="central-part">
+        <h1>HOME REPAIR ASSISTANT</h1>
+        <p class="description">
+          <span class="diagnosi-color">Problem diagnosis</span>, 
+          <span class="diy-color"> DIY suggestion </span>, 
+          <span class="matching-color"> Professional search</span> and 
+          <span class="appointment-color">Make an appointment</span> 
+        </p>
+        <form id="chat-form">
+          <input type="text" id="user-input" placeholder="Describe your issue .." required>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="../static/js/script.js?v=1.1.1"></script>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-btn" id="close-login">&times;</span>
+      <h2>Login</h2>
+      <form id="login-form">
+        <input type="email" id="login-email" name="email" placeholder="Email" required>
+        <input type="password" id="login-password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+      <p id="registration-p">Don't have an account?</p>
+      <button id="open-register">Register</button>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="register-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-btn" id="close-register">&times;</span>
+      <h2>Register</h2>
+     <form id="registration-form">
+        <input type="text" id="register-name" placeholder="Name" required />
+        <input type="email" id="register-email" placeholder="Email" required />
+        <input type="password" id="register-password" placeholder="Password" required />
+        <input type="text" id="register-phone" placeholder="Phone" required />
+        <button type="submit">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../static/js/login.js"></script>
+
+</body>
+>>>>>>> main
 </html>

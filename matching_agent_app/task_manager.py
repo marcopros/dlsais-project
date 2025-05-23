@@ -2,6 +2,7 @@ import asyncio
 import json
 import uuid
 import logging
+import re
 from typing import AsyncIterable, Any
 
 # Google ADK imports for agent execution and session management
@@ -19,6 +20,7 @@ from A2A.types import (
     Message,
     Artifact,
     TextPart,
+    DataPart,
     TaskStatus,
     TaskState,
     TaskNotFoundError,
@@ -112,7 +114,28 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
         # Extract the text from the last event's content parts
         return '\n'.join([p.text for p in events[-1].content.parts if p.text])
 
-
+    def extract_ids_from_response(self, response_text: str) -> dict:
+        """
+        Extract professional ID and user ID from the response text.
+        Expects a line in format: "SELECTED_PROFESSIONAL: prof_id USER: user_id"
+        
+        Args:
+            response_text: The agent's response text.
+            
+        Returns:
+            Dictionary with professional_id and user_id if found, empty dict otherwise.
+        """
+        # Use regex to find the selection line
+        selection_pattern = r"SELECTED_PROFESSIONAL:\s*(\S+)\s*USER:\s*(\S+)"
+        match = re.search(selection_pattern, response_text)
+        
+        if match:
+            return {
+                "professional_id": match.group(1),
+                "user_id": match.group(2)
+            }
+        return {}
+        
     async def stream(self, query, session_id) -> AsyncIterable[dict[str, Any]]:
         """
         Stream partial results from the agent asynchronously.
@@ -223,17 +246,26 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
                         break
             
             # Get the agent's response
-            final_response_text =  await self.invoke(user_message, task.sessionId)
+            final_response_text = await self.invoke(user_message, task.sessionId)
+            
+            # Extract professional ID and user ID from the response if present
+            extracted_ids = self.extract_ids_from_response(final_response_text)
+            
+            # Create parts for the response
+            text_part = TextPart(type="text", text=final_response_text)
+            parts = [text_part]
+            
+            # If we found IDs, add them as data part
+            artifacts = []
+            if extracted_ids:
+                data_part = DataPart(type="data", data=extracted_ids)
+                artifacts = [Artifact(parts=[data_part])]
+                logger.info(f"Extracted IDs from response: {extracted_ids}")
 
             # Create a response message to store in the task
             response_message = Message(
                 role="agent",
-                parts=[
-                    TextPart(
-                        type="text",
-                        text=final_response_text
-                    )
-                ],
+                parts=parts,
                 timestamp=int(asyncio.get_running_loop().time() * 1000),
                 id=str(uuid.uuid4())
             )
@@ -242,7 +274,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             updated_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.COMPLETED, message=response_message),
-                artifacts=[]
+                artifacts=artifacts
             )
 
             return SendTaskResponse(id=request.id, result=updated_task)
