@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leave Feedback</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Manrope', 'sans-serif'],
+          },
+          colors: {
+            primary: '#1E3A8A',
+            accent: '#F97316',
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500 text-white min-h-screen flex items-center justify-center p-4 font-sans">
+
+  <div class="w-full max-w-2xl bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 space-y-6 animate-fade-in">
+
+    <div>
+      <h1 id="jobTitle" class="text-3xl font-display font-extrabold text-white"></h1>
+      <p id="professionalInfo" class="text-white/70 text-sm mt-1"></p>
+    </div>
+
+
+    <div id="step1" class="space-y-4">
+      <label class="block text-lg font-semibold">1. How would you rate the service?</label>
+      <div id="rating" class="flex space-x-2 text-3xl">
+        <button data-rating="1" class="star text-white/30">&#9733;</button>
+        <button data-rating="2" class="star text-white/30">&#9733;</button>
+        <button data-rating="3" class="star text-white/30">&#9733;</button>
+        <button data-rating="4" class="star text-white/30">&#9733;</button>
+        <button data-rating="5" class="star text-white/30">&#9733;</button>
+      </div>
+      <button id="toStep2" class="mt-4 bg-accent text-white px-4 py-2 rounded-xl font-semibold hover:bg-orange-400 transition disabled:opacity-50" disabled>Next</button>
+    </div>
+
+    <div id="step2" class="hidden space-y-4">
+      <label class="block text-lg font-semibold">2. Leave your feedback</label>
+      <div class="flex space-x-4">
+        <button id="btnText" class="input-method px-4 py-2 rounded-lg bg-white/20 text-white hover:bg-white/30 transition">✍️ Write</button>
+        <button id="btnChips" class="input-method px-4 py-2 rounded-lg bg-white/20 text-white hover:bg-white/30 transition">💬 Select</button>
+      </div>
+      <textarea id="textFeedback" class="hidden w-full bg-white/10 text-white p-3 rounded-lg placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" placeholder="Write your feedback here..."></textarea>
+      <div id="chipContainer" class="hidden space-y-2">
+        <div class="font-semibold text-green-300">Positive Aspects</div>
+        <div id="positiveChips" class="flex flex-wrap gap-2"></div>
+        <div class="font-semibold text-red-300">Negative Aspects</div>
+        <div id="negativeChips" class="flex flex-wrap gap-2"></div>
+      </div>
+      <button id="submitBtn" class="w-full bg-white text-primary font-semibold py-3 rounded-xl hover:bg-gray-100 flex justify-center items-center gap-2">
+        <span>🚀 Submit Feedback</span>
+        <span id="spinner" class="hidden animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full"></span>
+      </button>
+    </div>
+
+    <div id="resultBox" class="hidden bg-white/20 border border-green-400 p-4 mt-4 rounded-xl shadow">
+      <div class="flex items-start gap-3">
+        <div class="text-green-300 text-2xl">🤖</div>
+        <div class="text-sm space-y-1 text-white">
+          <h3 class="font-bold text-green-200 text-lg">Feedback Analysis</h3>
+          <div id="resultOutput" class="whitespace-pre-wrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function updateAppointmentStatus(id, newStatus) {
+        try {
+            await fetch(`/appointments/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+            });
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("Failed to update appointment.");
+        }
+    }
+
+    function getQueryParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return {
+        professionalId: urlParams.get("professional_id"),
+        professionalName: urlParams.get("name"),
+        jobTitle: urlParams.get("job"),
+        appointmentId: urlParams.get("appointment_id"),
+      };
+    }
+
+    const query = getQueryParams();
+
+    document.getElementById("jobTitle").textContent = query.jobTitle || "Home Repair Job";
+    document.getElementById("professionalInfo").textContent = `${query.professionalName || "Unknown Professional"}`;
+
+
+    let selectedRating = 0;
+    let inputMethod = null;
+    let selectedChips = [];
+
+    const chips = {
+      positive: ['👍 Professional', '⏱️ Punctual', '💰 Fair price', '🧹 Clean and tidy', '🤝 Polite', '🔧 Accurate work', '📱 Great communication', '🚀 Fast and efficient', '🎓 Very competent', '♻️ Sustainable', '🛠️ Well equipped', '🔄 Flexible'],
+      negative: ['⏰ Late', '💸 Too expensive', '🗣️ Poor communication', '🛠️ Incomplete job', '😕 Unprofessional', '🧰 Bad equipment', '📝 Inaccurate quote', '⚠️ Safety concerns', '🗑️ Messy', '⌛ Too slow', '💦 Fragile results', '🔙 Required rework']
+    };
+
+    document.querySelectorAll('.star').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedRating = parseInt(btn.dataset.rating);
+        document.querySelectorAll('.star').forEach((b, i) => {
+          b.classList.toggle('text-yellow-400', i < selectedRating);
+          b.classList.toggle('text-white/30', i >= selectedRating);
+        });
+        document.getElementById('toStep2').disabled = selectedRating === 0;
+      });
+    });
+
+    document.getElementById('toStep2').onclick = () => {
+      document.getElementById('step1').classList.add('hidden');
+      document.getElementById('step2').classList.remove('hidden');
+    };
+
+    const textBtn = document.getElementById('btnText');
+    const chipsBtn = document.getElementById('btnChips');
+
+    textBtn.onclick = () => {
+      inputMethod = 'text';
+      textBtn.classList.add('bg-accent');
+      chipsBtn.classList.remove('bg-accent');
+      textBtn.classList.remove('bg-white/20');
+      chipsBtn.classList.add('bg-white/20');
+      document.getElementById('textFeedback').classList.remove('hidden');
+      document.getElementById('chipContainer').classList.add('hidden');
+      selectedChips = [];
+      document.querySelectorAll('[data-chip-id]').forEach(chip => {
+        chip.classList.remove('bg-green-400', 'bg-red-400', 'text-black');
+      });
+    };
+
+    chipsBtn.onclick = () => {
+      inputMethod = 'chips';
+      chipsBtn.classList.add('bg-accent');
+      textBtn.classList.remove('bg-accent');
+      chipsBtn.classList.remove('bg-white/20');
+      textBtn.classList.add('bg-white/20');
+      document.getElementById('textFeedback').classList.add('hidden');
+      document.getElementById('chipContainer').classList.remove('hidden');
+      document.getElementById('textFeedback').value = '';
+    };
+
+    function renderChips(containerId, items, cat) {
+      const container = document.getElementById(containerId);
+      items.forEach((txt, i) => {
+        const chip = document.createElement('button');
+        const id = `${cat[0]}${i+1}`;
+        chip.textContent = txt;
+        chip.className = "px-3 py-1 rounded-full text-sm text-white bg-white/20 transition hover:bg-white/30";
+        chip.onclick = () => {
+            if (selectedChips.includes(id)) {
+                selectedChips = selectedChips.filter(c => c !== id);
+                chip.classList.remove('bg-green-400', 'bg-red-400', 'text-black', 'hover:bg-white/30');
+            } else {
+                selectedChips.push(id);
+                chip.classList.add(cat === 'positive' ? 'bg-green-400' : 'bg-red-400', 'text-black');
+                chip.classList.remove('hover:bg-white/30'); // elimina hover per non sovrascrivere colore
+            }
+        };
+        chip.dataset.chipId = id;
+        chip.dataset.text = txt;
+        chip.dataset.category = cat;
+        container.appendChild(chip);
+      });
+    }
+
+    renderChips('positiveChips', chips.positive, 'positive');
+    renderChips('negativeChips', chips.negative, 'negative');
+
+    document.getElementById('submitBtn').onclick = async () => {
+      if (selectedRating === 0 || !inputMethod ||
+        (inputMethod === 'text' && !document.getElementById('textFeedback').value.trim()) ||
+        (inputMethod === 'chips' && selectedChips.length === 0)) {
+        alert("Please complete all fields before submitting.");
+        return;
+      }
+
+      const spinner = document.getElementById('spinner');
+      spinner.classList.remove('hidden');
+
+      const tags = Array.from(document.querySelectorAll('[data-chip-id]'))
+        .filter(el => selectedChips.includes(el.dataset.chipId))
+        .map(el => ({
+          id: el.dataset.chipId,
+          text: el.dataset.text,
+          category: el.dataset.category
+        }));
+
+      const feedback = {
+        jobInfo: {
+          jobTitle: query.jobTitle || "Unknown job",
+          professional: query.professionalName || "Unknown",
+          professionalId: query.professionalId || null,
+          date: new Date().toISOString().split("T")[0]
+        },
+        rating: selectedRating,
+        feedbackType: inputMethod,
+        textFeedback: inputMethod === 'text' ? document.getElementById('textFeedback').value : "",
+        selectedTags: inputMethod === 'chips' ? tags : []
+      };
+
+      try {
+        const res = await fetch("http://localhost:8009/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ feedback })
+        });
+        const data = await res.json();
+        const summary = `
+            🧠 Numeric rating: ${data.rating_scoring ?? "N/A"}
+            🏷️ Tag score: ${data.tag_scoring ?? "N/A"}
+            🕓 Time decay: ${data.time_decay ?? "N/A"}
+            💬 Sentiment: ${data.sentiment_scoring ?? "N/A"}
+            ✅ Updated trust score: ${data.updated_trust_score ?? "N/A"}
+        `;
+        document.getElementById('resultOutput').textContent = summary;
+        document.getElementById('resultBox').classList.remove('hidden');
+
+        updateAppointmentStatus(query.appointmentId, "terminated");
+
+        // ⏳ Aspetta 3 secondi e poi vai alla chat
+        setTimeout(() => {
+          window.location.href = "/chat";
+        }, 3000);
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        spinner.classList.add('hidden');
+      }
+    };
+  </script>
+</body>
+</html>

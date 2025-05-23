@@ -1,34 +1,413 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Repair Assistant</title>
-    <link rel="stylesheet" href="../static/css/a2a_chat.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Repair Assistant Chat</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Manrope', 'sans-serif'],
+          },
+          colors: {
+            primary: '#1E3A8A',
+            accent: '#F97316',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: 0, transform: 'translateY(20px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' },
+            },
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.8s ease-out forwards',
+          },
+        },
+      },
+    };
+  </script>
 </head>
-<body>
-    <div class="chat-container">
-        <header>
-            <h1>Home Repair Assistant</h1>
-            <p>Multi-agent system for all your home repair needs</p>
-        </header>
-        
-        <div id="chat-messages" class="chat-messages"></div>
-        
-        <div class="chat-input">
-            <form id="chat-form">
-                <textarea id="user-input" rows="1" placeholder="Message the assistant..." autocomplete="off"></textarea>
-                <button type="submit">
-                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22 2L11 13"></path>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
-            </form>
-        </div>
+<body class="bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500 text-white min-h-screen font-sans">
+  <div class="flex h-screen w-full overflow-hidden">
+
+    <!-- Sidebar for Appointments -->
+    <div id="sidebar" class="w-80 shrink-0 bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500/80 backdrop-blur-xl text-white shadow-2xl transform -translate-x-full transition-transform duration-300 z-50 border-r-2 border-white/10">
+
+    <div class="flex items-center justify-between px-4 py-3 border-b border-white/20">
+        <h2 class="text-lg font-bold">Appointments</h2>
+        <button id="close-sidebar" class="text-white hover:text-orange-300 text-2xl font-bold">&times;</button>
     </div>
 
-    <script src="../static/js/a2a_chat.js"></script>
+    <div id="appointments-list" class="p-4 space-y-4 text-sm">
+        <!-- Appointments injected here -->
+    </div>
+    </div>
+
+    <!-- Mini Toggle Button Always Visible -->
+    <button id="open-sidebar" class="fixed top-1/2 left-0 transform -translate-y-1/2 -translate-x-[2px] bg-accent hover:bg-orange-400 text-white w-10 h-10 rounded-r-full z-50 shadow-lg flex items-center justify-center text-xl font-bold transition">
+    📅
+    </button>
+
+
+    <div id="chat-container" class="flex-1 flex flex-col transition-all duration-300">
+        <!-- Header -->
+        <header class="p-6 border-b border-white/20 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-display font-extrabold text-white">Home Repair Assistant</h1>
+                <p class="text-white/70 text-sm mt-1">Multi-agent system for all your home repair needs</p>
+            </div>
+
+        </header>
+         <!-- Chat messages -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4 text-white text-sm">
+        <!-- Dynamic messages will appear here -->
+        </div>
+
+        <!-- Input -->
+        <form id="chat-form" class="flex items-center gap-2 p-4 border-t border-white/10">
+        <textarea id="user-input" rows="1" placeholder="Message the assistant..."
+            class="flex-1 resize-none px-4 py-2 rounded-full bg-white/20 text-white placeholder-white/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            autocomplete="off"></textarea>
+        <button type="submit"
+            class="p-3 rounded-full bg-white text-primary hover:bg-gray-100 transition">
+            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
+                stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                <path d="M22 2L11 13"></path>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+        </form>
+
+    </div>
+
+
+
+   
+  </div>
+
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const chatMessages = document.getElementById('chat-messages');
+  const chatForm = document.getElementById('chat-form');
+  const userInput = document.getElementById('user-input');
+
+  userInput.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+    this.style.overflowY = this.scrollHeight > 200 ? 'auto' : 'hidden';
+  });
+
+  const sessionId = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+
+  function addMessage(role, content, agentName = null) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex mb-2 ' + (role === 'user' ? 'justify-end' : 'items-start gap-2');
+
+    const bubble = document.createElement('div');
+    bubble.className =
+      role === 'user'
+        ? 'bg-accent text-white px-4 py-2 rounded-2xl max-w-[75%] ml-auto shadow-md'
+        : 'bg-white/80 text-black px-4 py-2 rounded-2xl max-w-[75%] shadow-md';
+
+    bubble.textContent = content;
+
+    if (role === 'agent') {
+      const avatar = document.createElement('div');
+      avatar.className = 'w-8 h-8 flex items-center justify-center bg-white text-primary font-bold rounded-full text-sm shrink-0';
+      avatar.textContent = agentName?.[0] || 'A';
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(bubble);
+    } else {
+      wrapper.appendChild(bubble);
+    }
+
+    chatMessages.appendChild(wrapper);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function addTypingIndicator() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex items-start gap-2 typing-indicator';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'w-8 h-8 flex items-center justify-center bg-white text-primary font-bold rounded-full text-sm shrink-0';
+    avatar.textContent = '…';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bg-white/50 text-black px-4 py-2 rounded-2xl max-w-[75%] flex gap-1';
+    for (let i = 0; i < 3; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'w-2 h-2 rounded-full bg-black/50 animate-pulse';
+      bubble.appendChild(dot);
+    }
+
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(bubble);
+    chatMessages.appendChild(wrapper);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    return wrapper;
+  }
+
+  function removeTypingIndicator() {
+    const typing = document.querySelector('.typing-indicator');
+    if (typing) typing.remove();
+  }
+
+  async function sendMessage(message) {
+    try {
+      const res = await fetch('/send_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+      const data = await res.json();
+      return data.response;
+    } catch (err) {
+      console.error(err);
+      return "Sorry, there was an error processing your request.";
+    }
+  }
+
+  function extractAgentName(response) {
+    const match = response.match(/^\[(.*?)\]|^Agent:\s*(.*?)\s*-|^(Diagnosis|Matching|Appointment|Feedback|Orchestrator):/i);
+    return match?.[1] || match?.[2] || match?.[3] || 'Agent';
+  }
+
+  function extractMainContent(response) {
+    let content = response.replace(/^\[(.*?)\]\s*/, '').trim();
+    content = content.replace(/^Agent:\s*(.*?)(?:\s*-|\n|:)/i, '').trim();
+    content = content.replace(/```json.*?```/gs, '');
+    content = content.replace(/Reasoning:.*?Result:/gs, 'Result:');
+    return content.trim();
+  }
+
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    addMessage('user', message);
+    userInput.value = '';
+    userInput.style.height = 'auto';
+    userInput.focus();
+
+    const typing = addTypingIndicator();
+    const response = await sendMessage(message);
+    removeTypingIndicator();
+
+    const agent = extractAgentName(response);
+    const text = extractMainContent(response);
+    addMessage('agent', text, agent);
+  });
+
+  userInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      chatForm.dispatchEvent(new Event('submit'));
+    }
+  });
+
+  userInput.focus();
+
+  const initialMessage = localStorage.getItem('initialMessage');
+    if (initialMessage) {
+      localStorage.removeItem('initialMessage');
+      addMessage('user', initialMessage);
+      const typing = addTypingIndicator();
+      sendMessage(initialMessage).then(response => {
+        removeTypingIndicator();
+        const agent = extractAgentName(response);
+        const text = extractMainContent(response);
+        addMessage('agent', text, agent);
+      });
+    } else {
+      setTimeout(() => {
+        addMessage('agent', "Hello! I'm your home repair assistant. What problem are you experiencing with your home today?", 'Orchestrator');
+      }, 500);
+    }
+
+});
+
+</script>
+
+<script>
+
+function renderStatusBadge(status) {
+        const badgeClasses = {
+          pending_confirmation: "bg-yellow-500",
+          confirmed: "bg-blue-600",
+          job_completed: "bg-purple-600",
+          terminated: "bg-gray-500"
+        };
+
+        const text = {
+          pending_confirmation: "Awaiting Confirmation",
+          confirmed: "Confirmed",
+          job_completed: "Completed",
+          terminated: "Concluded 🎉"
+        };
+
+        return `<span class="inline-block px-2 py-1 text-xs text-white font-medium rounded ${badgeClasses[status] || "bg-gray-400"}">${text[status] || "Unknown"}</span>`;
+      }
+
+  const sidebar = document.getElementById('sidebar');
+    const openSidebarBtn = document.getElementById('open-sidebar');
+    const closeSidebarBtn = document.getElementById('close-sidebar');
+    const chatContainer = document.getElementById('chat-container');
+  const appointmentsList = document.getElementById('appointments-list');
+
+  async function fetchAppointments() {
+    const res = await fetch("/appointments");
+    const raw = await res.json();
+    return JSON.parse(raw); // bson.dumps restituisce stringa JSON
+ }
+
+  async function renderAppointments() {
+    appointmentsList.innerHTML = '';
+
+    const appointments = await fetchAppointments();
+
+    appointments.forEach(appt => {
+      const card = document.createElement('div');
+      card.className = 'p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10';
+
+      const date = new Date(appt.scheduledTime.$date).toLocaleString();
+      const professional = appt.professionalDetails.name;
+      const professionalId = appt.professionalDetails.id;
+      const job = appt.problemSummary;
+      const status = appt.status;
+      const hasFeedback = appt.rating || appt.comments;
+      const appointmentId = appt.id;
+
+      let content = `
+        <div class="font-semibold text-white/80 text-xs">${date}</div>
+        <div class="text-white text-base font-semibold mt-1">${professional}</div>
+        <div class="text-white/90 text-sm mt-1">${job}</div>
+      `;
+
+      // ⬇️ Stato: pending_confirmation
+      if (status === "pending_confirmation") {
+        content += `
+          <div class="mt-2 text-xs text-yellow-400">🕒 Awaiting confirmation</div>
+          <button data-id="${appt.id}" data-action="confirm" class="mt-2 bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition text-sm">✅ Confirm</button>
+        `;
+      }
+
+      // ⬇️ Stato: confirmed
+      else if (status === "confirmed") {
+        content += `
+          <div class="mt-2 text-xs text-blue-300">📅 Appointment scheduled for: ${date}</div>
+          <button data-id="${appt.id}" data-action="complete" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition text-sm">🛠️ Complete Job</button>
+        `;
+      }
+
+      // ⬇️ Stato: job_completed
+      else if (status === "job_completed") {
+        if (hasFeedback) {
+          content += `
+            <div class="mt-2 text-xs text-green-400">✅ Feedback submitted — ${appt.rating ?? "?"}⭐</div>
+            <div class="text-white/90 text-sm mt-1">${appt.comments}</div>
+            <div class="mt-2 text-xs text-gray-300">🎉 Status: Concluded</div>
+          `;
+        } else {
+          content += `
+            <div class="mt-2 text-xs text-yellow-400">📝 Job completed, awaiting feedback</div>
+            <a href="/feedback?professional_id=${encodeURIComponent(professionalId)}&job=${encodeURIComponent(job)}&name=${encodeURIComponent(professional)}&appointment_id=${appointmentId}" class="mt-2 inline-block text-sm bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition">
+              ✍️ Leave a Review
+            </a>
+            <button data-id="${appt.id}" data-action="terminate" class="mt-2 ml-2 text-sm bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600 transition">✅ Finalize</button>
+          `;
+        }
+      }
+
+      // ⬇️ Stato: terminated
+      else if (status === "terminated") {
+        content += `
+          <div class="mt-2 text-xs text-gray-300">✅ Process completed. No further action required.</div>
+        `;
+      }
+
+      // ✅ AGGIUNGI QUI il badge finale
+      // content += `<div class="mt-2">${renderStatusBadge(status)}</div>`;
+
+      card.innerHTML = content;
+      appointmentsList.appendChild(card);
+    });
+
+
+
+    // Event listener per i bottoni "confirm" e "complete"
+    appointmentsList.querySelectorAll("button[data-action]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const id = button.dataset.id;
+        const action = button.dataset.action;
+
+        const stateMap = {
+          confirm: "confirmed",
+          complete: "job_completed",
+          terminate: "terminated"
+        };
+
+        const newStatus = stateMap[action];
+        if (!newStatus) return;
+
+        // Disabilita il bottone per evitare click multipli
+        button.disabled = true;
+        button.textContent = "Processing...";
+
+        await updateAppointmentStatus(id, newStatus);
+        const toast = document.createElement("div");
+        toast.className = "fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-xl shadow-xl animate-fade-in z-50";
+        toast.textContent = "✅ Appointment updated!";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+
+        await renderAppointments();
+      });
+    });
+  }
+
+    async function updateAppointmentStatus(id, newStatus) {
+        try {
+            await fetch(`/appointments/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+            });
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("Failed to update appointment.");
+        }
+    }
+
+    
+
+  openSidebarBtn.addEventListener('click', () => {
+    renderAppointments();
+    sidebar.classList.remove('-translate-x-full');
+    document.body.classList.add('overflow-hidden');
+    openSidebarBtn.classList.add('hidden');
+  });
+
+    closeSidebarBtn.addEventListener('click', () => {
+    sidebar.classList.add('-translate-x-full');
+    document.body.classList.remove('overflow-hidden');
+    openSidebarBtn.classList.remove('hidden');
+    });
+
+</script>
+
+
+
 </body>
-</html> 
+</html>
