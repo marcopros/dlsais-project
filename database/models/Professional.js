@@ -11,7 +11,7 @@ const ProfessionalSchema = new mongoose.Schema({
         zipCode: String,
     },
     skills: [String],
-    trust_score: Double
+    trust_score: Number
 });
 
 module.exports = mongoose.model('Professional', ProfessionalSchema);
