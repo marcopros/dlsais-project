@@ -45,7 +45,7 @@
 <br>
 
 <p align="center">
-  <img src="architecture-structure.png" alt="System Architecture" style="width: 80%; max-width: 800px;" />
+  <img src="schema.png" alt="System Architecture" style="width: 80%; max-width: 800px;" />
 </p>
 
 <br>
