@@ -4,60 +4,73 @@ import logging
 from typing import Dict, Any, Optional
 import datetime
 
-import openai
+import os
+import json
+import logging
+from typing import Dict, Any, Optional
+import datetime
+
+# Import Google Generative AI SDK
+import google.generativeai as genai
 
 # Configura il logging
 logger = logging.getLogger(__name__)
 
-# Configura OpenAI per usare direttamente OpenRouter
-# Usa la chiave API dall'ambiente
-openai_api_key = os.getenv("OPENROUTER_API_KEY")
-openai.api_key = openai_api_key
-openai.base_url = "https://openrouter.ai/api/v1"  # URL diretto di OpenRouter
-print(f"Using OpenAI with OpenRouter API: {openai.base_url}")
-print(f"API Key configured: {'Yes' if openai_api_key else 'No'}")
-
-# Sistema di prompt per l'agente di appuntamenti
+# The SYSTEM_PROMPT is now primarily managed by the LlmAgent in agent.py
+# However, keeping a consistent prompt here might be useful for direct testing or fallback.
+# This prompt should ideally match the 'instruction' in agent.py.
 SYSTEM_PROMPT = """
-You are a smart assistant specialized in scheduling appointments between users and professionals
-for home repair interventions.
+You are the Appointment Agent, specialized in scheduling home repair appointments.
 
 **Main Steps:**
 1. From the user input, extract:
-   - Any time preferences mentioned by the user (such as "tomorrow", "as soon as possible", "next week", etc.)
-   - The issue that needs to be resolved
+   - The issue that needs to be resolved.
    - The user_id and professional_id which are included at the beginning of the message in the format:
-     "user_id:XXXX professional_id:YYYY [actual message]" 
-   - Note: DO NOT ask the user for their ID or the professional's ID as they are already included in the message
+     "user_id:XXXX professional_id:YYYY [actual message]"
+   - Note: DO NOT ask the user for their ID or the professional's ID as they are already included in the message.
 
-2. Use the 'check_user_availability' tool to get the user's available time slots.
-   - Pass the extracted user_id to the tool
-   - You can pass natural language date preferences like "tomorrow" or "as soon as possible" using the date_text parameter
-   - If the user says "as soon as possible", offer them the first available slot
+2. **Confirm Appointment Details:**
+   - Inform the user that you are ready to schedule an appointment with the selected professional (mention professional ID if name is not available, otherwise use name if you can retrieve it using a tool).
+   - State the issue that needs to be resolved.
+   - Ask the user to confirm if they wish to proceed with scheduling this appointment.
 
-3. Use the 'check_professional_availability' tool to get the professional's available time slots.
-   - Pass the extracted professional_id to the tool
-   - Use the same date preferences as for the user
+3. **If User Confirms:**
+   - Ask the user for their preferred date and time for the appointment. Accept natural language inputs (e.g., "tomorrow afternoon", "next Monday at 10 AM", "as soon as possible").
 
-4. Find the matching time slots between the user and professional.
-   - If there are matching slots, present options to the user.
-   - If there are no matching slots:
-      a. Inform the user that there are no immediate matching time slots.
-      b. Suggest alternative dates/times based on the professional's availability.
+4. **Interpret Date and Time:**
+   - Use the user's response to determine the desired date and time.
 
-5. Once the user selects a time slot or agrees to a suggestion, use the 'schedule_appointment' tool to confirm the appointment.
-   - Pass both user_id and professional_id to the appointment_details
-   - You can use natural language dates like "tomorrow" or "next Monday" in the datetime field
-   - Include the issue description in the appointment details
+5. **Schedule Appointment:**
+   - Use the 'schedule_appointment' tool with the following details:
+     - `user_id`: Extracted from the initial message.
+     - `professional_id`: Extracted from the initial message.
+     - `datetime`: The date and time interpreted from the user's response (format 'YYYY-MM-DD HH:MM'). If the user requested "as soon as possible", pass this phrase to the tool to handle.
+     - `issue`: Extracted from the initial message.
+     - `notes`: Include any relevant notes from the conversation.
+
+6. **After the appointment is successfully scheduled (based on the tool's response):**
+   - Provide the user with a confirmation summary including:
+     - The date and time of the appointment.
+     - The professional's name (if available from the tool response).
+     - The issue to be addressed.
+     - The appointment ID for reference.
+   - IMPORTANT: End your response with a confirmation line in this format:
+     "APPOINTMENT_CONFIRMED: <appointment_id> USER: <user_id> PROFESSIONAL: <professional_id>"
+   - This format is crucial for the orchestrator to process the appointment correctly.
 
 **Important Notes:**
-- ALWAYS extract and use the user_id and professional_id from the message - never ask the user for these
-- Message format: "user_id:XXXX professional_id:YYYY [actual message]" 
-- Accept natural language date inputs like "tomorrow", "next week", "as soon as possible"
-- If the user says "as soon as possible", book the first available slot 
-- If the date is ambiguous, suggest a specific time and ask for confirmation
-- Always confirm all details with the user before finalizing the appointment
-- After booking, always provide a summary of the scheduled appointment
+- ALWAYS extract and use the user_id and professional_id from the message - never ask the user for these.
+- Message format: "user_id:XXXX professional_id:YYYY [actual message]".
+- Accept natural language date and time inputs.
+- If the date/time is ambiguous, ask for clarification.
+- Always confirm all details with the user before finalizing the appointment.
+- After booking, always provide a summary of the scheduled appointment.
+- Always include the structured confirmation line at the end of successful bookings.
+
+**Tone:**
+- Friendly and professional.
+- Be clear and concise.
+- Confirm all details with the user before finalizing the appointment.
 """
 
 def get_appointment_template():
@@ -74,104 +87,69 @@ def get_appointment_template():
 
 async def query_agent(user_message: str, session_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
-    Query the OpenAI model directly through OpenRouter.
-    
+    Query the Google Generative AI model directly.
+
     Args:
         user_message: The user's input
-        session_data: Optional session context
-    
+        session_data: Optional session context (currently not directly used in this simplified query)
+
     Returns:
-        A dictionary with the structured appointment response
+        A dictionary with a simple text response from the model.
+        Note: This direct query bypasses ADK's tool orchestration and structured response handling.
+        It's primarily for basic text generation based on the prompt.
     """
-    # Default session settings if none provided
-    if not session_data:
-        session_data = {
-            "previous_appointments": [],
-            "user_location": "Unknown",
-            "user_preferred_times": [],
-            "professional_preferred_times": [],
-        }
-    
-    # Build the messages for the API call
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "system", "content": f"Session context: {json.dumps(session_data)}"},
-        {"role": "user", "content": user_message}
-    ]
-    
     try:
-        # Extra headers for OpenRouter
-        headers = {
-            "HTTP-Referer": "https://dlsais-project.app",  # Optional for OpenRouter statistics
-            "X-Title": "Home Repair Appointment Agent" 
-        }
-        
-        # Call the OpenAI API through OpenRouter directly
-        client = openai.Client(api_key=openai_api_key, base_url=openai.base_url)
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",  # OpenRouter will route this appropriately
-            messages=messages,
-            response_format={"type": "json_object"},
-            temperature=0.7,
-            extra_headers=headers
-        )
-        
-        # Debug logs to see the full response structure
-        logger.info(f"OpenRouter response type: {type(response)}")
-        
-        # Check if response is None or has other issues
-        if response is None:
-            logger.error("Received None response from OpenRouter")
-            return get_appointment_template()
-            
-        # Check if choices exists and is not empty
-        if not hasattr(response, 'choices') or not response.choices:
-            logger.error("Response does not have choices or choices is empty")
-            return get_appointment_template()
-            
-        # Check if first choice exists
-        if len(response.choices) == 0:
-            logger.error("Response choices is empty")
-            return get_appointment_template()
-            
-        # Check if message exists in first choice
-        if not hasattr(response.choices[0], 'message'):
-            logger.error("First choice does not have message")
-            return get_appointment_template()
-            
-        # Check if content exists in message
-        if not hasattr(response.choices[0].message, 'content') or response.choices[0].message.content is None:
-            logger.error("Message does not have content or content is None")
-            return get_appointment_template()
-        
-        # Extract the content from the response
-        ai_message = response.choices[0].message.content
-        logger.info(f"AI message content: {ai_message}")
-        
-        # Parse the JSON response
-        try:
-            appointment_data = json.loads(ai_message)
-            logger.info(f"Parsed appointment data: {appointment_data}")
-            
-            # Ensure we have all required fields
+        # Ensure genai is configured (should be done in server.py, but a check here is safe)
+        if not genai.get_client().api_key:
+             # This might happen if query_agent is called directly without server initialization
+             logger.error("Google Generative AI SDK not configured. Cannot query model.")
+             template = get_appointment_template()
+             template["agent_response"] = "Error: Google API key not configured."
+             return template
+
+        # Get the generative model
+        # Use the model specified in agent.py or a default
+        # For direct query, we'll use a default model name compatible with genai
+        model_name = "gemini-1.5-flash-latest" # Or match the model in agent.py if accessible
+
+        model = genai.GenerativeModel(model_name)
+
+        # Build the prompt including system instructions and user message
+        # Note: Direct querying might not handle multi-turn conversation or session state
+        # as effectively as the ADK Runner. This is a simplified interaction.
+        prompt_parts = [
+            SYSTEM_PROMPT,
+            f"User: {user_message}",
+            "Agent:" # Prompt the model to generate the agent's response
+        ]
+
+        # Generate content from the model
+        response = await model.generate_content_async(prompt_parts)
+
+        # Extract the text response
+        if response and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+            # Assuming the response is text
+            agent_response_text = "".join([part.text for part in response.candidates[0].content.parts if hasattr(part, 'text')])
+            logger.info(f"Agent response text: {agent_response_text}")
+
+            # For compatibility with the calling code (task_manager.py process_task before ADK integration),
+            # we return a dictionary, even though the response isn't structured JSON from the model here.
+            # The Task Manager's updated process_task (using ADK runner) will handle structured data.
+            # This direct_agent query is now a simplified path.
             template = get_appointment_template()
-            for key in template:
-                if key not in appointment_data:
-                    appointment_data[key] = template[key]
-            
-            # Return the filled template
-            return appointment_data
-            
-        except json.JSONDecodeError as e:
-            # If the response isn't valid JSON, create a diagnostic error response
-            logger.error(f"JSON decode error: {e}. Content: {ai_message}")
-            template = get_appointment_template()
-            template["agent_response"] = f"I'm sorry, I encountered an error processing your request. The response wasn't in the expected JSON format: {str(e)}"
+            template["agent_response"] = agent_response_text
+            # We cannot reliably extract structured data (appointment_scheduled, etc.) from a freeform text response here
+            # This part of the return is less meaningful when bypassing ADK/tools.
             return template
-            
+
+        else:
+            logger.warning("Model generated no content.")
+            template = get_appointment_template()
+            template["agent_response"] = "No response generated by the model."
+            return template
+
     except Exception as e:
-        # Handle any other errors
-        logger.error(f"Error during OpenRouter query: {type(e).__name__} - {str(e)}")
+        logger.error(f"Error during Google Generative AI query: {type(e).__name__} - {str(e)}")
         template = get_appointment_template()
-        template["agent_response"] = f"An error occurred: {str(e)}"
-        return template 
+        template["agent_response"] = f"An error occurred during model query: {str(e)}"
+        return template

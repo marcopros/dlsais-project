@@ -122,7 +122,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         human_readable_logger.log_user_message(query)
         
         # Retrieve or create a session based on session_id
-        session = self.runner.session_service.get_session(
+        session = await self.runner.session_service.get_session(
             app_name=self.app_name,
             user_id=self.user_id,
             session_id=session_id,
@@ -131,14 +131,25 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # If session is None, create a new session
         if session is None:
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
-            session = self.runner.session_service.create_session(
+            session = await self.runner.session_service.create_session(
                 app_name=self.app_name,
                 user_id=self.user_id,
                 state={},
                 session_id=session_id,
             )
+            # Explicitly retrieve the newly created session to ensure consistency
+            session = await self.runner.session_service.get_session(
+                app_name=self.app_name,
+                user_id=self.user_id,
+                session_id=session_id,
+            )
+            if session is None:
+                 # This should not happen if create_session was successful, but as a safeguard
+                 logger.error(f"Failed to retrieve newly created session with ID: {session_id}")
+                 # Depending on desired behavior, could raise an exception or handle differently
+                 raise ValueError(f"Failed to retrieve newly created session with ID: {session_id}")
         else:
-            logger.info(f"Session found with ID: {session_id}") 
+            logger.info(f"Session found with ID: {session_id}")
         
         # Wrap the user message in a types.Content object ( Format understandable by ADK Agent)
         content = types.Content(
@@ -149,13 +160,13 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         human_readable_logger.log_system_message("Processing your request...")
 
         # Run the agent synchronously with the user message and session
-        events = list(
-            self.runner.run(
-                user_id=self.user_id,
-                session_id=session.id,
-                new_message=content,
-            )
-        )
+        events = []
+        async for event in self.runner.run_async(
+            user_id=self.user_id,
+            session_id=session.id,
+            new_message=content,
+        ):
+            events.append(event)
 
         response = ""                    # Extract agent responses and log them
         agent_name = "Orchestrator"     # The name of the agent that is being called
@@ -267,7 +278,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         human_readable_logger.log_user_message(query)
         
         # Retrieve or create a session based on session_id
-        session = self.runner.session_service.get_session(
+        session = await self.runner.session_service.get_session(
             app_name=self.app_name,
             user_id=self.user_id,
             session_id=session_id,
@@ -433,29 +444,19 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             return SendTaskResponse(id=request.id, result=updated_task)
 
         except Exception as e:
-            logger.error(f"Error while processing task {task.id}: {e}")
-            human_readable_logger.log_system_message(f"❌ Error: {str(e)}")
+            logger.error(f"Error while processing task {task.id}: {e}", exc_info=True) # Log traceback
+            human_readable_logger.log_system_message(f"❌ Error: {type(e).__name__} - {e}") # Include exception type and message
 
-            error_message = Message(
-                role="agent",
-                parts=[
-                    TextPart(
-                        type="text",
-                        text=f"Error occurred during task processing: {str(e)}"
-                    )
-                ],
-                timestamp=int(asyncio.get_running_loop().time() * 1000),
-                id=str(uuid.uuid4())
+            # Instead of trying to update the store again, which seems to be causing issues,
+            # return an error response directly. The initial error should have already
+            # been logged and potentially handled by the store update that failed.
+            return SendTaskResponse(
+                id=request.id,
+                error={
+                    "code": -32603, # Internal error
+                    "message": f"Error occurred during task processing: {str(e)}"
+                }
             )
-
-            # Update status with error
-            failed_task = await self.update_store(
-                task_id=task.id,
-                status=TaskStatus(state=TaskState.FAILED, message=error_message),
-                artifacts=[]
-            )
-
-            return SendTaskResponse(id=request.id, result=failed_task)
 
 
     

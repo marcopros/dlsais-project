@@ -74,7 +74,7 @@ orchestrator = Agent(
         - Maintain state and context across multiple turns to ensure smooth flow.
         - Always extract and pass professional_id from the matching agent to the appointment agent - NEVER ask the user for IDs.
         - Be persistent in extracting the required IDs from agent responses - search responses thoroughly
-
+        - **NEVER ask the user for the session ID.** Always use the session ID provided internally.
     """,
     tools=[
         validate_diagnosis, diagnosis_agent_send_task, matching_agent_send_task, appointment_agent_send_task

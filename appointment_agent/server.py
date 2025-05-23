@@ -21,13 +21,11 @@ logger = logging.getLogger(__name__)
 # Load environment variables from a .env file if present
 load_dotenv()
 
-# Import e configura OpenAI per OpenRouter
-import openai
-openai_api_key = os.getenv("OPENROUTER_API_KEY")
-if openai_api_key:
-    openai.api_key = openai_api_key
-    openai.base_url = "https://openrouter.ai/api/v1"
-    logger.info("Using OpenAI with OpenRouter API directly: https://openrouter.ai/api/v1")
+# Import e configura Google Generative AI
+import google.generativeai as genai
+
+# Load environment variables from a .env file if present
+load_dotenv()
 
 # Application-wide constants
 APP_NAME = "appointment_agent_app"  # Logical name for this agent app
@@ -37,11 +35,17 @@ USER_ID = "1"  # Default user ID; used when associating sessions/tasks with a us
 async def run_server():
     """Initializes services and starts the A2AServer."""
 
-    # Verifica che la chiave OpenRouter API sia configurata
-    if not os.getenv('OPENROUTER_API_KEY'):
+    # Verifica che la chiave Google API sia configurata
+    if not os.getenv('GOOGLE_API_KEY'):
         raise MissingAPIKeyError(
-            'OPENROUTER_API_KEY environment variable not set'
-    )
+            'GOOGLE_API_KEY environment variable not set'
+        )
+    
+    # Configura l'SDK di Google Generative AI
+    genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+    logger.info("Google Generative AI SDK configured.")
+
+    logger.info("Starting Appointment Agent A2A Server initialization...")
 
     logger.info("Starting Appointment Agent A2A Server initialization...")
 
