@@ -24,127 +24,6 @@ body {
     padding: 20px;
 }
 
-/* Agent Colors */
-.diagnosi-color{
-    color: #63CAE3
-}
-
-.matching-color{
-    color: #91EC36
-}
-
-.diy-color{
-    color: #ffa62b
-}
-
-.appointment-color{
-    color: #EF6461
-}
-
-.feedback-color{
-    color: #A663CC
-}
-
-
-/* Agent Backgrounds */
-.diagnosis-agent {
-    background-color: #5436da;
-    color: white;
-}
-
-.matching-agent {
-    background-color: #1a7f64;
-    color: white;
-}
-
-.appointment-agent {
-    background-color: #2563eb;
-    color: black;
-}
-
-.feedback-agent {
-    background-color: #ef4146;
-    color: white;
-}
-
-.orchestrator {
-    background-color: #10a37f;
-    color: white;
-}
-
-.system {
-    background-color: #777;
-}
-
-.error {
-    background-color: #ff4444;
-    color: white;
-}
-
-.agent {
-    background-color: #555;
-}
-
-/* ############################## Header Bar ##############################*/
-#header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #f4f5f6;
-  padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  position: fixed;
-  width: 100%;
-  height: 50px;
-  top: 0;
-  z-index: 1000;
-}
-
-#logo {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #333;
-}
-
-#header-icons {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-#hamburger-menu {
-  font-size: 1.5em;
-  cursor: pointer;
-  color: #333;
-}
-
-
-/*############################## MAIN PAGE ################################# */
-#main-content {
-  display: flex;
-  justify-content: center;      /* Center chat if no session is open */
-  align-items: center;
-  margin-top: 50px;             /* Space for header */
-  height: calc(100vh - 60px);   /* Subtract header height */
-}
-
-#chat-area {
-  flex: 1 1 auto;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-#sessions-container {
-  flex: 0 0 250px;
-  width: 200px;
-  height: 100%;
-  background-color: #f4f4f4;
-  border-right: 1px solid #ccc;
-  padding: 10px;
-  transition: margin 0.3s ease;
-}
-
 #central-part {
     text-align: center;
     width: 50vw;
@@ -234,48 +113,31 @@ body {
 }
 
 /* Bubble styling */
-.user .text-bubble {
+.text-bubble {
     max-width: 70%;
     padding: 10px 15px;
     border-radius: 20px;
-    border-top-right-radius: 5px;
-    background-color: #f1f1f1;
-    line-height: 1.4;
-    word-wrap: break-word;
-    font-size: 1em;
-}
-
-.bot .text-bubble {
-    max-width: 70%;
-    padding: 10px 15px;
-    background-color: white;
     line-height: 1.4;
     word-wrap: break-word;
     font-size: 1em;
 }
 
 /* User bubble: right side, blue */
-.user .message-text{
+.text-bubble.user {
+    background-color: #f1f1f1;
     color: #333;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 20px;
     text-align: right;
 }
 
 /* Bot bubble: left side, light gray */
-.bot .message-text{
+.text-bubble.bot {
+    background-color: white;
     color: black;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 20px;
     text-align: left;
-}
-
-/* agent-header */
-.agent-header {
-    width: 70%;
-    padding-left: 10px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    text-align: left;
-    color: white;
-    font-weight: bold;
-    font-size: 0.8em;
 }
 
 /* Dont waiting animation */
@@ -306,5 +168,3 @@ body {
     0%, 80%, 100% { opacity: 0; }
     40% { opacity: 1; }
 }
-
-
