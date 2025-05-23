@@ -5,7 +5,7 @@ const Request = require('./models/Request');
 const Appointment = require('./models/Appointment');
 const Feedback = require('./models/Feedback');
 
-require('dotenv').config({ path: '.env' });
+require('dotenv').config({ path: '../.env' });
 
 const uri = process.env.MONGODB_URI;
 if (!uri) {

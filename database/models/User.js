@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
         diy_skills: [String],  // skills of the users in the diy 
         diy_tools: [String],   // tools avaible for the user to make diy
     },
-    trusted_users: [String],
+    trusted_professionals: [ {type: mongoose.Schema.Types.ObjectId, ref: 'Professional'} ], 
+    trusted_users: [ {type: mongoose.Schema.Types.ObjectId, ref: 'User'} ],
     feedbacks: [String],    
     sessions: [String] 
 });
