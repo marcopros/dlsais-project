@@ -8,9 +8,9 @@ load_dotenv()
 
 class MongoMemoryService:
     def __init__(self):
-        uri = os.getenv("MONGODB_URI")
+        uri = os.getenv("MONGO_URI")
         if not uri:
-            raise EnvironmentError("Variabile d'ambiente MONGODB_URI non trovata")
+            raise EnvironmentError("Variabile d'ambiente MONGO_URI non trovata")
         self.client = MongoClient(uri)
         self.db = self.client["dlsais_memory"]
         self.collection = self.db["user_conversations"]

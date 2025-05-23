@@ -15,19 +15,24 @@ from typing import Optional, List, Dict, Any
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / '.env')
 
 # MongoDB connection setup
-# MONGO_URI = os.getenv("MONGODB_URI")      # NON MI VA BOH (matteo)
+# MONGO_URI = os.getenv("MONGODB_URI")      # NON MI VA BOH (matteo) # perchè usa MONGO_URI (gian)
 
-# Soluzione alternativa caricare dall'env solo la password ( quindi devi meterla in .env globale)
-MONGO_PASSWORD = os.getenv("MONGODB_PASSWORD")
-MONGO_URI = f'mongodb+srv://marco:{MONGO_PASSWORD}@dlsais-cluster.vkxu2tc.mongodb.net/?retryWrites=true&w=majority&appName=dlsais-cluster'
-DB_NAME = "test"
+# Leggi direttamente la connessione completa
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise RuntimeError("⚠️ MONGO_URI non trovata nel file .env: assicurati di avere MONGO_URI nel .env alla root.")
 
+# Imposta il nome del database (opzionale: puoi spostarlo in env come DB_NAME)
+DB_NAME = os.getenv("MONGO_DB_NAME", "test")
+
+# Connessione a MongoDB
 try:
     client = MongoClient(MONGO_URI)
     client.admin.command('ping')  # Test connection
     db = client[DB_NAME]
-except pymongo_errors.ConnectionFailure as e:
+except pymongo_errors.PyMongoError as e:
     raise RuntimeError(f"Failed to connect to MongoDB: {e}") from e
+
 
 
 
