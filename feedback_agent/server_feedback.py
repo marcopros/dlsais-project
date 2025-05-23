@@ -40,4 +40,3 @@ async def analyze_feedback(req: FeedbackRequest):
 
 # to run the server, use the command:
 # uvicorn server_feedback:app --reload
-
