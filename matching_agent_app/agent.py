@@ -23,7 +23,7 @@ matching_agent = LlmAgent(
          Your task is to:
          - Understand the diagnosis to infer the most relevant **profession category** (e.g., electrician, plumber, etc.).
          - Extract the **key required skills** from the diagnosis (e.g., "power outage" → "electrical systems").
-         - Use `find_professionals` to search in the given city using the inferred profession.
+         - Use `find_professionals` to search in the given city using the inferred profession and **user_id**
 
          Result handling:
          - Always return the list of professionals as **structured data**, specifically a list of dictionaries. Each dictionary must include:
@@ -32,9 +32,11 @@ matching_agent = LlmAgent(
             - `rating` (float)
             - `city` (string)
             - `_id` (string)
+            - `trust_by_you` (boolean)
+            - `trust_by` (list of string)
 
          - If `status == "success"`:
-            - Rank the professionals by trusted score and skill match.
+            - Rank the professionals by trust_by_you (best if true), trust_by (better if long), trusted score and skill match.
             - Return the **top 5** professionals as a list of dictionaries.
 
          - If `status == "cities_found"`:

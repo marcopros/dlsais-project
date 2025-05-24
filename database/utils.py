@@ -238,6 +238,43 @@ def getCity(user_id: str) -> str:
 
 # ------------------------------------------ User ----------------------------------------------------
 # ----------------------
+# FUNCTION: getUSer
+# ----------------------
+def getUser(user_id: str, fields: list = None) -> dict:
+    """
+    Fetch a user by ID with optional field filtering and population of trust network.
+
+    Args:
+        user_id (str): ID of the user to fetch.
+        fields (list, optional): List of fields to include in the result. Defaults to None (all fields).
+
+    Returns:
+        dict: User document with optional population, or None if not found.
+    """
+    # Verify db connection is available
+    if db is None:
+        logger.error("Database connection not available in getCity")
+        return ""
+    
+    logger.info(f'Requested field: {fields}')
+
+    collection = db["users"]
+
+    query = {"_id": ObjectId(user_id)}
+    projection = {field: 1 for field in fields} if fields else None
+
+    user = collection.find_one(query, projection)
+
+    logger.info(f"Raw DB result for user {user_id}: {user}")
+
+    if not user:
+        logger.warning(f"No user found with ID: {user_id}")
+        return None
+
+    return user
+
+
+# ----------------------
 # FUNCTION: registerUser
 # ----------------------
 def registerUser(name: str, email: str, password: str, phone: str) -> dict:
