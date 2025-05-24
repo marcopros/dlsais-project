@@ -3,6 +3,7 @@ import json
 import uuid
 import logging
 import re
+
 from typing import AsyncIterable, Any
 
 # Google ADK imports for agent execution and session management
@@ -10,8 +11,6 @@ from google.genai import types
 from google.adk.runners import Runner
 from google.adk.agents import Agent
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
-# help(Runner)                      # To see the available methods and attributes of the Runner class
-# help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
 
 # Import common A2A server components and types
 from A2A.types import (
@@ -31,6 +30,7 @@ from A2A.types import (
     JSONRPCResponse
 )
 from A2A.server.task_manager import InMemoryTaskManager
+from .utils import extract_final_response
 
 # Setup basic logging to help debug and trace execution flow
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +43,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
     Custom Task Manager for handling tasks related to a matching agent.
     Manages sessions, invokes the agent, streams responses, and updates task status.
     """
-    def __init__(self, agent: Agent, runner: Runner, session_service: InMemorySessionService, app_name: str, user_id: str):
+    def __init__(self, agent: Agent, runner: Runner, session_service: InMemorySessionService, app_name: str):
         """
         Initialize the task manager with required dependencies.
         
@@ -59,16 +59,16 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
         self.runner = runner
         self.session_service = session_service
         self.app_name = app_name
-        self.user_id = user_id
         logger.info("MatchingAgentTaskManager initialized.")
     
 
-    async def invoke(self, query, session_id) -> str:
+    async def invoke(self, query, user_id, session_id) -> str:
         """
         Synchronously invoke the agent to get a final response for a given query and session.
 
         Args:
             query: User input as text.
+            user_id: Unique identifier of the user
             session_id: Unique identifier for the session.
 
         Returns:
@@ -77,7 +77,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
         # Retrieve or create a session based on session_id
         session = self.runner.session_service.get_session(
             app_name=self.app_name,
-            user_id=self.user_id,
+            user_id=user_id,
             session_id=session_id,
         )
 
@@ -86,13 +86,15 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
             session = self.runner.session_service.create_session(
                 app_name=self.app_name,
-                user_id=self.user_id,
-                state={},
+                user_id = user_id,
+                state = {},
                 session_id=session_id,
             )
         else:
             logger.info(f"Session found with ID: {session_id}") 
         
+        query = query + f' user_id: {user_id}'
+
         # Wrap the user message in a types.Content object ( Format understandable by ADK Agent)
         content = types.Content(
             role='user', parts=[types.Part.from_text(text=query)]
@@ -101,9 +103,9 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
         # Run the agent synchronously with the user message and session
         events = list(
             self.runner.run(
-                user_id=self.user_id,
-                session_id=session.id,
-                new_message=content,
+                user_id = user_id,
+                session_id = session.id,
+                new_message = content,
             )
         )
 
@@ -114,29 +116,9 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
         # Extract the text from the last event's content parts
         return '\n'.join([p.text for p in events[-1].content.parts if p.text])
 
-    def extract_ids_from_response(self, response_text: str) -> dict:
-        """
-        Extract professional ID and user ID from the response text.
-        Expects a line in format: "SELECTED_PROFESSIONAL: prof_id USER: user_id"
+
         
-        Args:
-            response_text: The agent's response text.
-            
-        Returns:
-            Dictionary with professional_id and user_id if found, empty dict otherwise.
-        """
-        # Use regex to find the selection line
-        selection_pattern = r"SELECTED_PROFESSIONAL:\s*(\S+)\s*USER:\s*(\S+)"
-        match = re.search(selection_pattern, response_text)
-        
-        if match:
-            return {
-                "professional_id": match.group(1),
-                "user_id": match.group(2)
-            }
-        return {}
-        
-    async def stream(self, query, session_id) -> AsyncIterable[dict[str, Any]]:
+    async def stream(self, query, user_id, session_id) -> AsyncIterable[dict[str, Any]]:
         """
         Stream partial results from the agent asynchronously.
 
@@ -150,7 +132,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
         # Retrieve or create a session based on session_id
         session = self.runner.session_service.get_session(
             app_name=self.app_name,
-            user_id=self.user_id,
+            user_id=user_id,
             session_id=session_id,
         )
 
@@ -159,7 +141,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
             session = self.runner.session_service.create_session(
                 app_name=self.app_name,
-                user_id=self.user_id,
+                user_id=user_id,
                 state={},
                 session_id=session_id,
             )
@@ -173,7 +155,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
 
         # Run the agent asynchronously and process each event
         async for event in self.runner.run_async(
-            user_id=self.user_id, session_id=session.id, new_message=content
+            user_id=user_id, session_id=session.id, new_message=content
         ):
             # Handle final response
             if event.is_final_response():
@@ -229,11 +211,32 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             Response with updated task state and result.
         """
         logger.info(f"Received task submission: {request.params.id}")
+        # logger.info(f"Params: {request.params}")
 
         # Save the task to the store
         task = await self.upsert_task(request.params)
 
+        # Since Task object doesn't have a user_id field, we add it to metadata manually
+        user_id = None
+        if request.params.metadata:
+            user_id = request.params.metadata.get('user_id')
+
+        if user_id:
+            # Initialize metadata if it's None
+            if task.metadata is None:
+                task.metadata = {}
+
+            # Only set user_id if not already present
+            if not task.metadata.get('user_id'):
+                task.metadata['user_id'] = user_id
+                logger.info(f"User ID '{user_id}' added to task metadata.")
+            else:
+                logger.debug("User ID already exists in task metadata.")
+        else:
+            logger.error("WRONG REQUEST PARAMS. It needs a user_id field")
+
         try:
+            logger.info(f"Task: {task}")
             # Find the latest user message from the task history
             user_message = "No input"
             if task.history:
@@ -246,21 +249,17 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
                         break
             
             # Get the agent's response
-            final_response_text = await self.invoke(user_message, task.sessionId)
-            
-            # Extract professional ID and user ID from the response if present
-            extracted_ids = self.extract_ids_from_response(final_response_text)
-            
-            # Create parts for the response
-            text_part = TextPart(type="text", text=final_response_text)
+            final_response_text = await self.invoke(user_message, task.metadata.get('user_id'), task.sessionId)
+            response = extract_final_response(final_response_text)
+            # logger.info(f'Response: {response}')
+
+            text_part = TextPart(
+                text=response.get('summary'),
+                metadata={"professionals": response.get('professionals')}
+            )
+
             parts = [text_part]
             
-            # If we found IDs, add them as data part
-            artifacts = []
-            if extracted_ids:
-                data_part = DataPart(type="data", data=extracted_ids)
-                artifacts = [Artifact(parts=[data_part])]
-                logger.info(f"Extracted IDs from response: {extracted_ids}")
 
             # Create a response message to store in the task
             response_message = Message(
@@ -274,7 +273,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             updated_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.COMPLETED, message=response_message),
-                artifacts=artifacts
+                artifacts= None # artifacts
             )
 
             return SendTaskResponse(id=request.id, result=updated_task)
@@ -304,7 +303,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             return SendTaskResponse(id=request.id, result=failed_task)
 
 
-    
+    #TODO
     async def on_send_task_subscribe(self, request: SendTaskStreamingRequest) -> AsyncIterable[SendTaskStreamingResponse] | JSONRPCResponse:
         """
         Handle streaming task subscription. Streams updates back to the client.
@@ -333,7 +332,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
                         break
             
             # Stream agent response
-            async for item in self.stream(user_message, task.sessionId):
+            async for item in self.stream(user_message, task.user_id, task.session_id):
                 is_task_complete = item.get('is_task_complete', False)
 
                 if not is_task_complete:

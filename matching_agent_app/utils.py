@@ -1,6 +1,8 @@
 import requests
 import math
 import time
+import json
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -58,3 +60,31 @@ def fetch_coordinates_for_cities(city_list, max_workers=5):
                 print(f"Coordinates not found for {city}")
     
     return coordinates
+
+
+def extract_final_response(final_response_text:str):
+    # Step 1: Extract JSON block from the response
+    json_match = re.search(r"```json\s*(\[\s*{.*?}\s*])\s*```", final_response_text, re.DOTALL)
+
+    if json_match:
+        try:
+            professionals = json.loads(json_match.group(1))  # structured list
+        except json.JSONDecodeError as e:
+            professionals = []
+            # Log or handle the parsing error
+    else:
+        professionals = []
+
+    # Step 2: Extract the summary (everything before the JSON block)
+    if json_match:
+        summary = final_response_text.split("```json")[0].strip()
+    else:
+        summary = final_response_text
+
+    # Step 3: Prepare and return a structured response
+    structured_response = {
+        "summary": summary,
+        "professionals": professionals
+    }
+
+    return structured_response
