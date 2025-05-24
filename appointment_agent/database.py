@@ -22,7 +22,7 @@ DB_NAME = os.environ.get("DB_NAME", "appointment_db")
 # Collections - allineate con i nomi definiti nei modelli Mongoose
 USERS_COLLECTION = "users"  # Corrisponde a mongoose.model('User', userSchema)
 PROFESSIONALS_COLLECTION = "professionals"  # Corrisponde a mongoose.model('Professional', ProfessionalSchema)
-APPOINTMENTS_COLLECTION = "requests"  # Corrisponde a mongoose.model('Request', requestSchema)
+APPOINTMENTS_COLLECTION = "appointments"  # Corrisponde a mongoose.model('Appointment', appointmentSchema)
 AVAILABILITY_COLLECTION = "availability"  # Non esiste un modello dedicato ma la usiamo per gestire le disponibilità
 
 # In-memory database class for fallback
@@ -592,51 +592,115 @@ def get_professional_availability(professional_id, start_date, end_date):
 def create_appointment(appointment_details):
     """
     Create a new appointment in the database.
-    
+
     Args:
         appointment_details (dict): Details of the appointment
-        
+                                    Expected keys: 'user_id', 'professional_id', 'datetime', 'issue', 'notes' (optional)
+
     Returns:
         str: ID of the created appointment, or None if failed
     """
     try:
-        # Add timestamp for creation
-        appointment_details["created_at"] = datetime.now()
-        
-        # Adatta i campi per corrispondere al modello Request
-        request_data = {
-            "_id": str(uuid.uuid4()),
-            "userId": appointment_details["user_id"],
-            "professionalId": appointment_details["professional_id"],
-            "date": datetime.strptime(appointment_details["datetime"], '%Y-%m-%d %H:%M'),
-            "status": "pending",  # Gli stati possibili sono: pending, accepted, rejected
-            "description": appointment_details["issue"],
-            # Manteniamo anche i campi aggiuntivi specifici dell'appointment
-            "location": appointment_details.get("location", "Not specified"),
-            "notes": appointment_details.get("notes", ""),
-            "created_at": appointment_details["created_at"]
+        # Get user details to retrieve location
+        user_id = appointment_details.get("user_id")
+        user = get_user_details(user_id)
+
+        location_data = {"city": "Unknown", "zipCode": "Unknown"}
+        if user and "location" in user and isinstance(user["location"], dict):
+             location_data = {
+                 "city": user["location"].get("city", "Unknown"),
+                 "zipCode": user["location"].get("zipCode", "Unknown")
+             }
+        elif user and "location" in user and isinstance(user["location"], str):
+             # Handle case where location is a string, try to parse city/zip
+             # This is a basic attempt; more robust parsing might be needed
+             location_str = user["location"]
+             city = location_str.split(',')[0].strip() if ',' in location_str else location_str.strip()
+             zip_code = "" # Cannot reliably extract zip from a simple string without more context
+             location_data = {"city": city, "zipCode": zip_code}
+
+
+        # Convert datetime string to datetime object
+        scheduled_time_obj = datetime.strptime(appointment_details["datetime"], '%Y-%m-%d %H:%M')
+
+        # Calculate confirmation deadline (e.g., 24 hours before scheduled time)
+        # This is an example; adjust logic as needed
+        confermation_dead_line_obj = scheduled_time_obj - timedelta(hours=24)
+
+        # Prepare data according to Appointment.js schema
+        appointment_data = {
+            "user_id": user_id,
+            "professional_id": appointment_details["professional_id"],
+            "location": location_data,
+            "scheduled_time": scheduled_time_obj,
+            "confermation_dead_line": confermation_dead_line_obj,
+            "problem_summary": appointment_details["issue"],
+            "status": "pending",  # Initial status
+            # Add any other fields from the schema if necessary, e.g., createdAt
+            # For simplicity, we use the default _id generation
         }
-        
+
+        # Add notes if provided
+        if "notes" in appointment_details:
+            appointment_data["notes"] = appointment_details["notes"]
+
+
         if using_mongodb:
             # Insert using MongoDB
-            result = db[APPOINTMENTS_COLLECTION].insert_one(request_data)
+            result = db[APPOINTMENTS_COLLECTION].insert_one(appointment_data)
+            logger.info(f"Appointment created in MongoDB with ID: {result.inserted_id}")
             return str(result.inserted_id)
         else:
             # Insert using in-memory database
-            db[APPOINTMENTS_COLLECTION].append(request_data)
-            return request_data["_id"]
-    
+            appointment_data["_id"] = str(uuid.uuid4()) # Generate ID for in-memory
+            db[APPOINTMENTS_COLLECTION].append(appointment_data)
+            logger.info(f"Appointment created in in-memory DB with ID: {appointment_data['_id']}")
+            return appointment_data["_id"]
+
+    except ValueError as ve:
+        logger.error(f"ValueError in create_appointment (datetime parsing): {str(ve)}")
+        raise ValueError(f"Invalid datetime format provided: {appointment_details.get('datetime')}. Expected 'YYYY-MM-DD HH:MM'.")
     except Exception as e:
         logger.error(f"Database error in create_appointment: {str(e)}")
         raise Exception(f"Error creating appointment: {str(e)}")
 
+def get_user_details(user_id):
+    """
+    Retrieve user details from the database.
+
+    Args:
+        user_id (str): User ID
+
+    Returns:
+        dict: The user details, or None if not found
+    """
+    try:
+        if using_mongodb:
+            # Use MongoDB find_one
+            user = db[USERS_COLLECTION].find_one({"_id": user_id})
+            if not user:
+                logger.warning(f"User with ID {user_id} not found.")
+                return None
+            return user
+        else:
+            # Use in-memory search
+            for user in db[USERS_COLLECTION]:
+                if user.get("_id") == user_id:
+                    return user
+            logger.warning(f"User with ID {user_id} not found in in-memory DB.")
+            return None
+
+    except Exception as e:
+        logger.error(f"Database error in get_user_details: {str(e)}")
+        raise Exception(f"Error retrieving user details: {str(e)}")
+
 def get_appointment(appointment_id):
     """
     Retrieve an appointment by ID.
-    
+
     Args:
         appointment_id (str): ID of the appointment
-        
+
     Returns:
         dict: The appointment details, or None if not found
     """
@@ -652,9 +716,9 @@ def get_appointment(appointment_id):
             for appointment in db[APPOINTMENTS_COLLECTION]:
                 if appointment.get("_id") == appointment_id:
                     return appointment
-            
+
             raise Exception(f"Appointment with ID {appointment_id} not found.")
-    
+
     except Exception as e:
         logger.error(f"Database error in get_appointment: {str(e)}")
         raise Exception(f"Error retrieving appointment: {str(e)}")

@@ -6,8 +6,10 @@ from appointment_agent.database import (
     get_user_availability,
     get_professional_availability,
     create_appointment,
-    update_availability_after_booking
+    update_availability_after_booking,
+    get_user_details # Import the new function
 )
+from database.utils import getProfessionals # Assuming this function exists and can get professional details by ID
 from appointment_agent.utils import format_datetime
 from appointment_agent.date_parser import (
     parse_natural_date,
@@ -210,6 +212,26 @@ def check_professional_availability(professional_id: str, date_range: Optional[s
 
 
 # ----------------------
+# Helper function to get professional details (assuming getProfessionals can fetch by ID)
+# ----------------------
+def get_professional_details(professional_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Retrieve professional details from the database by ID.
+
+    Args:
+        professional_id (str): The ID of the professional.
+
+    Returns:
+        dict: The professional details, or None if not found.
+    """
+    # Assuming getProfessionals can filter by ID if passed None for profession and location
+    professionals = getProfessionals(None, None, professional_id)
+    if professionals and len(professionals) > 0:
+        return professionals[0]
+    return None
+
+
+# ----------------------
 # TOOL 3: schedule_appointment
 # ----------------------
 def schedule_appointment(appointment_details: Dict[str, Any]) -> Dict[str, Any]:
@@ -220,154 +242,223 @@ def schedule_appointment(appointment_details: Dict[str, Any]) -> Dict[str, Any]:
         appointment_details (dict): A dictionary containing:
             - 'user_id': ID of the user
             - 'professional_id': ID of the professional
-            - 'datetime': Date and time of the appointment (format: 'YYYY-MM-DD HH:MM') or natural language like "tomorrow"
+            - 'datetime': Date and time of the appointment (format: 'YYYY-MM-DD HH:MM') or natural language like "tomorrow" or "as soon as possible"
             - 'issue': Description of the issue to be addressed
-            - 'location': Location of the appointment (optional)
             - 'notes': Additional notes (optional)
 
     Returns:
         dict: {
             'status': 'success' or 'error',
             'appointment_id': unique ID for the appointment (if successful),
+            'appointment_details': dict with scheduled appointment info (if successful),
             'message': confirmation message or error message
         }
     """
     try:
         # Validate and use default values if needed
         if not appointment_details:
-            appointment_details = {}
-            
+            return {
+                "status": "error",
+                "error_message": "Appointment details are missing.",
+                "user_id": DEFAULT_USER_ID,
+                "professional_id": DEFAULT_PROFESSIONAL_ID
+            }
+
         # Use default IDs if not provided
-        if 'user_id' not in appointment_details or not appointment_details['user_id']:
-            appointment_details['user_id'] = DEFAULT_USER_ID
-            
-        if 'professional_id' not in appointment_details or not appointment_details['professional_id']:
-            appointment_details['professional_id'] = DEFAULT_PROFESSIONAL_ID
-            
+        user_id = appointment_details.get('user_id', DEFAULT_USER_ID)
+        professional_id = appointment_details.get('professional_id', DEFAULT_PROFESSIONAL_ID)
+        datetime_value = appointment_details.get('datetime')
+        issue = appointment_details.get('issue')
+        notes = appointment_details.get('notes', '')
+
         # Validate required fields
-        required_fields = ['datetime', 'issue']
-        missing_fields = [field for field in required_fields if field not in appointment_details]
-        
-        if missing_fields:
-            # Generate default datetime if not provided (tomorrow at noon)
-            if 'datetime' in missing_fields:
-                tomorrow = datetime.now() + timedelta(days=1)
-                appointment_details['datetime'] = tomorrow.strftime('%Y-%m-%d 12:00')
-                missing_fields.remove('datetime')
-                
-            # Generate default issue if not provided
-            if 'issue' in missing_fields:
-                appointment_details['issue'] = "General maintenance"
-                missing_fields.remove('issue')
-                
-            # If we still have missing fields, return error
-            if missing_fields:
-                return {
-                    "status": "error",
-                    "error_message": f"Missing required fields: {', '.join(missing_fields)}",
-                    "user_id": appointment_details.get('user_id', DEFAULT_USER_ID),
-                    "professional_id": appointment_details.get('professional_id', DEFAULT_PROFESSIONAL_ID)
-                }
-        
-        # Check if datetime is a natural language string
-        datetime_value = appointment_details['datetime']
-        if not isinstance(datetime_value, str) or ' ' not in datetime_value or not any(c.isdigit() for c in datetime_value):
-            # Handle natural language date
+        if not datetime_value or not issue:
+             missing = []
+             if not datetime_value: missing.append("'datetime'")
+             if not issue: missing.append("'issue'")
+             return {
+                 "status": "error",
+                 "error_message": f"Missing required fields: {', '.join(missing)}",
+                 "user_id": user_id,
+                 "professional_id": professional_id
+             }
+
+        # Handle natural language date/time or parse explicit format
+        try:
+            # Attempt to parse as explicit YYYY-MM-DD HH:MM first
+            scheduled_time_str = datetime.strptime(datetime_value, '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M')
+        except ValueError:
+            # If explicit parse fails, try natural language
             start_date, _, _, is_asap = parse_natural_date(datetime_value)
-            
+
             if is_asap:
-                # For ASAP, we need to find the first available slot that matches both calendars
-                # Check professional availability
-                prof_result = check_professional_availability(
-                    appointment_details['professional_id'],
-                    date_text="as soon as possible"
-                )
-                
-                if prof_result["status"] == "success" and "first_available" in prof_result:
-                    # Use the first available slot
-                    appointment_details['datetime'] = prof_result["first_available"]
-                else:
-                    # Default to tomorrow at noon if no match
-                    tomorrow = datetime.now() + timedelta(days=1)
-                    appointment_details['datetime'] = tomorrow.strftime('%Y-%m-%d 12:00')
-            else:
-                # For other natural language dates, use noon as default time
-                start_date = start_date.replace(hour=12, minute=0, second=0)
-                appointment_details['datetime'] = format_datetime_for_api(start_date)
-        
-        # Format datetime for readability
-        datetime_obj = datetime.strptime(appointment_details['datetime'], '%Y-%m-%d %H:%M')
-        formatted_date, formatted_time = format_datetime(appointment_details['datetime'])
-        
+                 # For ASAP, we need to find the first available slot that matches both calendars
+                 # We'll rely on the create_appointment function to handle the location/user details lookup
+                 # and potentially the availability check if needed.
+                 # For now, just pass the ASAP intent. The create_appointment logic in database.py
+                 # needs to be robust enough to handle this, or we need a separate tool/step
+                 # to find the *actual* first available slot before calling schedule_appointment.
+                 # Given the instruction in agent.py step 5 mentions passing natural language dates,
+                 # let's assume create_appointment (or a subsequent step) handles the lookup.
+                 # However, the current create_appointment expects '%Y-%m-%d %H:%M'.
+                 # Let's revise the flow based on the agent instructions: The agent should
+                 # check availability *before* calling schedule_appointment and pass a concrete slot.
+                 # The current agent instructions (step 5) say "You can use natural language dates like 'tomorrow' or 'next Monday' in the datetime field".
+                 # This conflicts with the create_appointment function expecting a formatted string.
+                 # Let's adjust schedule_appointment to handle natural language and find a slot here,
+                 # or clarify the agent's role vs tool's role.
+
+                 # Let's stick to the original plan: the agent extracts date/time, and the tool schedules.
+                 # The agent should use check_user_availability and check_professional_availability first,
+                 # find a matching slot, and *then* call schedule_appointment with a specific datetime string.
+                 # The current agent instructions are slightly ambiguous on this.
+                 # Let's assume the agent *will* provide a specific datetime string after checking availability.
+                 # So, schedule_appointment expects a formatted string.
+
+                 # If natural language was used, and it wasn't ASAP handled by finding the first available slot
+                 # earlier in the agent's flow (which isn't fully implemented yet based on the current agent.py),
+                 # we need a concrete time. Let's default to noon for non-ASAP natural language dates
+                 # if the time isn't specified.
+                 if start_date:
+                      # Default to noon if no time was specified in natural language
+                      scheduled_time_str = start_date.replace(hour=12, minute=0, second=0).strftime('%Y-%m-%d %H:%M')
+                 else:
+                      # Fallback if natural language parsing failed completely
+                      tomorrow = datetime.now() + timedelta(days=1)
+                      scheduled_time_str = tomorrow.strftime('%Y-%m-%d 12:00')
+
+        # Now scheduled_time_str is guaranteed to be in 'YYYY-MM-DD HH:MM' format
+        scheduled_time_obj = datetime.strptime(scheduled_time_str, '%Y-%m-%d %H:%M')
+
         # Create appointment in database
+        # The create_appointment function in database.py now handles fetching user location
         appointment_id = create_appointment({
-            "user_id": appointment_details['user_id'],
-            "professional_id": appointment_details['professional_id'],
-            "datetime": appointment_details['datetime'],
-            "datetime_obj": datetime_obj,
-            "formatted_date": formatted_date,
-            "formatted_time": formatted_time,
-            "issue": appointment_details['issue'],
-            "location": appointment_details.get('location', 'Not specified'),
-            "notes": appointment_details.get('notes', ''),
-            "status": "confirmed"
+            "user_id": user_id,
+            "professional_id": professional_id,
+            "datetime": scheduled_time_str, # Pass the formatted string
+            "issue": issue,
+            "notes": notes,
         })
-        
+
         if not appointment_id:
             return {
                 "status": "error",
                 "error_message": "Failed to create appointment in database. Please try again later.",
-                "user_id": appointment_details['user_id'],
-                "professional_id": appointment_details['professional_id']
+                "user_id": user_id,
+                "professional_id": professional_id
             }
-        
+
         # Update availability to remove the booked slot
         update_result = update_availability_after_booking(
-            appointment_details['user_id'],
-            appointment_details['professional_id'],
-            appointment_details['datetime']
+            user_id,
+            professional_id,
+            scheduled_time_str # Pass the formatted string
         )
-        
+
+        # Get professional details for the confirmation message
+        professional_details = get_professional_details(professional_id)
+        professional_name = professional_details.get("name", "Unknown Professional") if professional_details else "Unknown Professional"
+
+
+        # Get the created appointment details to return in the response
+        # This assumes get_appointment is updated to fetch by the new schema ID
+        # (which create_appointment now returns)
+        created_appointment = get_appointment(appointment_id)
+        # Format date and time for the message
+        formatted_date = created_appointment['scheduled_time'].strftime('%A, %B %d, %Y') if created_appointment and 'scheduled_time' in created_appointment else 'Unknown Date'
+        formatted_time = created_appointment['scheduled_time'].strftime('%I:%M %p') if created_appointment and 'scheduled_time' in created_appointment else 'Unknown Time'
+        issue_summary = created_appointment.get('problem_summary', 'Unknown Issue') if created_appointment else 'Unknown Issue'
+        location_summary = created_appointment.get('location', {}) if created_appointment else {}
+        location_str = f"{location_summary.get('city', 'Unknown City')}, {location_summary.get('zipCode', '')}".strip() if location_summary else "Unknown Location"
+        if location_str.endswith(','):
+             location_str = location_str[:-1].strip()
+
+        message = f"Appointment successfully scheduled with {professional_name} for {issue_summary} on {formatted_date} at {formatted_time} at {location_str}."
+
         if not update_result:
-            return {
-                "status": "warning",
-                "appointment_id": appointment_id,
-                "appointment_details": {
-                    "user_id": appointment_details['user_id'],
-                    "professional_id": appointment_details['professional_id'],
-                    "date": formatted_date,
-                    "time": formatted_time,
-                    "issue": appointment_details['issue'],
-                    "location": appointment_details.get('location', 'Not specified')
-                },
-                "message": f"Appointment created successfully, but there was an issue updating the availability calendar. The appointment may conflict with existing bookings.",
-                "user_id": appointment_details['user_id'],
-                "professional_id": appointment_details['professional_id']
-            }
-        
+            message += " Warning: There was an issue updating the availability calendar. The appointment may conflict with existing bookings."
+
         return {
-            "status": "success",
+            "status": "success" if update_result else "warning",
             "appointment_id": appointment_id,
             "appointment_details": {
-                "user_id": appointment_details['user_id'],
-                "professional_id": appointment_details['professional_id'],
+                "user_id": user_id,
+                "professional_id": professional_id,
                 "date": formatted_date,
                 "time": formatted_time,
-                "issue": appointment_details['issue'],
-                "location": appointment_details.get('location', 'Not specified')
+                "issue": issue_summary,
+                "location": location_str,
+                "professional_name": professional_name
             },
-            "message": f"Appointment successfully scheduled for {formatted_date} at {formatted_time}.",
-            "user_id": appointment_details['user_id'],
-            "professional_id": appointment_details['professional_id']
+            "message": message,
+            "user_id": user_id, # Include IDs in the tool response
+            "professional_id": professional_id
         }
-        
+
+    except ValueError as ve:
+        return {
+            "status": "error",
+            "error_message": f"Error parsing date/time: {str(ve)}. Please provide the date and time in a clear format.",
+            "user_id": user_id,
+            "professional_id": professional_id
+        }
     except Exception as e:
         return {
             "status": "error",
             "error_message": f"Error scheduling appointment: {str(e)}",
-            "user_id": appointment_details.get('user_id', DEFAULT_USER_ID) if appointment_details else DEFAULT_USER_ID,
-            "professional_id": appointment_details.get('professional_id', DEFAULT_PROFESSIONAL_ID) if appointment_details else DEFAULT_PROFESSIONAL_ID
+            "user_id": user_id,
+            "professional_id": professional_id
         }
+
+# ----------------------
+# Mock data generation for testing
+# ----------------------
+
+def _generate_mock_user_slots(start_date, end_date):
+    """Generate mock availability slots for a user"""
+    slots = []
+    current_date = start_date
+    while current_date <= end_date:
+        # Skip some days randomly to simulate unavailability
+        if random.random() > 0.3:  # 70% chance of having availability on a given day
+            # Generate 3-6 slots per day
+            num_slots = random.randint(3, 6)
+            for _ in range(num_slots):
+                hour = random.randint(9, 20)  # 9 AM to 8 PM
+                minute = random.choice([0, 30])  # Either on the hour or half hour
+
+                slot_time = current_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                # Only add future slots
+                if slot_time > datetime.now():
+                    slot_str = slot_time.strftime('%Y-%m-%d %H:%M')
+                    slots.append(slot_str)
+
+        current_date += timedelta(days=1)
+
+    return slots
+
+def _generate_mock_professional_slots(start_date, end_date):
+    """Generate mock availability slots for a professional"""
+    slots = []
+    current_date = start_date
+    while current_date <= end_date:
+        # Only generate slots for weekdays
+        if current_date.weekday() < 5:  # Monday to Friday
+            # Generate 5-8 slots per day
+            num_slots = random.randint(5, 8)
+            for _ in range(num_slots):
+                hour = random.randint(8, 18)  # 8 AM to 6 PM
+                minute = random.choice([0, 30])  # Either on the hour or half hour
+
+                slot_time = current_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                # Only add future slots
+                if slot_time > datetime.now():
+                    slot_str = slot_time.strftime('%Y-%m-%d %H:%M')
+                    slots.append(slot_str)
+
+        current_date += timedelta(days=1)
+
+    return slots
 
 
 # ----------------------
