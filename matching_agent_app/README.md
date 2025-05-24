@@ -5,7 +5,7 @@ The Matching Agent is a smart assistant designed to connect users with the best 
 <br>
 
 <p align="center">
-  <img src="matching-agent-architecture-structure.png" alt="System Architecture" style="width: 80%; max-width: 800px;" />
+  <img src="MatchingAgent.png" alt="System Architecture" style="width: 80%; max-width: 800px;" />
 </p>
 
 <br>
@@ -18,68 +18,145 @@ The Matching Agent is a smart assistant designed to connect users with the best 
 The Matching Agent uses the following tools to provide its service:
 
 <ol>
-<li><b><em>find_professionals()</em></b>: Finds available professionals based on the profession, issue, and location.</li>
+<li><b><em>find_professionals()</em></b>: Finds professionals based on a specified profession and city. If no direct matches are found, it gracefully falls back to searching in nearby cities or lists alternative professions available in the same city. It also enriches results with trust network insights , showing which professionals are trusted by the user or by other trusted users.</li>
 
-<li><b><em>find_other_city()</em></b>: Helps locate other cities where the requested profession is available if no professionals are found in the specified location.</li>
-
-<li><b><em>find_nearest_cities()</em></b>: Identifies nearby cities to expand the search using OpenStreetMap API for professionals if needed.</li>
+<li><b><em>get_user_city()</em></b>: Retrieves the city associated with a given user ID. This tool can be used to determine a user's location for personalized searches or recommendations.</li>
 </ol>
 <br>
 <br>
 
-## A2A Protocol
 
-This agent is implemented using the A2A Protocol; more precicsly the directory contain:
-matching_agent_app
-|-**init**.py
-|-agent.py
+## Agent
 
-## Workflow Overview
-
-<ol>
-<li><b>User Input Analysis</b>
-The agent begins by extracting key information from the user's request. This includes:
+<b>Input:</b>
+The agent receives:
 <ul>
-
-<li><b>Profession</b>: The type of professional the user is looking for (e.g., electrician, plumber).
-
-<li><b>Issue</b>: The specific problem or service required (e.g., "fix a broken pipe").
-
-<li><b>Location</b>: The city or area where the user needs the service.
-</li>
+  <li> A problem diagnosis (e.g., "My sink is leaking").
+  <li> A user_id (used to retrieve city and trust network).
+  <li> Optionally, a city name (if the user want to find professionals in other cities).
 </ul>
+
+
 <br>
-<li><b>Initial Search for Professionals</b>
-Using the extracted profession, issue, and location, the agent queries the <em> find_professionals()</em> tool to identify relevant professionals. If professionals are found, the agent proceeds to select the best matches based on skills and ratings (point 5)
+<b>Workflow:</b>
+<ol> 
+<b>NB: </b> If the city is not provided the agent use the get_user_city tool to retrieve the user's city from the database.
 </li>
+
 <br>
 
-<li><b>Handling No Matches Found</b>
-If no professionals are found in the user's specified location:
-<ul>
-<li>
-The agent use the <em>find_other_city()</em> tool to search for nearby cities where the requested profession is available.
+<li><b>Infer Profession Type</b>
+Understand the diagnosis to infer the most relevant profession category (e.g., electrician, plumber, etc.)
 </li>
-<li>
-The agent will also use the <em>find_nearest_cities()</em> tool to find the nearest city to the user's location.
-</li>
-</ul>
+
 <br>
-<li><b>Second Search in Nearby City</b>
-After identifying the nearest city, the agent will repeat the search for professionals using the new city. If successful, the agent presents professionals from the nearby city.
+
+<li><b>Infer Required Skills</b>
+ Extract the key required skills from the diagnosis (e.g., "power outage" → "electrical systems").
 </li>
+
 <br>
-<li><b>Selection of Professionals</b>
-Once a list of professionals is returned, the agent will select up to 5 professionals, ensuring that at least 2 are available. Prioritize professionals based on:
+
+<li><b>Find Professionals</b>
+Use find_professionals tool to search in the given city using the inferred profession and user_id. 
+The tool can return 3 type of response:
+
 <ul>
-<li>Relevance to the specific issue.</li>
-<li>Higher ratings to ensure quality service.</li>
+  <li>status == "success": the tool have found and return all the professionals for the requested profession and city</li>
+  <li>status == "cities_found": the tool have not found some professionals for the requested profession in the requested city. So it return a list of the nearest city where that type of profession are founded in the database</li>
+  <li>status == "alternate_found": the tool have not found any cities where there is the requested type of profession, so it return a list of alternative professionals available in the requested city</li>
+  <li>status == "error": the tool have not found any professionist in the city, so it inform the user that no professionals were found and suggest trying a different profession or refining the diagnosis.</li>
 </ul>
 </li>
+
 <br>
 
-<li><b>Presentation of Results</b>
-The agent presents the selected professionals to the user in a clear and concise manner.
+<li><b>Rank Professionals</b>
+Rank the professionals by trust_by_you (best if true), trust_by (better if long), trusted score and skill match. It return the **top 5** professionals
+</li>
+
+<br>
+
+<li><b>Format Response</b>
+The agent response always include a concise summary message. Alongside it provide also the professional results like a list of dictionary, where each dictionary is a professional:
+  <ul style="list-style-type: '- '">
+    <li>name (string)</li>
+    <li>skills (list of strings)</li>
+    <li>rating (float)</li>
+    <li>city (string)</li>
+    <li>_id (string)</li>
+    <li>trust_by_you (boolean)</li>
+    <li>trust_by (list of string)</li>
+  </ul>   
 </li>
 
 </ol>
+<br>
+<br>
+
+
+## Task Menager
+<b>Input:</b>
+The Task Menager take in input a paylod of a fetch request, it should have this structure:
+<ul style="list-style-type: '- '">
+  <li> "id": task_id, </li>
+  <li> "sessionId": session_id, </li>
+  <li> "acceptedOutputModes": ["text"], </li>
+  <li> "message": 
+    <ul style="list-style-type: '- '">  
+      <li> "role": "user",
+      <li> "parts": [ {"type": "text", "text": user_text} ],
+      <li> "id": str(uuid.uuid4()), "timestamp": int(datetime.now().timestamp() * 1000),
+    </ul>
+  </li>
+  <li> "metadata": { "user_id": user_id, }</li>
+</ul>
+
+
+<br>
+<b>Workflow:</b>
+<ol> 
+<li><b>Create the Task</b>
+Create the Task and store it in to the session menager
+</li>
+
+<br>
+
+<li><b>Prepare the Query</b>
+Extract the query of the user from the and append the 'user_id' from the metadata field.
+</li>
+
+<br>
+
+<li><b>Invoke the Agent</b>
+Send the query to the agent and wait it respons
+</li>
+
+<br>
+
+<li><b>Format Respons</b>
+Define an A2A Message containing an A2A TextPart:
+<ul>
+  <li><b>text</b>: summary coming from the agent (TextPart)</li>
+  <li><b>metadata</b>: professional filed containing all the data of the professionals founded by the agent</li>
+</ul>
+</li>
+        
+
+## TRUST NETWORK
+The trust network operates by enriching a list of professionals with trust information derived from the connections of trusted users. For each professional, the system determines:
+<ul>
+  <li> if the current user trusts them directly, based on their own list of trusted professionals. </li> 
+  Additionally, 
+  <li> if the users, trusted by the current user, trust the professional based on their own list of trusted professionals.  </li>
+</ul>
+
+<br>
+
+<p align="center">
+  <img src="TrustNetwork.png" alt="System Architecture" style="width: 80%; max-width: 800px;" />
+</p>
+
+<br>
+
+<b>NB</b> Until now we are considering only the trust relation of the first order. In the futur should be improved the system in order to consider also the trust relation of bigger order
