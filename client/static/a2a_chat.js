@@ -50,105 +50,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return '<div class="avatar user-avatar">U</div>';
     }
     
-    // Function to extract agent name from response
-    function extractAgentName(response) {
-        // First try to find explicit agent labels - look for patterns like [AgentName] or "Agent: AgentName"
-        const explicitAgentMatch = response.match(/^\[(.*?)\]|^Agent:\s*(.*?)(?:\s*-|\n|:)|^(Diagnosis|Matching|Appointment|Feedback|Orchestrator):/i);
-        
-        if (explicitAgentMatch) {
-            // Return the first capturing group that has a value
-            return explicitAgentMatch[1] || explicitAgentMatch[2] || explicitAgentMatch[3] || "Agent";
+    // Function to extract agent name from metadata
+    function extractAgentName(metadata) {
+        // Check if we have agent information in the metadata
+        if (metadata && metadata.agent) {
+            // Extract the agent name from the string (e.g., "Matching Agent")
+            const agentName = metadata.agent;
+            return agentName.replace(/\s+Agent$/i, '');
         }
         
-        // Look for sub-agent mentions in the response
-        const subAgentPatterns = [
-            { 
-                name: "Diagnosis", 
-                patterns: [
-                    /diagnosis agent/i, 
-                    /diagnosi/i, 
-                    /diagnostic/i,
-                    /diagnose/i,
-                    /let me (check|examine|diagnose|identify)/i,
-                    /I'll (help|assist) (you with|in) (diagnosing|identifying)/i,
-                    /problem (seems to|appears to|might|could) be/i,
-                    /based on (your description|what you've described|your explanation)/i
-                ]
-            },
-            { 
-                name: "Matching", 
-                patterns: [
-                    /matching agent/i, 
-                    /matching/i, 
-                    /find professional/i, 
-                    /trovare un professionista/i,
-                    /I (can|could|will) (help you|assist you in) (find|finding|locate|locating|connect|matching)/i,
-                    /let me (find|match|connect|help you find)/i,
-                    /here (are|is) (some|a few|a list of|a|the) (professionals|experts|specialists|recommended|options)/i,
-                    /I've found (some|a few|several|the following) professionals/i,
-                    /you need a (professional|specialist|expert|plumber|electrician|contractor)/i
-                ]
-            },
-            { 
-                name: "Appointment", 
-                patterns: [
-                    /appointment agent/i, 
-                    /appuntamento/i, 
-                    /booking/i, 
-                    /calendario/i, 
-                    /schedule/i
-                ]
-            },
-            { 
-                name: "Feedback", 
-                patterns: [
-                    /feedback agent/i, 
-                    /feedback/i, 
-                    /review/i, 
-                    /recensione/i
-                ]
-            }
-        ];
-        
-        // Check each sub-agent pattern
-        for (const agent of subAgentPatterns) {
-            for (const pattern of agent.patterns) {
-                if (pattern.test(response)) {
-                    return agent.name;
-                }
-            }
-        }
-        
-        // Enhanced fallback detection based on context clues
-        if (/what (kind of|type of) (problem|issue)|describe (the|your) (problem|issue|symptoms)/i.test(response)) {
-            return "Diagnosis";
-        }
-        
-        if (/professional|specialist|expert|service provider|technician/i.test(response)) {
-            return "Matching";
-        }
-        
-        // Default to "Orchestrator" if no specific agent is identified
+        // Default to Orchestrator if no specific agent is identified
         return "Orchestrator";
     }
     
-    // Function to extract main text content from response
-    function extractMainContent(response) {
-        // Remove any JSON or reasoning parts that might be present
-        // This is a simplified version - adjust based on actual response format
-        
-        // Remove agent prefix if present
-        let content = response.replace(/^\[(.*?)\]\s*/, '').trim();
-        content = content.replace(/^Agent:\s*(.*?)(?:\s*-|\n|:)/i, '').trim();
-        
-        // Remove any JSON blocks
-        content = content.replace(/```json.*?```/gs, '');
-        
-        // Remove any reasoning sections marked with specific patterns
-        content = content.replace(/Reasoning:.*?Result:/gs, 'Result:');
-        
-        return content.trim();
-    }
     
     // Function to add a message to the chat
     function addMessage(role, content, agentName = null) {
@@ -164,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
-        
         messageContent.innerHTML = avatar;
         
         const chatDetails = document.createElement('div');
@@ -229,30 +142,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to send message to server
     async function sendMessage(message) {
         try {
+            // Retrieve user from localStorage
+            const userJson = localStorage.getItem("user");
+            let userId = 'Default'; // Default if no user found
+            let bodyData = { message }; // Base data
+
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                userId = user.id;
+                bodyData.user_id = userId; // Add user_id only if user exists
+            } else {
+                console.warn("User not logged in, using default user.");
+            }
+
+            // Send request
             const response = await fetch('/send_message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message })
+                body: JSON.stringify(bodyData)
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            
+
+            // Read the response as JSON
             const data = await response.json();
-            return data.response;
+            return data;
         } catch (error) {
             console.error('Error sending message:', error);
-            return 'Sorry, there was an error processing your request.';
+            return { 
+                text: '[ERROR] Sorry, there was an error processing your request.',
+                metadata: {}
+            };
         }
     }
     
     // Handle form submission
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const message = userInput.value.trim();
         if (!message) return;
         
@@ -275,12 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove typing indicator
         removeTypingIndicator();
         
-        // Extract agent name and main content
-        const agentName = extractAgentName(response);
-        const mainContent = extractMainContent(response);
+        // Extract agent name from metadata
+        const agentName = extractAgentName(response.metadata);
         
         // Add agent response
-        addMessage('agent', mainContent, agentName);
+        addMessage('agent', response.text, agentName);
     });
     
     // Handle textarea enter key

@@ -26,6 +26,8 @@ orchestrator = Agent(
         - Always send a request to the Matching Agent **whenever the user asks to speak to, find, or get help from a professional** such as plumbers, electricians, carpenters, etc.
         - Always send a request to the Appointment Agent **whenever the user wants to schedule an appointment with a professional**.
 
+        **Important** if the user explicitly asks for a professional skip the Diagnosis Agent and use directly the Matching Agent
+
         ### Workflow:
 
         1. **Diagnosis Phase**
@@ -56,7 +58,7 @@ orchestrator = Agent(
             - session_id: the input **session_id**
         - On response:
             - Extract the list of professionals 
-            - **Important** NOT put the professional data in your response
+            - **Important**: Do not include or reference any professional data in your response to the user — this information is handled separately via metadata.
             - Ask the user to choose one
             - Store the selected professional_id for the Appointment Phase (never ask the user for it)
         - If response is missing required info, retry or show a clear error.

@@ -173,27 +173,52 @@ async def get_appointments():
 
 def extract_agent_message(task_result):
     try:
-        # Verifica se ci sono artifacts con testo
+        result = {
+            "text": "",
+            "metadata": {}
+        }
+
+        # Cerca nei artifacts
         artifacts = getattr(task_result.result, "artifacts", [])
         for artifact in artifacts:
             if hasattr(artifact, "text") and artifact.text:
-                return artifact.text
+                result["text"] = artifact.text
+                break  # Trovato testo negli artifacts, esci
 
-        # Se non ci sono artifacts validi, passa allo status.message
+        # Se non ha trovato nulla negli artifacts, cerca nello status.message
+        if not result["text"]:
+            status = getattr(task_result.result, "status", None)
+            if (
+                status and
+                hasattr(status, "message") and
+                status.message and
+                hasattr(status.message, "parts") and
+                status.message.parts
+            ):
+                text_part = status.message.parts[0]
+                if hasattr(text_part, "text"):
+                    result["text"] = text_part.text
+                if hasattr(text_part, "metadata"):
+                    result["metadata"] = vars(text_part.metadata) if hasattr(text_part.metadata, "__dict__") else text_part.metadata
+
+        # Estrai metadata aggiuntivi dal campo message principale
         status = getattr(task_result.result, "status", None)
-        if (
-            status and
-            hasattr(status, "message") and
-            status.message and
-            hasattr(status.message, "parts") and
-            status.message.parts
-        ):
-            return status.message.parts[0].text
+        if status and hasattr(status, "message") and status.message:
+            msg_metadata = getattr(status.message, "metadata", None)
+            if msg_metadata:
+                result["metadata"].update(vars(msg_metadata) if hasattr(msg_metadata, "__dict__") else msg_metadata)
 
-        return "[NESSUN MESSAGGIO RICEVUTO]"
+        # Se ancora non c'è testo
+        if not result["text"]:
+            result["text"] = "[NESSUN MESSAGGIO RICEVUTO]"
+
+        return result
 
     except Exception as e:
-        return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
+        return {
+            "text": f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}",
+            "metadata": {}
+        }
 
 
 from fastapi import Path
