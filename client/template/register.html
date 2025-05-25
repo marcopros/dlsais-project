@@ -6,13 +6,13 @@
     <title>Register</title>
 
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter :wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
 
     <!-- Heroicons -->
-    <script src="https://unpkg.com/heroicons@2.0.16/dist/outline.min.js"></script>
+    <script src="https://unpkg.com/heroicons @2.0.16/dist/outline.min.js"></script>
 
     <!-- TailwindCSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com "></script>
     <script>
       tailwind.config = {
         theme: {
@@ -35,29 +35,76 @@
     <div class="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl w-full max-w-md text-white animate-fade-in">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-display font-extrabold">Create your account</h1>
-        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.137 0 4.163.5 5.879 1.386M15 10a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.137 0 4.163.5 5.879 1.386M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
       </div>
       <form action="/register" method="POST" class="space-y-4">
+        <!-- Username -->
         <div class="relative">
           <input type="text" name="username" placeholder="Username" required class="w-full pl-10 pr-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
-          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.137 0 4.163.5 5.879 1.386M15 10a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 15c2.137 0 4.163.5 5.879 1.386M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
         </div>
+
+        <!-- Email -->
         <div class="relative">
           <input type="email" name="email" placeholder="Email" required class="w-full pl-10 pr-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
-          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 12H8m8 0H8m8-4H8m8 8H8m-2 4a2 2 0 01-2-2V6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6z" /></svg>
+          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 12H8m8 0H8m8-4H8m8 8H8m-2 4a2 2 0 01-2-2V6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6z" />
+          </svg>
         </div>
+
+        <!-- Password -->
         <div class="relative">
           <input type="password" name="password" placeholder="Password" required class="w-full pl-10 pr-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
-          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5s-3 1.343-3 3 1.343 3 3 3zm0 2c-2.21 0-4 1.79-4 4v2h8v-2c0-2.21-1.79-4-4-4z" /></svg>
+          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5s-3 1.343-3 3 1.343 3 3 3zm0 2c-2.21 0-4 1.79-4 4v2h8v-2c0-2.21-1.79-4-4-4z" />
+          </svg>
         </div>
+
+        <!-- Phone -->
+        <div class="relative">
+          <input type="text" name="phone" placeholder="Phone Number" required class="w-full pl-10 pr-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
+          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+        </div>
+
+        <!-- Location Fields -->
+        <div class="grid grid-cols-2 gap-3">
+          <input type="text" name="city" placeholder="City" class="w-full px-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
+          <input type="text" name="zipCode" placeholder="ZIP Code" class="w-full px-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
+        </div>
+
+        <!-- DIY Skills -->
+        <div class="relative">
+          <input type="text" name="diy_skills" placeholder="DIY Skills (comma-separated)" class="w-full pl-10 pr-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
+          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        </div>
+
+        <!-- DIY Tools -->
+        <div class="relative">
+          <input type="text" name="diy_tools" placeholder="DIY Tools (comma-separated)" class="w-full pl-10 pr-4 py-3 rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-accent" />
+          <svg class="absolute left-3 top-3.5 w-5 h-5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+
         <button type="submit" class="w-full px-6 py-3 rounded-full bg-accent text-white font-semibold hover:bg-orange-400 transition">
           Sign Up
         </button>
       </form>
       <p class="text-sm text-white/80 text-center mt-4">
         Already have an account?
-        <a href="index.html" class="underline hover:text-white">Go back</a>
+        <a href="/signin" class="underline hover:text-white">Sign in</a>
       </p>
     </div>
+
+    <script src="../static/register.js"></script>
+
   </body>
 </html>

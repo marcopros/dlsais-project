@@ -11,7 +11,6 @@ from bson import ObjectId
 from typing import List
 
 
-
 # Configurazione logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -277,9 +276,18 @@ def getUser(user_id: str, fields: list = None) -> dict:
 # ----------------------
 # FUNCTION: registerUser
 # ----------------------
-def registerUser(name: str, email: str, password: str, phone: str) -> dict:
+def registerUser(
+    name: str,
+    email: str,
+    password: str,
+    phone: str,
+    city: str = None,
+    zipCode: str = None,
+    diy_skills: list = None,
+    diy_tools: list = None
+) -> dict:
     """
-    Register a new user in the database.
+    Register a new user in the database with extended profile fields.
 
     Returns:
         dict: Result of the registration (success/failure + message).
@@ -302,7 +310,18 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
             "email": email,
             "password": hashed_pw,
             "phone": phone,
-            "sessions": []  # Initialize with empty sessions array
+            "location": {
+                "city": city or "",
+                "zipCode": zipCode or ""
+            },
+            "diy_preference": {
+                "diy_skills": diy_skills or [],
+                "diy_tools": diy_tools or []
+            },
+            "trusted_professionals": [],  # Initialize empty
+            "trusted_users": [],          # Initialize empty
+            "feedbacks": [],              # Initialize empty
+            "sessions": []                # Already existing field
         }
 
         result = collection.insert_one(user_data)
@@ -311,11 +330,12 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
             "message": "User registered successfully",
             "user_id": str(result.inserted_id)
         }
+    
     except pymongo_errors.PyMongoError as e:
-        logger.error(f"Errore database durante la registrazione utente: {e}")
+        logger.error(f"Database error during user registration: {e}")
         return {"success": False, "message": f"Database error: {e}"}
     except Exception as e:
-        logger.error(f"Errore imprevisto durante la registrazione utente: {e}")
+        logger.error(f"Unexpected error during user registration: {e}")
         return {"success": False, "message": f"Unexpected error: {e}"}
 
 
