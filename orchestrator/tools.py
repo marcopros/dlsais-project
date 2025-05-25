@@ -102,11 +102,12 @@ async def diagnosis_agent_send_task( message: str, sessionId:str ) -> dict:
 
 
 
-async def matching_agent_send_task( message: str, sessionId:str ) -> dict:
+async def matching_agent_send_task( message: str, userId: str, sessionId:str ) -> dict:
         """Sends a task to the Matching Agent.
 
         Args:
           message: The message to send to the agent for the task.
+          userId: THe user id of the user
           sessionId: The session id of the conversation
 
         Yields:
@@ -139,6 +140,9 @@ async def matching_agent_send_task( message: str, sessionId:str ) -> dict:
                 ],
                 "id": str(uuid.uuid4()),
                 "timestamp": int(datetime.now().timestamp() * 1000)         # Current time in milliseconds
+            },
+            "metadata":{
+                 "user_id": userId,
             }
         }
 
@@ -151,7 +155,8 @@ async def matching_agent_send_task( message: str, sessionId:str ) -> dict:
 
         else:
             # Send a one-time request and wait for final result
-             return await client.send_task(payload)
+            response = await client.send_task(payload)
+            return response
 
 
 async def appointment_agent_send_task(message: str, sessionId: str, user_id: str = "user_123456", professional_id: Optional[str] = None) -> dict:

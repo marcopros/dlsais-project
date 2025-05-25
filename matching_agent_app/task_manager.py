@@ -251,16 +251,19 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             # Get the agent's response
             final_response_text = await self.invoke(user_message, task.metadata.get('user_id'), task.sessionId)
             response = extract_final_response(final_response_text)
-            # logger.info(f'Response: {response}')
+            logger.info(f'Response: {response}')
 
             text_part = TextPart(
                 text=response.get('summary'),
-                metadata={"professionals": response.get('professionals')}
             )
 
-            parts = [text_part]
-            
+            data_part = DataPart(
+                data={'professionals': response.get('professionals')}
+            )
 
+            parts = [text_part, data_part]
+            
+            '''
             # Create a response message to store in the task
             response_message = Message(
                 role="agent",
@@ -268,13 +271,14 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
                 timestamp=int(asyncio.get_running_loop().time() * 1000),
                 id=str(uuid.uuid4())
             )
+            '''
 
-            artifact = Artifact(parts=[data_part])
+            artifact = Artifact(parts=parts)
 
             # Update task as completed
             updated_task = await self.update_store(
                 task_id=task.id,
-                status=TaskStatus(state=TaskState.COMPLETED, message=response_message),
+                status=TaskStatus(state=TaskState.COMPLETED, message=None),
                 artifacts= [artifact]
             )
 
