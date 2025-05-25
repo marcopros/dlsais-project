@@ -269,11 +269,13 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
                 id=str(uuid.uuid4())
             )
 
+            artifact = Artifact(parts=[data_part])
+
             # Update task as completed
             updated_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.COMPLETED, message=response_message),
-                artifacts= None # artifacts
+                artifacts= [artifact]
             )
 
             return SendTaskResponse(id=request.id, result=updated_task)

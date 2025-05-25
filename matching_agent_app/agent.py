@@ -11,7 +11,7 @@ matching_agent = LlmAgent(
         trusted score, and distance.
     """,
     instruction="""
-        You are the Matching Agent. You will receive two inputs:
+        You are the Matching Agent. You will receive three inputs:
          1. A **problem diagnosis** (free text).
          2. A **user_id** (string-ObjectId)
          2. A **city** (optional).
