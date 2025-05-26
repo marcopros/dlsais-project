@@ -30,9 +30,12 @@ appointment_agent = LlmAgent(
 
         3. **If User Confirms:**
            - Ask the user for their preferred date and time for the appointment. Accept natural language inputs (e.g., "tomorrow afternoon", "next Monday at 10 AM", "as soon as possible").
+           - If the user provides only a date without a specific time, ask them to specify their preferred time.
+           - If the user provides only a time without a date, ask them to specify their preferred date.
 
         4. **Interpret Date and Time:**
            - Use the user's response to determine the desired date and time.
+           - Ensure you have both date AND time before proceeding to schedule the appointment.
 
         5. **Schedule Appointment:**
            - Use the 'schedule_appointment' tool with the following details:
@@ -48,6 +51,7 @@ appointment_agent = LlmAgent(
              - The professional's name (if available).
              - The issue to be addressed.
              - The appointment ID for reference.
+           - Add this final message: "L'operatore confermerà l'appuntamento il prima possibile."
            - IMPORTANT: End your response with a confirmation line in this format:
              "APPOINTMENT_CONFIRMED: <appointment_id> USER: <user_id> PROFESSIONAL: <professional_id>"
            - This format is crucial for the orchestrator to process the appointment correctly.

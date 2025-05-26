@@ -676,8 +676,14 @@ def get_user_details(user_id):
     """
     try:
         if using_mongodb:
-            # Use MongoDB find_one
-            user = db[USERS_COLLECTION].find_one({"_id": user_id})
+            # Use MongoDB find_one with ObjectId conversion
+            from bson import ObjectId
+            try:
+                user = db[USERS_COLLECTION].find_one({"_id": ObjectId(user_id)})
+            except:
+                # If ObjectId conversion fails, try with string (for backward compatibility)
+                user = db[USERS_COLLECTION].find_one({"_id": user_id})
+            
             if not user:
                 logger.warning(f"User with ID {user_id} not found.")
                 return None
@@ -706,13 +712,14 @@ def get_appointment(appointment_id):
     """
     try:
         if using_mongodb:
-            # Use MongoDB find_one
-            appointment = db[APPOINTMENTS_COLLECTION].find_one({"_id": appointment_id})
+            # Use MongoDB find_one with ObjectId conversion
+            from bson import ObjectId
+            appointment = db[APPOINTMENTS_COLLECTION].find_one({"_id": ObjectId(appointment_id)})
             if not appointment:
                 raise Exception(f"Appointment with ID {appointment_id} not found.")
             return appointment
         else:
-            # Use in-memory search
+            # Use in-memory search (uses string IDs)
             for appointment in db[APPOINTMENTS_COLLECTION]:
                 if appointment.get("_id") == appointment_id:
                     return appointment

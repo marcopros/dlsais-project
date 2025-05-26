@@ -110,20 +110,13 @@ class OrchestratorTaskManager(InMemoryTaskManager):
     async def invoke(self, query, user_id, session_id) -> str:
         """
         Synchronously invoke the agent to get a final response for a given query and session.
-
-        Args:
-            query: User input as text.
-            user_id: Unique identifier for user.
-            session_id: Unique identifier for the session.
-
-        Returns:
-            Final response from the agent as a string.
+        Handles both sync and async runner.run implementations robustly.
         """
         # Log user query in human-readable format
         human_readable_logger.log_user_message(query)
         
         # Retrieve or create a session based on session_id
-        session = self.runner.session_service.get_session(
+        session = await self.runner.session_service.get_session(
             app_name=self.app_name,
             user_id=user_id,
             session_id=session_id,
@@ -132,14 +125,14 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # If session is None, create a new session
         if session is None:
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
-            session = self.runner.session_service.create_session(
+            session = await self.runner.session_service.create_session(
                 app_name=self.app_name,
                 user_id=user_id,
                 state={},
                 session_id=session_id,
             )
         else:
-            logger.info(f"Session found with ID: {session_id}") 
+            logger.info(f"Session found with ID: {session_id}")
         
         # Add the user id in the query becouse otherway the orchestrator is not able to manage it
         query = query + f' \n user_id: {user_id}'
@@ -152,14 +145,22 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Let the user know the orchestrator is processing
         human_readable_logger.log_system_message("Processing your request...")
 
-        # Run the agent synchronously with the user message and session
-        events = list(
-            self.runner.run(
-                user_id=user_id,
-                session_id=session.id,
-                new_message=content,
-            )
+        # --- Robust handling: support both sync and async runner.run ---
+        events = None
+        run_result = self.runner.run(
+            user_id=user_id,
+            session_id=session.id,
+            new_message=content,
         )
+        # If run_result is a coroutine, await it
+        if asyncio.iscoroutine(run_result):
+            run_result = await run_result
+        # If run_result is an async generator, collect events
+        if hasattr(run_result, "__aiter__"):
+            events = [event async for event in run_result]
+        else:
+            events = list(run_result)
+        # -------------------------------------------------------------
 
         response = ""                    # Extract agent responses and log them
         agent_name = "Orchestrator"      # The name of the agent that is being called
@@ -296,7 +297,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         human_readable_logger.log_user_message(query)
         
         # Retrieve or create a session based on session_id
-        session = self.runner.session_service.get_session(
+        session = await self.runner.session_service.get_session(
             app_name=self.app_name,
             user_id=user_id,
             session_id=session_id,
@@ -305,14 +306,14 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # If session is None, create a new session
         if session is None:
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
-            session = self.runner.session_service.create_session(
+            session = await self.runner.session_service.create_session(
                 app_name=self.app_name,
                 user_id=user_id,
                 state={},
                 session_id=session_id,
             )
         else:
-            logger.info(f"Session found with ID: {session_id}") 
+            logger.info(f"Session found with ID: {session_id}")
         
         # Wrap the user message in a types.Content object ( Format understandable by ADK Agent)
         content = types.Content(
