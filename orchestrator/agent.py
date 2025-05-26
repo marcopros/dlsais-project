@@ -27,6 +27,7 @@ orchestrator = Agent(
         - Always send a request to the Appointment Agent **whenever the user wants to schedule an appointment with a professional**.
 
         **Important** if the user explicitly asks for a professional skip the Diagnosis Agent and use directly the Matching Agent
+        **Important** don't start a discussion with one agent, always route the agent response to the user and wait for the next user input before sending a new request to an agent.
 
         ### Workflow:
 

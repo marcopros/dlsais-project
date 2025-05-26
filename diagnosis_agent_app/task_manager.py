@@ -259,7 +259,8 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
             updated_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.COMPLETED, message=Message(role='agent', parts=part_summary)),
-                artifacts=[Artifact(parts=part_data, metadata={"data": data, "yt_links": yt_link})]
+                # artifacts=[Artifact(parts=part_data, metadata={"data": data, "yt_links": yt_link})]
+                artifacts=[Artifact(parts=part_data)]
             )
 
             return SendTaskResponse(id=request.id, result=updated_task)

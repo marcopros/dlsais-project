@@ -137,7 +137,7 @@ diagnosis_agent = Agent[DiagnosisContext](
     instructions=(f"{RECOMMENDED_PROMPT_PREFIX}"
         "Your job is to find the root cause of the home issue and ask for a DIY solution if the user is interested or if the users prefers a professional to cope with the problem (if it does set the relative output flag to true)." 
         "Ask few clarification if needed."
-        "if user is interested in a DIY solution and video tutorials, use the agent tool at your disposal"
+        "if user is interested in a DIY solution and video tutorials, use the agent tool at your disposal. **IMPORTANT** don't include the video tutorial link in the response, but in the output field 'diy_links' and 'diy_solution' write a summary of the solution."
         "Follow accurately the setting provided in the context and adapt to the user preferences (language, location, time to solve the issue). If users writes in a language find results in that language, if the user is located in Italy, search for results in Italian and so on."
         "Do not ask twice question to detect the problem, work with the context provided and the previous agent response. "
         # "when you are done write as last word 'END' to signal the end of the conversation. "
@@ -181,14 +181,14 @@ async def main():
                    
                 if isinstance(new_item, MessageOutputItem):
                     parsed = json.loads(ItemHelpers.text_message_output(new_item))
-                    print(f"{agent_name}: {parsed["agent_response"]}")
+                    print(f"{agent_name}: {parsed['agent_response']}")
                     if parsed["unlock_request_for_diy_solution"]:
                         print("Unlocking DIY agent...")
                         current_agent = diy_agent
                     if parsed["diy_solution"] != None:
-                        print(f"DIY solution: {parsed["diy_solution"]}")
+                        print(f"DIY solution: {parsed['diy_solution']}")
                     if parsed["diy_links"] != None:
-                        print(f"DIY links: {parsed["diy_links"]}")
+                        print(f"DIY links: {parsed['diy_links']}")
                     if parsed["call_professional"]:
                         print("User prefers to call a professional.")
                         break

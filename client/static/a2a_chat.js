@@ -262,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         bubble.textContent = content;
 
+
         // Handle the different data sended by the user
         // Handle professional data rendering
         if (agentData?.professionals && Array.isArray(agentData.professionals)) {
@@ -313,6 +314,59 @@ document.addEventListener('DOMContentLoaded', () => {
             bubble.appendChild(professionalsContainer);
         }
 
+        // Handle DIY YouTube video rendering
+        if (agentData?.diy_list && Array.isArray(agentData.diy_list)) {
+            const youtubeContainer = document.createElement('div');
+            youtubeContainer.className = 'mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+
+            agentData.diy_list.forEach(async videoUrl => {
+                const trimmedUrl = videoUrl.trim();
+                let videoId;
+
+                try {
+                    const urlObj = new URL(trimmedUrl);
+                    videoId = urlObj.searchParams.get('v') || trimmedUrl.split('v=')[1]?.split(/[&/]/)[0];
+                } catch (err) {
+                    console.warn('Invalid YouTube URL:', trimmedUrl);
+                    return;
+                }
+
+                // Fetch title and thumbnail from YouTube oEmbed
+                try {
+                    const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(trimmedUrl)}&format=json`);
+                    if (!res.ok) throw new Error('Failed to fetch oEmbed data');
+
+                    const data = await res.json();
+                    const { title, thumbnail_url } = data;
+
+                    const card = document.createElement('div');
+                    card.className = 'border border-gray-200 rounded-xl overflow-hidden bg-white shadow hover:shadow-lg transition-shadow duration-300';
+
+                    card.innerHTML = `
+                        <div class="relative pb-[56.25%] h-0 overflow-hidden">
+                            <img 
+                                src="${thumbnail_url}" 
+                                alt="Thumbnail for ${title}" 
+                                class="absolute top-0 left-0 w-full h-full object-cover"
+                            />
+                        </div>
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 truncate">${title}</h3>
+                            <p class="text-xs text-gray-500 mt-1">Watch this helpful guide on YouTube 🎥</p>
+                            <a href="${trimmedUrl}" target="_blank" class="mt-2 inline-block text-xs text-blue-500 hover:underline">Open on YouTube</a>
+                        </div>
+                    `;
+
+                    youtubeContainer.appendChild(card);
+                } catch (err) {
+                    console.error('Error fetching YouTube video info:', err);
+                }
+            });
+
+            bubble.appendChild(youtubeContainer); // Append to your container element (bubble)
+        }
+
+
         if (role === 'agent') {
             const avatar = document.createElement('div');
             avatar.className = 'w-8 h-8 flex items-center justify-center bg-white text-primary font-bold rounded-full text-sm shrink-0';
@@ -358,6 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendMessage(message) {
         console.log('Sending message:', message);
+        let controller = new AbortController(); 
+
         try {
             // Retrieve user from localStorage
             const userJson = localStorage.getItem("user");
@@ -372,14 +428,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn("User not logged in, using default user.");
             }
 
+            // 4 Minute Timout
+            const timeoutId = setTimeout(() => controller.abort(), 240000)
+
             // Send request
             const response = await fetch('/send_message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(bodyData)
+                body: JSON.stringify(bodyData),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId)
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);

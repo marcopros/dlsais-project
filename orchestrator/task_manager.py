@@ -193,6 +193,32 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                             if function_name == "diagnosis_agent_send_task":
                                 agent_name = "Diagnosis Agent"
                                 human_readable_logger.log_agent_response("Diagnosis Agent", part.function_response.response)
+
+                                # Normalize the response format: handle both object and dict
+                                raw_response = part.function_response.response
+
+                                # Case 1: It's a SendTaskResponse object
+                                if hasattr(raw_response, 'result'):
+                                    task_result = raw_response.result
+                                # Case 2: It's a dict with 'result' key
+                                elif isinstance(raw_response, dict) and 'result' in raw_response:
+                                    task_result = raw_response['result']
+                                else:
+                                    human_readable_logger.log_system_message("⚠️ Unexpected response format")
+                                    continue
+                                
+                                result = task_result.result
+
+                                # Now safely access artifacts
+                                if result and hasattr(result, 'artifacts'):
+                                    for artifact in result.artifacts:
+                                        if hasattr(artifact, 'parts'):
+                                            for artifact_part in artifact.parts:
+                                                if isinstance(artifact_part, DataPart):  # Ensure correct type
+                                                    # all the             
+                                                    diy_list = artifact_part.data.get("diy_links", [])
+                                                    response_data["diy_list"] = diy_list
+                                                    human_readable_logger.log_system_message(f"ℹ️ Diagnosis Agent - DIY Youtube Videos: { response_data['diy_list'] }" )
                             
                             # Menage Matching Agent Response
                             elif function_name == "matching_agent_send_task":
