@@ -64,11 +64,11 @@ def fetch_coordinates_for_cities(city_list, max_workers=5):
 
 def extract_final_response(final_response_text:str):
     # Step 1: Extract JSON block from the response
-    json_match = re.search(r"```json\s*(\[\s*{.*?}\s*])\s*```", final_response_text, re.DOTALL)
+    json_match = re.search(r"```json\s*(\[.*?\])\s*```", final_response_text, re.DOTALL)
 
     if json_match:
         try:
-            professionals = json.loads(json_match.group(1))  # structured list
+            professionals = json.loads(json_match.group(1).strip())  # structured list
         except json.JSONDecodeError as e:
             professionals = []
             # Log or handle the parsing error

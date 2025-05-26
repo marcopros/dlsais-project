@@ -122,7 +122,6 @@ def annotate_network_trust(pro_list, trusted_professionals_ids, trusted_users_id
             if tp_id not in trusted_by_map:
                 trusted_by_map[tp_id] = []
             trusted_by_map[tp_id].append({
-                "user_id": str(trusted_user_data['_id']),
                 "name": trusted_user_data['name']
             })
 
@@ -138,7 +137,7 @@ def annotate_network_trust(pro_list, trusted_professionals_ids, trusted_users_id
 
         # Check if any other users trust this professional
         if prof_id in trusted_by_map:
-            prof["trusted_by"] = trusted_by_map[prof_id]
+            prof["trusted_by"] =  trusted_by_map.get(prof_id, [])
         else:
             prof["trusted_by"] = []
 

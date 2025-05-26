@@ -1,3 +1,4 @@
+/*
 const controller = new AbortController();
 const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds
 
@@ -143,3 +144,4 @@ chatForm.addEventListener("submit", async (e) => {
     }
 
 });
+*/

@@ -28,6 +28,7 @@ matching_agent = LlmAgent(
          Result handling:
          - Always return the list of professionals as **structured data**, specifically a list of dictionaries. Each dictionary must include:
             - `name` (string)
+            - `motivation` (string)
             - `skills` (list of strings)
             - `rating` (float)
             - `city` (string)
@@ -36,7 +37,8 @@ matching_agent = LlmAgent(
             - `trust_by` (list of string)
 
          - If `status == "success"`:
-            - Rank the professionals by trust_by_you (best if true), trust_by (better if long), trusted score and skill match.
+            - Rank the professionals by this ordered list of relevant features: trust_by_you (best if true), trust_by (better if long), trusted score and skill match.
+            - Find the **top 5** professionals and for each define a short motivation phrese ( 1 sentence ) that explains why they are a good match for the user.
             - Return the **top 5** professionals as a list of dictionaries.
 
          - If `status == "cities_found"`:
