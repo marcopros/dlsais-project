@@ -1,3 +1,4 @@
+/*
 const controller = new AbortController();
 const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds
 
@@ -101,10 +102,28 @@ chatForm.addEventListener("submit", async (e) => {
     chatBoxEl.appendChild(typingEl);
 
     try {
+        const userJson = localStorage.getItem("user");
+        let userId = 'Default'
+        let body = None
+
+        if (!userJson) {
+            alert("User not logged in, used default user");
+            body = JSON.stringify({
+                message: text, 
+            })
+        } else {
+            const user = JSON.parse(userJson);
+            userId = user.id;
+            body = JSON.stringify({
+                message: text,
+                user_id: userId  
+            })
+        }
+
         const res = await fetch("/send_message", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text }),
+            body: body,
             signal: controller.signal
         });
 
@@ -125,3 +144,4 @@ chatForm.addEventListener("submit", async (e) => {
     }
 
 });
+*/

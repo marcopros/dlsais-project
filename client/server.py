@@ -1,13 +1,14 @@
-from datetime import datetime
+import os
 import asyncio
 import uvicorn
 import logging
 import uuid
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from datetime import datetime
 from typing import Optional
 from A2A.client import A2ACardResolver, A2AClient
 
@@ -15,7 +16,10 @@ from pymongo import MongoClient
 from bson.json_util import dumps
 
 from dotenv import load_dotenv
-import os
+
+from database.utils import registerUser, loginUser
+from .utils import create_access_token
+
 
 load_dotenv()
 
@@ -44,6 +48,7 @@ AGENT_URL = "http://localhost:8000/"
 # Global session ID
 SESSION_ID = str(uuid.uuid4())
 
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "session_id": SESSION_ID})
@@ -55,6 +60,10 @@ async def a2a_chat(request: Request):
 @app.get("/signup", response_class=HTMLResponse)
 async def signup(request: Request):
     return templates.TemplateResponse("register.html", {"request": request, "session_id": SESSION_ID})
+
+@app.get("/signin", response_class=HTMLResponse)
+async def signup(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request, "session_id": SESSION_ID})
 
 @app.get("/feedback", response_class=HTMLResponse)
 async def feedback_page(
@@ -75,7 +84,86 @@ async def feedback_page(
         }
     )
 
-from fastapi.responses import JSONResponse
+@app.post("/login")
+async def handle_login(request: Request):
+    try:
+        data = await request.json()
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "message": "Missing email or password"}
+            )
+
+        result = loginUser(email=email, password=password)
+
+        if result["success"]:
+            user = result["user"]
+
+            # Create access token
+            access_token = create_access_token(
+                data={"sub": user["email"], "id": user["id"]},   
+            )
+
+            return JSONResponse(content={
+                "success": True,
+                "message": "Login successful",
+                "token": access_token,
+                "user": {
+                    "id": user["id"],
+                    "name": user["name"],
+                    "email": user["email"],
+                    "phone": user["phone"]
+                }
+            })
+
+        else:
+            return JSONResponse(
+                status_code=401,
+                content=result
+            )
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Internal server error: {str(e)}"}
+        )
+
+
+@app.post('/user')
+async def handle_register(request: Request):
+    try:
+        data = await request.json()
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Invalid JSON input", "error": str(e)}
+        )
+
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+    phone = data.get("phone")
+    city = data.get("city")
+    zipCode = data.get("zipCode")
+    diy_skills = data.get("diy_skills", [])
+    diy_tools = data.get("diy_tools", [])
+
+    result = registerUser(
+        name=name,
+        email=email,
+        password=password,
+        phone=phone,
+        city=city,
+        zipCode=zipCode,
+        diy_skills=diy_skills,
+        diy_tools=diy_tools
+    )
+
+    return JSONResponse(content=result)
+
 
 @app.get("/appointments")
 async def get_appointments():
@@ -85,27 +173,52 @@ async def get_appointments():
 
 def extract_agent_message(task_result):
     try:
-        # Verifica se ci sono artifacts con testo
+        result = {
+            "text": "",
+            "metadata": {}
+        }
+
+        # Cerca nei artifacts
         artifacts = getattr(task_result.result, "artifacts", [])
         for artifact in artifacts:
             if hasattr(artifact, "text") and artifact.text:
-                return artifact.text
+                result["text"] = artifact.text
+                break  # Trovato testo negli artifacts, esci
 
-        # Se non ci sono artifacts validi, passa allo status.message
+        # Se non ha trovato nulla negli artifacts, cerca nello status.message
+        if not result["text"]:
+            status = getattr(task_result.result, "status", None)
+            if (
+                status and
+                hasattr(status, "message") and
+                status.message and
+                hasattr(status.message, "parts") and
+                status.message.parts
+            ):
+                text_part = status.message.parts[0]
+                if hasattr(text_part, "text"):
+                    result["text"] = text_part.text
+                if hasattr(text_part, "metadata"):
+                    result["metadata"] = vars(text_part.metadata) if hasattr(text_part.metadata, "__dict__") else text_part.metadata
+
+        # Estrai metadata aggiuntivi dal campo message principale
         status = getattr(task_result.result, "status", None)
-        if (
-            status and
-            hasattr(status, "message") and
-            status.message and
-            hasattr(status.message, "parts") and
-            status.message.parts
-        ):
-            return status.message.parts[0].text
+        if status and hasattr(status, "message") and status.message:
+            msg_metadata = getattr(status.message, "metadata", None)
+            if msg_metadata:
+                result["metadata"].update(vars(msg_metadata) if hasattr(msg_metadata, "__dict__") else msg_metadata)
 
-        return "[NESSUN MESSAGGIO RICEVUTO]"
+        # Se ancora non c'è testo
+        if not result["text"]:
+            result["text"] = "[NESSUN MESSAGGIO RICEVUTO]"
+
+        return result
 
     except Exception as e:
-        return f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}"
+        return {
+            "text": f"[ERRORE ESTRAZIONE]: {type(e).__name__} - {e}",
+            "metadata": {}
+        }
 
 
 from fastapi import Path
@@ -132,7 +245,7 @@ async def update_appointment_status(appointment_id: str, payload: AppointmentUpd
 
 
 # Reuse your async ask_agent_with_a2a function here
-async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
+async def ask_agent_with_a2a(agent_url: str, user_id: str, session_id: str, user_text: str):
     try:
         card_resolver = A2ACardResolver(agent_url)
         agent_card = card_resolver.get_agent_card()
@@ -151,6 +264,9 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
                 "parts": [{"type": "text", "text": user_text}],
                 "id": str(uuid.uuid4()),
                 "timestamp": int(datetime.now().timestamp() * 1000)
+            },
+            "metadata": {
+                "user_id": user_id
             }
         }
 
@@ -173,8 +289,16 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
 
 @app.post("/send_message")
 async def send_message(data: dict):
+    user_id = data.get("user_id")
     user_text = data.get("message")
-    response = await ask_agent_with_a2a(AGENT_URL, SESSION_ID, user_text)
+
+    if not user_text:
+        raise HTTPException(status_code=400, detail="Missing user_id or message")
+    
+    if not user_id:
+        user_id = '68337647a96af0b281857c35'
+    
+    response = await ask_agent_with_a2a(AGENT_URL, user_id, SESSION_ID, user_text)
     return {"response": response}
 
 

@@ -20,6 +20,7 @@ from A2A.types import (
     Message,
     Artifact,
     TextPart,
+    DataPart,
     TaskStatus,
     TaskState,
     TaskNotFoundError,
@@ -46,7 +47,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
     Custom Task Manager for handling tasks related to the orchestrator.
     Manages sessions, invokes the agent, streams responses, and updates task status.
     """
-    def __init__(self, agent: Agent, runner: Runner, session_service: InMemorySessionService, app_name: str, user_id: str):
+    def __init__(self, agent: Agent, runner: Runner, session_service: InMemorySessionService, app_name: str):
         """
         Initialize the task manager with required dependencies.
         
@@ -62,7 +63,6 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         self.runner = runner
         self.session_service = session_service
         self.app_name = app_name
-        self.user_id = user_id
         logger.info("OrchestratorTaskManager initialized.")
     
     def extract_professional_id(self, text: str) -> str:
@@ -107,12 +107,13 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             return info
         return {}
 
-    async def invoke(self, query, session_id) -> str:
+    async def invoke(self, query, user_id, session_id) -> str:
         """
         Synchronously invoke the agent to get a final response for a given query and session.
 
         Args:
             query: User input as text.
+            user_id: Unique identifier for user.
             session_id: Unique identifier for the session.
 
         Returns:
@@ -124,7 +125,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Retrieve or create a session based on session_id
         session = self.runner.session_service.get_session(
             app_name=self.app_name,
-            user_id=self.user_id,
+            user_id=user_id,
             session_id=session_id,
         )
 
@@ -133,13 +134,16 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
             session = self.runner.session_service.create_session(
                 app_name=self.app_name,
-                user_id=self.user_id,
+                user_id=user_id,
                 state={},
                 session_id=session_id,
             )
         else:
             logger.info(f"Session found with ID: {session_id}") 
         
+        # Add the user id in the query becouse otherway the orchestrator is not able to manage it
+        query = query + f' \n user_id: {user_id}'
+
         # Wrap the user message in a types.Content object ( Format understandable by ADK Agent)
         content = types.Content(
             role='user', parts=[types.Part.from_text(text=query)]
@@ -151,14 +155,15 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Run the agent synchronously with the user message and session
         events = list(
             self.runner.run(
-                user_id=self.user_id,
+                user_id=user_id,
                 session_id=session.id,
                 new_message=content,
             )
         )
 
         response = ""                    # Extract agent responses and log them
-        agent_name = "Orchestrator"     # The name of the agent that is being called
+        agent_name = "Orchestrator"      # The name of the agent that is being called
+        response_data = {}                    # metadata to send to the user
         
         # Variables to store extracted IDs and info
         professional_id = ""
@@ -169,6 +174,8 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                 # Log function calls (agent interactions)
                 if event.content and event.content.parts:
                     for part in event.content.parts:
+
+                        # Menage Function Call Events
                         if hasattr(part, 'function_call') and part.function_call:
                             function_name = part.function_call.name
                             if function_name == "diagnosis_agent_send_task":
@@ -178,33 +185,52 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                             elif function_name == "appointment_agent_send_task":
                                 human_readable_logger.log_agent_call("Appointment Agent", part.function_call.args.get("message", ""))
                         
-                        # Log function responses
+                        # Menage Function Response Events
                         if hasattr(part, 'function_response') and part.function_response:
                             function_name = part.function_response.name
+
+                            # Menage Diagnosis Agent Response
                             if function_name == "diagnosis_agent_send_task":
                                 agent_name = "Diagnosis Agent"
                                 human_readable_logger.log_agent_response("Diagnosis Agent", part.function_response.response)
+                            
+                            # Menage Matching Agent Response
                             elif function_name == "matching_agent_send_task":
                                 agent_name = "Matching Agent"
                                 human_readable_logger.log_agent_response("Matching Agent", part.function_response.response)
                                 
                                 # Extract professional ID from matching agent response
-                                if isinstance(part.function_response.response, dict) and "status" in part.function_response.response:
-                                    response_text = part.function_response.response.get("result", {}).get("status", {}).get("message", {}).get("text", "")
-                                    professional_id = self.extract_professional_id(response_text)
+                                # if isinstance(part.function_response.response, dict) and "status" in part.function_response.response:
+                                #    response_text = part.function_response.response.get("result", {}).get("status", {}).get("message", {}).get("text", "")
+                                #    professional_id = self.extract_professional_id(response_text)
                                     
-                                    # Check for artifacts that might contain the professional ID
-                                    artifacts = part.function_response.response.get("result", {}).get("artifacts", [])
-                                    for artifact in artifacts:
-                                        if "parts" in artifact:
-                                            for artifact_part in artifact["parts"]:
-                                                if artifact_part.get("type") == "data" and "data" in artifact_part:
-                                                    data = artifact_part["data"]
-                                                    if "professional_id" in data:
-                                                        professional_id = data["professional_id"]
-                                                        logger.info(f"Found professional_id in artifacts: {professional_id}")
-                                                        human_readable_logger.log_system_message(f"Found professional ID in data: {professional_id}")
+                                # Normalize the response format: handle both object and dict
+                                raw_response = part.function_response.response
+
+                                # Case 1: It's a SendTaskResponse object
+                                if hasattr(raw_response, 'result'):
+                                    task_result = raw_response.result
+                                # Case 2: It's a dict with 'result' key
+                                elif isinstance(raw_response, dict) and 'result' in raw_response:
+                                    task_result = raw_response['result']
+                                else:
+                                    human_readable_logger.log_system_message("⚠️ Unexpected response format")
+                                    continue
                                 
+                                result = task_result.result
+
+                                # Now safely access artifacts
+                                if result and hasattr(result, 'artifacts'):
+                                    for artifact in result.artifacts:
+                                        if hasattr(artifact, 'parts'):
+                                            for artifact_part in artifact.parts:
+                                                if isinstance(artifact_part, DataPart):  # Ensure correct type
+                                                    # Extract the professional data from the artifact             
+                                                    professionals_list = artifact_part.data.get("professionals", [])
+                                                    response_data["professionals"] = professionals_list
+                                                    human_readable_logger.log_system_message(f"ℹ️ Matching Agent - Professionals Data: { response_data['professionals'] }" )
+                            
+                            # Manage Appointment Agent Response
                             elif function_name == "appointment_agent_send_task":
                                 agent_name = "Appointment Agent"
                                 human_readable_logger.log_agent_response("Appointment Agent", part.function_response.response)
@@ -248,11 +274,14 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             result['professional_id'] = professional_id
         if appointment_info:
             result['appointment_info'] = appointment_info
+
+        # Add metadata 'result_data' to the final resuly
+        result['metadata'] = response_data
             
         return result
 
 
-    async def stream(self, query, session_id) -> AsyncIterable[dict[str, Any]]:
+    async def stream(self, query, user_id, session_id) -> AsyncIterable[dict[str, Any]]:
         """
         Stream partial results from the agent asynchronously.
 
@@ -269,7 +298,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Retrieve or create a session based on session_id
         session = self.runner.session_service.get_session(
             app_name=self.app_name,
-            user_id=self.user_id,
+            user_id=user_id,
             session_id=session_id,
         )
 
@@ -278,7 +307,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
             session = self.runner.session_service.create_session(
                 app_name=self.app_name,
-                user_id=self.user_id,
+                user_id=user_id,
                 state={},
                 session_id=session_id,
             )
@@ -295,7 +324,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
 
         # Run the agent asynchronously and process each event
         async for event in self.runner.run_async(
-            user_id=self.user_id, session_id=session.id, new_message=content
+            user_id=user_id, session_id=session.id, new_message=content
         ):
             agent_name = "Orchestrator"    # The name of the agent that is being called  
             # Log function calls and responses
@@ -392,6 +421,26 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Save the task to the store
         task = await self.upsert_task(request.params)
 
+        # Since Task object doesn't have a user_id field, we add it to metadata manually
+        user_id = None
+        if request.params.metadata:
+            user_id = request.params.metadata.get('user_id')
+
+        if user_id:
+            # Initialize metadata if it's None
+            if task.metadata is None:
+                task.metadata = {}
+
+            # Only set user_id if not already present
+            if not task.metadata.get('user_id'):
+                task.metadata['user_id'] = user_id
+                logger.info(f"User ID '{user_id}' added to task metadata.")
+            else:
+                logger.info("User ID already exists in task metadata.")
+        else:
+            logger.error("WRONG REQUEST PARAMS. It needs a user_id field")
+
+
         try:
             # Find the latest user message from the task history
             user_message = "No input"
@@ -405,9 +454,10 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                         break
             
             # Get the agent's response
-            final_response =  await self.invoke(user_message, task.sessionId)
+            final_response =  await self.invoke(user_message,  task.metadata.get('user_id'), task.sessionId)
             response_text = final_response['text']
             response_agent = final_response['agent']
+            response_metadata = final_response['metadata']
 
             # Create a response message to store in the task
             response_message = Message(
@@ -416,7 +466,10 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                     TextPart(
                         type="text",
                         text=response_text,
-                        metadata={ "agent": response_agent }
+                        metadata={ 
+                            "agent": response_agent,
+                            "data": response_metadata
+                        }
                     )
                 ],
                 timestamp=int(asyncio.get_running_loop().time() * 1000),
@@ -474,6 +527,26 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Salva il task
         task = await self.upsert_task(request.params)
 
+        # Since Task object doesn't have a user_id field, we add it to metadata manually
+        user_id = None
+        if request.params.metadata:
+            user_id = request.params.metadata.get('user_id')
+
+        if user_id:
+            # Initialize metadata if it's None
+            if task.metadata is None:
+                task.metadata = {}
+
+            # Only set user_id if not already present
+            if not task.metadata.get('user_id'):
+                task.metadata['user_id'] = user_id
+                logger.info(f"User ID '{user_id}' added to task metadata.")
+            else:
+                logger.debug("User ID already exists in task metadata.")
+        else:
+            logger.error("WRONG REQUEST PARAMS. It needs a user_id field")
+
+
         try:
             # Retrieve the latest user message
             user_message = "No input"
@@ -487,7 +560,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                         break
             
             # Stream agent response
-            async for item in self.stream(user_message, task.sessionId):
+            async for item in self.stream(user_message,  task.metadata.get('user_id'), task.sessionId):
                 is_task_complete = item.get('is_task_complete', False)
 
                 if not is_task_complete:

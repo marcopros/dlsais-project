@@ -27,7 +27,6 @@ load_dotenv()
 
 # Application-wide constants
 APP_NAME = "orchestrator"  # Logical name for this agent app
-USER_ID = "1"  # Default user ID; used when associating sessions/tasks with a user
 
 
 async def run_server():
@@ -51,7 +50,7 @@ async def run_server():
         runner = Runner(app_name=APP_NAME, agent=agent, session_service=session_service)
 
         # Instantiate the custom task manager that handles A2A streaming and task execution 
-        task_manager = OrchestratorTaskManager(agent, runner, session_service, APP_NAME, USER_ID)
+        task_manager = OrchestratorTaskManager(agent, runner, session_service, APP_NAME)
 
         # Determine the port and host from environment variables
         port = int(os.getenv("PORT", "8000"))

@@ -6,7 +6,7 @@ import uuid
 from A2A.client import A2ACardResolver, A2AClient
 
 
-async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
+async def ask_agent_with_a2a(agent_url: str, user_id: str, session_id: str, user_text: str):
     """
     Sends a message to an agent using A2AClient and returns the response.
 
@@ -28,8 +28,8 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
         task_id = str(uuid.uuid4())
 
         # Check if the agent supports streaming responses
-        streaming = agent_card.capabilities.streaming
-        #streaming = False  # Uncomment to force non-streamed mode
+        # streaming = agent_card.capabilities.streaming
+        streaming = False  # Uncomment to force non-streamed mode
 
         # Prepare the task payload to be sent to the agent
         payload = {
@@ -43,6 +43,9 @@ async def ask_agent_with_a2a(agent_url: str, session_id: str, user_text: str):
                 ],
                 "id": str(uuid.uuid4()),
                 "timestamp": int(datetime.now().timestamp() * 1000)         # Current time in milliseconds
+            },
+            "metadata": {
+                "user_id": user_id,
             }
         }
 
@@ -79,8 +82,10 @@ async def main():
     """
     url = "http://localhost:8000/"      # URL of the agent service
     session_id = str(uuid.uuid4())      # Unique ID for the entire chat session
+    user_id = '6830b8959df8bc36e536bb81'   
 
     print("Chat Client A2A Started")
+    print(f"\tUser ID: {user_id}")
     print(f"\tSession ID: {session_id}")
     print(f"\tConnected to: {url}")
     print("Type 'quit' or ':q' to exit.")
@@ -94,7 +99,7 @@ async def main():
                 break
             
             # Send the user's message to the agent
-            await ask_agent_with_a2a(url, session_id, user_input)
+            await ask_agent_with_a2a(url, user_id, session_id, user_input)
 
         except KeyboardInterrupt:
         # Handle user interruption gracefully

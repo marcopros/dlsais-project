@@ -8,7 +8,7 @@ from pymongo import MongoClient, errors as pymongo_errors
 from dotenv import load_dotenv
 from pathlib import Path
 from bson import ObjectId
-from bson.errors import InvalidId
+from typing import List
 
 
 # Configurazione logging
@@ -56,7 +56,7 @@ def get_mongodb_connection(max_retries=3, retry_delay=2):
                     MONGO_PASSWORD = os.getenv("MONGODB_PASSWORD", "unitn2025")
                     MONGO_URI = f'mongodb+srv://marco:{MONGO_PASSWORD}@dlsais-cluster.vkxu2tc.mongodb.net/?retryWrites=true&w=majority&appName=dlsais-cluster'
             
-            DB_NAME = os.getenv("MONGODB_DB_NAME", "test")
+            DB_NAME = os.getenv("MONGODB_DB_NAME", "dev")
             
             # Connection with timeout to avoid blocking
             client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -83,6 +83,9 @@ def get_mongodb_connection(max_retries=3, retry_delay=2):
     logger.error(error_message)
     raise Exception(error_message)
 
+
+
+
 # Try to establish the connection
 try:
     mongo_client, db = get_mongodb_connection()
@@ -93,37 +96,39 @@ except Exception as e:
     db = None
 
 
+
+
+# ------------------------------------------ Professional ------------------------------------------------
 # ----------------------
 # FUNCTION: getProfessionals
 # ----------------------
-def getProfessionals(profession: str = None, location: str = None) -> list:
+def getProfessionals(profession: str = None, city: str = None) -> List[dict]:
     """
-    Retrieve professionals from the database, optionally filtering by profession and/or location.
+    Retrieve professionals from the database, optionally filtering by profession and/or city.
 
     Args:
         profession (str): The profession to filter by (e.g., 'Electrician').
-        location (str): The location or city to filter by.
+        city (str): The city name to filter by.
 
     Returns:
         list: A list of professionals matching the criteria.
-        
     """
     try:
         # Verify db connection is available
         if db is None:
             logger.error("Database connection not available in getProfessionals")
             return []
-            
+
         collection = db["professionals"]
         query = {}
 
-        # Add profession filter if provided
+        # Add profession filter if provided (case-insensitive exact match)
         if profession:
             query["profession"] = {"$regex": f"^{profession}$", "$options": "i"}
 
-        # Add location filter if provided
-        if location:
-            query["location"] = {"$regex": f".*{location}.*", "$options": "i"}
+        # Add city filter if provided (search in location.city)
+        if city:
+            query["location.city"] = {"$regex": city, "$options": "i"}
 
         # Execute the query
         response = collection.find(query)
@@ -133,14 +138,17 @@ def getProfessionals(profession: str = None, location: str = None) -> list:
             doc["_id"] = str(doc["_id"])  # Convert ObjectId to string
             professionals.append(doc)
 
-        logger.debug(f"Trovati {len(professionals)} professionisti - Professione: {profession}, Località: {location}")
+        logger.debug(f"Found {len(professionals)} professionals - Profession: {profession}, City: {city}")
         return professionals
-        
+
     except Exception as e:
-        logger.error(f"Errore nel recupero dei professionisti: {e}")
+        logger.error(f"Error retrieving professionals: {e}")
         return []
 
 
+
+
+# ------------------------------------------ Location ----------------------------------------------------
 # ----------------------
 # FUNCTION: getCities
 # ----------------------
@@ -160,28 +168,126 @@ def getCities(profession: str = None) -> list:
         if db is None:
             logger.error("Database connection not available in getCities")
             return []
-            
+
         collection = db["professionals"]
         query = {}
 
+        # Add profession filter if provided
         if profession:
             query["profession"] = {"$regex": f"^{profession}$", "$options": "i"}
 
-        cities = collection.distinct("location", query)
-        logger.debug(f"Trovate {len(cities)} città per la professione: {profession}")
-        return cities
-        
+        # Get all distinct 'location.city' values matching the query
+        locations = collection.distinct("location.city", query)
+
+        # Remove None or empty values
+        unique_cities = list(set(city for city in locations if city))
+
+        logger.debug(f"Found {len(unique_cities)} unique cities for profession: {profession}")
+        return unique_cities
+
     except Exception as e:
-        logger.error(f"Errore nel recupero delle città: {e}")
+        logger.error(f"Error in getCities: {e}")
         return []
+
+def getCity(user_id: str) -> str:
+    '''
+    Retrieve the city of the specified user from the database.
+
+    Args:
+        user_id (str): The ID of the user whose city is to be retrieved.
+
+    Returns:
+        str: The name of the city if found, otherwise an empty string.
+    '''
+    try:
+        # Verify db connection is available
+        if db is None:
+            logger.error("Database connection not available in getCity")
+            return ""
+
+        collection = db["users"]
+
+        # Find the user by ID (case-insensitive regex match)
+        user = collection.find_one(
+            {"_id": ObjectId(user_id)},
+            {"location": 1}
+        )
+
+        if not user:
+            logger.info(f"No user found for {user_id}")
+            return "No city founded in the database"
+        
+        if "location" not in user:
+            logger.info(f"No location found for user {user_id}")
+            return "No city founded in the database"
+
+        city = user["location"].get("city")
+        if not city:
+            logger.info(f"Location exists, but 'city' is missing for user {user_id}")
+
+        logger.info(f"{city} is the city of user {user_id}")
+        return city
+
+    except Exception as e:
+        logger.error(f"Error in getCity: {e}", exc_info=True)
+        return "Error, no city founded in the database"
+
+
+
+
+# ------------------------------------------ User ----------------------------------------------------
+# ----------------------
+# FUNCTION: getUSer
+# ----------------------
+def getUser(user_id: str, fields: list = None) -> dict:
+    """
+    Fetch a user by ID with optional field filtering and population of trust network.
+
+    Args:
+        user_id (str): ID of the user to fetch.
+        fields (list, optional): List of fields to include in the result. Defaults to None (all fields).
+
+    Returns:
+        dict: User document with optional population, or None if not found.
+    """
+    # Verify db connection is available
+    if db is None:
+        logger.error("Database connection not available in getCity")
+        return ""
+    
+    logger.info(f'Requested field: {fields}')
+
+    collection = db["users"]
+
+    query = {"_id": ObjectId(user_id)}
+    projection = {field: 1 for field in fields} if fields else None
+
+    user = collection.find_one(query, projection)
+
+    logger.info(f"Raw DB result for user {user_id}: {user}")
+
+    if not user:
+        logger.warning(f"No user found with ID: {user_id}")
+        return None
+
+    return user
 
 
 # ----------------------
 # FUNCTION: registerUser
 # ----------------------
-def registerUser(name: str, email: str, password: str, phone: str) -> dict:
+def registerUser(
+    name: str,
+    email: str,
+    password: str,
+    phone: str,
+    city: str = None,
+    zipCode: str = None,
+    diy_skills: list = None,
+    diy_tools: list = None
+) -> dict:
     """
-    Register a new user in the database.
+    Register a new user in the database with extended profile fields.
 
     Returns:
         dict: Result of the registration (success/failure + message).
@@ -204,7 +310,18 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
             "email": email,
             "password": hashed_pw,
             "phone": phone,
-            "sessions": []  # Initialize with empty sessions array
+            "location": {
+                "city": city or "",
+                "zipCode": zipCode or ""
+            },
+            "diy_preference": {
+                "diy_skills": diy_skills or [],
+                "diy_tools": diy_tools or []
+            },
+            "trusted_professionals": [],  # Initialize empty
+            "trusted_users": [],          # Initialize empty
+            "feedbacks": [],              # Initialize empty
+            "sessions": []                # Already existing field
         }
 
         result = collection.insert_one(user_data)
@@ -213,11 +330,12 @@ def registerUser(name: str, email: str, password: str, phone: str) -> dict:
             "message": "User registered successfully",
             "user_id": str(result.inserted_id)
         }
+    
     except pymongo_errors.PyMongoError as e:
-        logger.error(f"Errore database durante la registrazione utente: {e}")
+        logger.error(f"Database error during user registration: {e}")
         return {"success": False, "message": f"Database error: {e}"}
     except Exception as e:
-        logger.error(f"Errore imprevisto durante la registrazione utente: {e}")
+        logger.error(f"Unexpected error during user registration: {e}")
         return {"success": False, "message": f"Unexpected error: {e}"}
 
 
