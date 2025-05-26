@@ -2,14 +2,15 @@ import os
 import json
 import asyncio
 import logging
+import uuid
 from typing import Dict, Any, List, Optional, Union, AsyncIterable
 
 # Import common A2A types and components
 from A2A.server.task_manager import InMemoryTaskManager
 from A2A.types import (
-    Task, TaskStatus, TaskState, Message, TextPart, 
+    Task, TaskStatus, TaskState, Message, TextPart,
     DataPart, Artifact, SendTaskResponse, SendTaskStreamingResponse, TaskStatusUpdateEvent,
-    JSONRPCResponse, JSONRPCError
+    TaskArtifactUpdateEvent, JSONRPCResponse, JSONRPCError
 )
 
 # Import the query_agent function from the direct_agent module
@@ -80,7 +81,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Processing task {task.id} with user query: {user_message_content}")
 
             # Retrieve or create a session based on task.sessionId
-            session = self.runner.session_service.get_session(
+            session = await self.runner.session_service.get_session(
                 app_name=self.app_name,
                 user_id=self.user_id, # Using default user_id for now
                 session_id=task.sessionId,
@@ -88,7 +89,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
 
             if session is None:
                 logger.info(f"Session not found for task {task.id}. Creating a new session with ID: {task.sessionId}")
-                session = self.runner.session_service.create_session(
+                session = await self.runner.session_service.create_session(
                     app_name=self.app_name,
                     user_id=self.user_id, # Using default user_id for now
                     state={}, # Initial session state
@@ -172,9 +173,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
             # Create A2A Message
             agent_message = Message(
                 role="agent",
-                parts=agent_message_parts,
-                timestamp=int(asyncio.get_running_loop().time() * 1000),
-                id=str(uuid.uuid4())
+                parts=agent_message_parts
             )
 
             # Create A2A Artifacts if there is structured data
@@ -189,8 +188,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
             # Update the task status and artifacts
             task.status = TaskStatus(
                 state=final_state,
-                message=agent_message,
-                timestamp=int(asyncio.get_running_loop().time() * 1000)
+                message=agent_message
             )
             task.artifacts = artifacts
 
@@ -202,14 +200,11 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
             # In case of error, return an error message
             error_message = Message(
                 role="agent",
-                parts=[TextPart(type="text", text=f"An error occurred during task processing: {str(e)}")],
-                timestamp=int(asyncio.get_running_loop().time() * 1000),
-                id=str(uuid.uuid4())
+                parts=[TextPart(type="text", text=f"An error occurred during task processing: {str(e)}")]
             )
             task.status = TaskStatus(
                 state=TaskState.FAILED, # Mark as failed
-                message=error_message,
-                timestamp=int(asyncio.get_running_loop().time() * 1000)
+                message=error_message
             )
             task.history.append(error_message) # Add error message to history
             return task
@@ -239,9 +234,8 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
                  id=task_id,
                  sessionId=session_id,
                  status=TaskStatus(
-                     state=TaskState.PENDING,
-                     message=None,
-                     timestamp=None # Will be filled automatically
+                     state=TaskState.SUBMITTED,
+                     message=None
                  ),
                  history=[],
                  artifacts=[],
@@ -261,50 +255,17 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
 
         # Add new message to history if provided in the request
         if hasattr(request, 'message') and request.message:
-             # Ensure message has a timestamp and ID if missing
-             if not request.message.timestamp:
-                  request.message.timestamp = int(asyncio.get_running_loop().time() * 1000)
-             if not request.message.id:
-                  request.message.id = str(uuid.uuid4())
              task.history.append(request.message)
              logger.info(f"Added new message to task {task_id} history.")
 
 
-        # If it's a "send" task (not a follow-up), process it immediately
-        # A follow-up task would typically have a parent_task_id
-        if not hasattr(request, 'parent_task_id') or not request.parent_task_id:
-             # Update the task state to IN_PROGRESS before processing
-             task.status.state = TaskState.IN_PROGRESS
-             task.status.timestamp = int(asyncio.get_running_loop().time() * 1000)
-             logger.info(f"Task {task_id} is a new 'send' task. Starting processing.")
-             # Process the task asynchronously
-             asyncio.create_task(self._process_and_update_task(task))
-        else:
-             # For follow-up tasks, the state might depend on the parent task or the message content
-             # For now, we'll just update the task and assume the orchestrator/client
-             # will trigger further processing if needed based on the state.
-             logger.info(f"Task {task_id} is a follow-up task. Parent ID: {request.parent_task_id}")
-             # You might want to set the state to PENDING or WAITING_FOR_INPUT here
-             # depending on the interaction flow.
-             # task.status.state = TaskState.PENDING # Example
+        # Don't automatically process tasks here - let the calling method handle processing
+        # This avoids conflicts between automatic processing and manual processing
+        logger.info(f"Task {task_id} created/updated. Processing will be handled by calling method.")
 
         return task
 
 
-    async def _process_and_update_task(self, task: Task) -> None:
-        """
-        Elabora un task e aggiorna il risultato.
-
-        Args:
-            task: Il task da elaborare
-        """
-        logger.info(f"Starting _process_and_update_task for task {task.id}")
-        # Elabora il task utilizzando la logica aggiornata
-        updated_task = await self.process_task(task)
-
-        # Aggiorna il task memorizzato con il risultato elaborato
-        self.tasks[task.id] = updated_task
-        logger.info(f"Finished _process_and_update_task for task {task.id}. Final state: {updated_task.status.state}")
 
 
     async def get_task(self, id: str) -> Optional[Task]:
@@ -367,20 +328,17 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
             logger.error(f"Error processing non-streaming task {task.id}: {str(e)}", exc_info=True)
             error_message = Message(
                 role="agent",
-                parts=[TextPart(type="text", text=f"An error occurred: {str(e)}")],
-                timestamp=int(asyncio.get_running_loop().time() * 1000),
-                id=str(uuid.uuid4())
+                parts=[TextPart(type="text", text=f"An error occurred: {str(e)}")]
             )
             task.status = TaskStatus(
                 state=TaskState.FAILED,
-                message=error_message,
-                timestamp=int(asyncio.get_running_loop().time() * 1000)
+                message=error_message
             )
             self.tasks[task.id] = task # Update store with failed state
             return SendTaskResponse(id=request.id, result=task)
 
 
-    async def on_send_task_subscribe(self, request) -> Union[AsyncIterable[SendTaskStreamingResponse], JSONRPCResponse]:
+    async def on_send_task_subscribe(self, request) -> AsyncIterable[SendTaskStreamingResponse]:
         """
         Handle streaming task subscription. Streams updates back to the client.
         Uses the ADK Runner for asynchronous agent execution and streaming.
@@ -394,325 +352,173 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
         logger.info(f"Subscribing to task stream: {request.params.id}")
 
         # Create/update the task in the store
-        # upsert_task should NOT schedule processing for streaming tasks either
         task = await self.upsert_task(request.params)
 
-        async def stream_response():
-            try:
-                # Find the latest user message from the task history
-                user_message_content = None
-                if task.history:
-                    for msg in reversed(task.history):
-                        if msg.role == "user":
-                            text_parts = [p.text for p in msg.parts if hasattr(p, "text") and p.text]
-                            if text_parts:
-                                user_message_content = text_parts[0]
-                                break
+        try:
+            # Find the latest user message from the task history
+            user_message_content = None
+            if task.history:
+                for msg in reversed(task.history):
+                    if msg.role == "user":
+                        text_parts = [p.text for p in msg.parts if hasattr(p, "text") and p.text]
+                        if text_parts:
+                            user_message_content = text_parts[0]
+                            break
 
-                if user_message_content is None:
-                    logger.warning(f"No user message found in task {task.id} history for streaming.")
-                    # Yield an error or a completion event
-                    yield SendTaskStreamingResponse(
-                        id=request.id,
-                        result=TaskStatusUpdateEvent(
-                            id=task.id,
-                            status=TaskStatus(state=TaskState.FAILED, message=Message(role="agent", parts=[TextPart(type="text", text="No user input for streaming.")])),
-                            final=True
-                        )
+            if user_message_content is None:
+                logger.warning(f"No user message found in task {task.id} history for streaming.")
+                # Yield an error or a completion event
+                yield SendTaskStreamingResponse(
+                    id=request.id,
+                    result=TaskStatusUpdateEvent(
+                        id=task.id,
+                        status=TaskStatus(state=TaskState.FAILED, message=Message(role="agent", parts=[TextPart(type="text", text="No user input for streaming.")])),
+                        final=True
                     )
-                    return # Stop the generator
+                )
+                return # Stop the generator
 
-                logger.info(f"Starting streaming processing for task {task.id} with user query: {user_message_content}")
+            logger.info(f"Starting streaming processing for task {task.id} with user query: {user_message_content}")
 
-                # Retrieve or create a session
-                session = self.runner.session_service.get_session(
+            # Retrieve or create a session
+            session = await self.runner.session_service.get_session(
+                app_name=self.app_name,
+                user_id=self.user_id, # Using default user_id
+                session_id=task.sessionId,
+            )
+
+            if session is None:
+                logger.info(f"Session not found for task {task.id} streaming. Creating new session with ID: {task.sessionId}")
+                session = await self.runner.session_service.create_session(
                     app_name=self.app_name,
                     user_id=self.user_id, # Using default user_id
+                    state={},
                     session_id=task.sessionId,
                 )
 
-                if session is None:
-                    logger.info(f"Session not found for task {task.id} streaming. Creating new session with ID: {task.sessionId}")
-                    session = self.runner.session_service.create_session(
-                        app_name=self.app_name,
-                        user_id=self.user_id, # Using default user_id
-                        state={},
-                        session_id=task.sessionId,
-                    )
+            # Wrap user message for ADK Runner
+            from google.genai import types
+            user_content = types.Content(
+                role='user', parts=[types.Part.from_text(text=user_message_content)]
+            )
 
-                # Wrap user message for ADK Runner
-                from google.genai import types
-                user_content = types.Content(
-                    role='user', parts=[types.Part.from_text(text=user_message_content)]
-                )
+            # Use the ADK Runner's async streaming method
+            full_agent_response_content = "" # To build the full text response
+            artifacts_data = [] # To collect structured data for artifacts
 
-                # Use the ADK Runner's async streaming method
-                full_agent_response_content = "" # To build the full text response
-                artifacts_data = [] # To collect structured data for artifacts
+            async for event in self.runner.run_async(
+                user_id=self.user_id,
+                session_id=session.id,
+                new_message=user_content,
+            ):
+                # Process each event from the runner
+                if event.content and event.content.parts:
+                    current_text_chunk = ""
+                    current_artifacts_chunk_data = []
 
-                async for event in self.runner.run_async(
-                    user_id=self.user_id,
-                    session_id=session.id,
-                    new_message=user_content,
-                ):
-                    # Process each event from the runner
-                    if event.content and event.content.parts:
-                        current_text_chunk = ""
-                        current_artifacts_chunk_data = []
+                    for part in event.content.parts:
+                        if part.text:
+                            current_text_chunk += part.text
+                            full_agent_response_content += part.text # Accumulate for final message
+                        elif part.function_response:
+                            try:
+                                 tool_response_data = part.function_response.response
+                                 if isinstance(tool_response_data, dict) and 'status' in tool_response_data:
+                                      current_artifacts_chunk_data.append(tool_response_data)
+                                      artifacts_data.append(tool_response_data) # Accumulate for final artifacts
+                                      # Optionally add a text representation of the tool response
+                                      if 'message' in tool_response_data:
+                                           current_text_chunk += f"\nTool response: {tool_response_data['message']}\n"
+                            except Exception as e:
+                                 logger.error(f"Error processing streamed tool response part for task {task.id}: {e}")
+                                 current_text_chunk += f"\nError processing tool response: {str(e)}\n"
 
-                        for part in event.content.parts:
-                            if part.text:
-                                current_text_chunk += part.text
-                                full_agent_response_content += part.text # Accumulate for final message
-                            elif part.function_response:
-                                try:
-                                     tool_response_data = part.function_response.response
-                                     if isinstance(tool_response_data, dict) and 'status' in tool_response_data:
-                                          current_artifacts_chunk_data.append(tool_response_data)
-                                          artifacts_data.append(tool_response_data) # Accumulate for final artifacts
-                                          # Optionally add a text representation of the tool response
-                                          if 'message' in tool_response_data:
-                                               current_text_chunk += f"\nTool response: {tool_response_data['message']}\n"
-                                except Exception as e:
-                                     logger.error(f"Error processing streamed tool response part for task {task.id}: {e}")
-                                     current_text_chunk += f"\nError processing tool response: {str(e)}\n"
-
-                        # Yield text updates as they arrive
-                        if current_text_chunk:
-                            yield SendTaskStreamingResponse(
-                                id=request.id,
-                                result=TaskStatusUpdateEvent(
-                                    id=task.id,
-                                    status=TaskStatus(
-                                        state=TaskState.WORKING, # Or another appropriate intermediate state
-                                        message=Message(role="agent", parts=[TextPart(type="text", text=current_text_chunk)]),
-                                        timestamp=int(asyncio.get_running_loop().time() * 1000)
-                                    ),
-                                    final=False # Not the final event
-                                )
+                    # Yield text updates as they arrive
+                    if current_text_chunk:
+                        yield SendTaskStreamingResponse(
+                            id=request.id,
+                            result=TaskStatusUpdateEvent(
+                                id=task.id,
+                                status=TaskStatus(
+                                    state=TaskState.WORKING, # Or another appropriate intermediate state
+                                    message=Message(role="agent", parts=[TextPart(type="text", text=current_text_chunk)])
+                                ),
+                                final=False # Not the final event
                             )
+                        )
 
-                        # Yield artifact updates if structured data is available
-                        if current_artifacts_chunk_data:
-                            # You might want to yield each artifact data chunk as a separate artifact update event
-                            # or accumulate and send periodically/at the end.
-                            # For simplicity now, let's accumulate and send a final artifact.
-                            pass # Will handle artifacts at the end
+                    # Yield artifact updates if structured data is available
+                    if current_artifacts_chunk_data:
+                        # You might want to yield each artifact data chunk as a separate artifact update event
+                        # or accumulate and send periodically/at the end.
+                        # For simplicity now, let's accumulate and send a final artifact.
+                        pass # Will handle artifacts at the end
 
-                # After the runner stream is done, determine the final state and send final events
+            # After the runner stream is done, determine the final state and send final events
 
-                # Determine final state based on the last event or session state
-                final_state = TaskState.COMPLETED # Default final state
-                # You might check the content of the last event or session state to refine this
-                # Example: if the last event indicates waiting for user input, set state to INPUT_REQUIRED
+            # Determine final state based on the last event or session state
+            final_state = TaskState.COMPLETED # Default final state
+            # You might check the content of the last event or session state to refine this
+            # Example: if the last event indicates waiting for user input, set state to INPUT_REQUIRED
 
-                # Create the final agent message from accumulated text
-                final_agent_message_parts = [TextPart(type="text", text=full_agent_response_content)] if full_agent_response_content else []
+            # Create the final agent message from accumulated text
+            final_agent_message_parts = [TextPart(type="text", text=full_agent_response_content)] if full_agent_response_content else []
 
-                # Add structured data to final artifacts
-                final_artifacts = [Artifact(parts=[DataPart(type="data", data=data)], index=i) for i, data in enumerate(artifacts_data)]
-
-
-                # Update the task in the store with the final state and content
-                final_task_status = TaskStatus(
-                    state=final_state,
-                    message=Message(role="agent", parts=final_agent_message_parts, timestamp=int(asyncio.get_running_loop().time() * 1000)),
-                    timestamp=int(asyncio.get_running_loop().time() * 1000)
-                )
-                task.status = final_task_status
-                task.artifacts = final_artifacts # Set final artifacts
-                task.history.append(final_task_status.message) # Add final message to history
-                self.tasks[task.id] = task # Update the stored task
-
-                logger.info(f"Streaming for task {task.id} finished. Final state: {final_state}. Yielding final events.")
-
-                # Yield final artifact updates
-                for artifact in final_artifacts:
-                     yield SendTaskStreamingResponse(
-                         id=request.id,
-                         result=TaskArtifactUpdateEvent(
-                             id=task.id,
-                             artifact=artifact,
-                         ),
-                     )
-
-                # Yield the final status update
-                yield SendTaskStreamingResponse(
-                    id=request.id,
-                    result=TaskStatusUpdateEvent(
-                        id=task.id,
-                        status=final_task_status,
-                        final=True # This is the last event for this task
-                    )
-                )
-
-            except Exception as e:
-                logger.error(f"Error during streaming task {task.id} with ADK Runner: {str(e)}", exc_info=True)
-                # Yield an error event
-                error_message = Message(
-                    role="agent",
-                    parts=[TextPart(type="text", text=f"An error occurred during streaming: {str(e)}")],
-                    timestamp=int(asyncio.get_running_loop().time() * 1000),
-                    id=str(uuid.uuid4())
-                )
-                task.status = TaskStatus(
-                    state=TaskState.FAILED, # Mark as failed
-                    message=error_message,
-                    timestamp=int(asyncio.get_running_loop().time() * 1000)
-                )
-                self.tasks[task.id] = task # Update the stored task state
-                task.history.append(error_message) # Add error message to history
-
-                yield SendTaskStreamingResponse(
-                    id=request.id,
-                    result=TaskStatusUpdateEvent(
-                        id=task.id,
-                        status=task.status,
-                        final=True # This is the last event
-                    )
-                )
+            # Add structured data to final artifacts
+            final_artifacts = [Artifact(parts=[DataPart(type="data", data=data)], index=i) for i, data in enumerate(artifacts_data)]
 
 
-        # Return the async generator
-        return stream_response()
-
-    async def on_send_task(self, request) -> SendTaskResponse:
-        """
-        Gestisce l'invio di un task non streaming.
-        
-        Args:
-            request: La richiesta di invio task
-            
-        Returns:
-            La risposta con i risultati del task
-        """
-        try:
-            # Estrai il messaggio dalla richiesta
-            message = request.params.message
-            session_id = request.params.sessionId
-            task_id = request.params.id
-            
-            # Crea/aggiorna il task
-            task = Task(
-                id=task_id,
-                sessionId=session_id,
-                status=TaskStatus(
-                    state=TaskState.IN_PROGRESS,
-                    message=None,
-                    timestamp=None
-                ),
-                history=[message],
-                artifacts=[]
+            # Update the task in the store with the final state and content
+            final_task_status = TaskStatus(
+                state=final_state,
+                message=Message(role="agent", parts=final_agent_message_parts)
             )
-            
-            # Memorizza il task
-            self.tasks[task_id] = task
-            
-            # Processa il task in modo asincrono
-            updated_task = await self.process_task(task)
-            
-            # Restituisci la risposta
-            return SendTaskResponse(
+            task.status = final_task_status
+            task.artifacts = final_artifacts # Set final artifacts
+            task.history.append(final_task_status.message) # Add final message to history
+            self.tasks[task.id] = task # Update the stored task
+
+            logger.info(f"Streaming for task {task.id} finished. Final state: {final_state}. Yielding final events.")
+
+            # Yield final artifact updates
+            for artifact in final_artifacts:
+                 yield SendTaskStreamingResponse(
+                     id=request.id,
+                     result=TaskArtifactUpdateEvent(
+                         id=task.id,
+                         artifact=artifact,
+                     ),
+                 )
+
+            # Yield the final status update
+            yield SendTaskStreamingResponse(
                 id=request.id,
-                result=updated_task
+                result=TaskStatusUpdateEvent(
+                    id=task.id,
+                    status=final_task_status,
+                    final=True # This is the last event for this task
+                )
             )
-            
+
         except Exception as e:
-            logger.error(f"Error processing send task: {str(e)}", exc_info=True)
-            
-            # Crea un errore JSON-RPC
-            error = JSONRPCError(
-                code=-32603,  # Codice per errore interno
-                message=f"Error processing send task: {str(e)}"
+            logger.error(f"Error during streaming task {task.id} with ADK Runner: {str(e)}", exc_info=True)
+            # Yield an error event
+            error_message = Message(
+                role="agent",
+                parts=[TextPart(type="text", text=f"An error occurred during streaming: {str(e)}")]
             )
-            
-            # Restituisci la risposta con l'errore
-            return SendTaskResponse(
+            task.status = TaskStatus(
+                state=TaskState.FAILED, # Mark as failed
+                message=error_message
+            )
+            self.tasks[task.id] = task # Update the stored task state
+            task.history.append(error_message) # Add error message to history
+
+            yield SendTaskStreamingResponse(
                 id=request.id,
-                error=error
+                result=TaskStatusUpdateEvent(
+                    id=task.id,
+                    status=task.status,
+                    final=True # This is the last event
+                )
             )
-    
-    async def on_send_task_subscribe(self, request) -> Union[AsyncIterable[SendTaskStreamingResponse], JSONRPCResponse]:
-        """
-        Gestisce l'invio di un task streaming.
-        
-        Args:
-            request: La richiesta di invio task streaming
-            
-        Returns:
-            Un generatore asincrono di risposte streaming o una risposta di errore
-        """
-        try:
-            # Estrai il messaggio dalla richiesta
-            message = request.params.message
-            session_id = request.params.sessionId
-            task_id = request.params.id
-            
-            # Crea/aggiorna il task
-            task = Task(
-                id=task_id,
-                sessionId=session_id,
-                status=TaskStatus(
-                    state=TaskState.IN_PROGRESS,
-                    message=None,
-                    timestamp=None
-                ),
-                history=[message],
-                artifacts=[]
-            )
-            
-            # Memorizza il task
-            self.tasks[task_id] = task
-            
-            # In questa implementazione, non supportiamo veramente lo streaming,
-            # quindi processiamo il task normalmente e restituiamo un singolo evento
-            async def stream_response():
-                try:
-                    # Processa il task
-                    updated_task = await self.process_task(task)
-                    
-                    # Crea un evento di aggiornamento dello stato del task
-                    status_event = TaskStatusUpdateEvent(
-                        id=updated_task.id,
-                        status=updated_task.status,
-                        final=True
-                    )
-                    
-                    # Restituisci una risposta streaming con l'evento di stato
-                    yield SendTaskStreamingResponse(
-                        id=request.id,
-                        result=status_event
-                    )
-                    
-                except Exception as e:
-                    logger.error(f"Error in streaming task: {str(e)}", exc_info=True)
-                    
-                    # Crea un errore JSON-RPC
-                    error = JSONRPCError(
-                        code=-32603,  # Codice per errore interno
-                        message=f"Error in streaming task: {str(e)}"
-                    )
-                    
-                    # Restituisci una risposta con l'errore
-                    yield SendTaskStreamingResponse(
-                        id=request.id,
-                        error=error
-                    )
-            
-            # Restituisci il generatore asincrono
-            return stream_response()
-            
-        except Exception as e:
-            logger.error(f"Error setting up streaming task: {str(e)}", exc_info=True)
-            
-            # Crea un errore JSON-RPC
-            error = JSONRPCError(
-                code=-32603,  # Codice per errore interno
-                message=f"Error setting up streaming task: {str(e)}"
-            )
-            
-            # Restituisci una risposta immediata con l'errore
-            return JSONRPCResponse(
-                id=request.id,
-                error=error
-            ) 

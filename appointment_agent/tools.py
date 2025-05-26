@@ -7,7 +7,8 @@ from appointment_agent.database import (
     get_professional_availability,
     create_appointment,
     update_availability_after_booking,
-    get_user_details # Import the new function
+    get_user_details, # Import the new function
+    get_appointment  # Import the missing function
 )
 from database.utils import getProfessionals # Assuming this function exists and can get professional details by ID
 from appointment_agent.utils import format_datetime
@@ -212,7 +213,7 @@ def check_professional_availability(professional_id: str, date_range: Optional[s
 
 
 # ----------------------
-# Helper function to get professional details (assuming getProfessionals can fetch by ID)
+# Helper function to get professional details by ID
 # ----------------------
 def get_professional_details(professional_id: str) -> Optional[Dict[str, Any]]:
     """
@@ -224,11 +225,24 @@ def get_professional_details(professional_id: str) -> Optional[Dict[str, Any]]:
     Returns:
         dict: The professional details, or None if not found.
     """
-    # Assuming getProfessionals can filter by ID if passed None for profession and location
-    professionals = getProfessionals(None, None, professional_id)
-    if professionals and len(professionals) > 0:
-        return professionals[0]
-    return None
+    try:
+        from database.utils import db
+        from bson import ObjectId
+        
+        if db is None:
+            return None
+        
+        collection = db["professionals"]
+        professional = collection.find_one({"_id": ObjectId(professional_id)})
+        
+        if professional:
+            professional["_id"] = str(professional["_id"])
+            return professional
+        return None
+        
+    except Exception as e:
+        print(f"Error getting professional details: {e}")
+        return None
 
 
 # ----------------------
