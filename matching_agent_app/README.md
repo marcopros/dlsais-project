@@ -75,12 +75,17 @@ The tool can return 3 type of response:
 Rank the professionals by trust_by_you (best if true), trust_by (better if long), trusted score and skill match. It return the **top 5** professionals
 </li>
 
+<li><b>Define Motivations</b>
+For **top 5** professionals it derive a short sentence that motivate the choice of the agent
+</li>
+
 <br>
 
 <li><b>Format Response</b>
 The agent response always include a concise summary message. Alongside it provide also the professional results like a list of dictionary, where each dictionary is a professional:
   <ul style="list-style-type: '- '">
     <li>name (string)</li>
+    <li>motivation (string)</li>
     <li>skills (list of strings)</li>
     <li>rating (float)</li>
     <li>city (string)</li>
