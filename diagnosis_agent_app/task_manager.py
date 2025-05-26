@@ -1,14 +1,21 @@
 import asyncio
 import json
+from operator import call
 import uuid
 import logging
 from typing import AsyncIterable, Any
 
-# Google ADK imports for agent execution and session management
 from agents import Agent, Runner, trace
 
-from .session import SessionService
-from .agent import DiagnosisAgentOut
+from .session import SessionService, SessionSettings
+from .agent import DiagnosisAgentOut, DiagnosisContext
+
+from agents import (
+    Agent, 
+    Runner, 
+    trace,
+    TResponseInputItem,
+)
 
 # Import common A2A server components and types
 from A2A.types import (
@@ -60,9 +67,10 @@ async def validate_diagnosis_output(output: DiagnosisAgentOut):
     Raises ValueError if any required field is missing.
     """
     required_fields = {
-        "diagnosis": output.diagnosis,
-        "detected_problem_cause": output.detected_problem_cause,
-        "type_specialist": output.type_specialist,
+        "agent_response": output.agent_response,
+        # "diagnosis": output.diagnosis,
+        # "detected_problem_cause": output.detected_problem_cause,
+        # "type_specialist": output.type_specialist,
     }
 
     missing = [field for field, value in required_fields.items() if value is None]
@@ -86,7 +94,27 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
         """
         super().__init__()
         self.agent = agent
+        self.input_items: list[TResponseInputItem] = []
         self.sessions = SessionService()
+        self.context = DiagnosisContext(
+            # search_for_diy_solution=False,
+            # user_location=None,
+            # user_diy_skills=None,
+            # user_diy_tools=[],
+            # home_type=None,
+            # solution_preferences=None,
+            # time_available_for_repair=None,
+            # favourite_language="English",
+            previous_agent_response="",
+            diagnosis=None,
+            detected_problem_cause=None,
+            type_specialist=None,
+            unlock_request_for_diy_solution=False,
+            diy_solution=None,
+            diy_links=[],
+            call_professional=False
+        )
+
         logger.info("DiagnosisAgentTaskManager initialized.")
     
 
@@ -112,12 +140,50 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
         else:
             logger.info(f"Session found with ID: {session_id}") 
         
+        print("***CONTEXT***")
+        print(self.context.model_dump(exclude_none=True))
         
         # Run the agent synchronously with the user message and session
         with trace(f"Session {session_id}"):
-            result = await Runner.run( self.agent, input=query, context=session )
+            self.input_items.append({"content": query, "role": "user"})
+            result = await Runner.run( self.agent, input=self.input_items, context=self.context )
 
-        logger.info(f"RESULT: {result}")
+        logger.info(f"RESULT: {result.final_output.model_dump(exclude_none=True)}")
+        
+        updated_context = DiagnosisContext(
+            # search_for_diy_solution=session.search_for_diy_solution,
+            # user_location=session.user_location,
+            # user_diy_skills=session.user_diy_skills,
+            # user_diy_tools=session.user_diy_tools,
+            # home_type=session.home_type,
+            # solution_preferences=session.solution_preferences,
+            # time_available_for_repair=session.time_available_for_repair,
+            # favourite_language=session.favourite_language,
+            previous_agent_response=result.final_output.agent_response,
+            diagnosis=result.final_output.diagnosis,
+            detected_problem_cause=result.final_output.detected_problem_cause,
+            type_specialist=result.final_output.type_specialist,
+            unlock_request_for_diy_solution=result.final_output.unlock_request_for_diy_solution,
+            diy_solution=result.final_output.diy_solution,
+            diy_links=result.final_output.diy_links,
+            call_professional=result.final_output.call_professional
+        )
+        
+        self.context = updated_context
+        
+        # updated_session = SessionSettings(
+        #     search_for_diy_solution=updated_context.search_for_diy_solution,
+        #     user_location=updated_context.user_location,
+        #     user_diy_skills=updated_context.user_diy_skills,
+        #     user_diy_tools=updated_context.user_diy_tools,
+        #     home_type=updated_context.home_type,
+        #     solution_preferences=updated_context.solution_preferences,
+        #     time_available_for_repair=updated_context.time_available_for_repair,
+        #     favourite_language=updated_context.favourite_language
+        # )
+        
+        # self.sessions.update_session(session_id, updated_session)
+        
         return result.final_output
 
 
@@ -168,6 +234,7 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
             # Assume final_response is a DiagnosisAgentOut instance
             summary = final_response.agent_response
             data = final_response.model_dump()
+            yt_link = final_response.diy_links if final_response.diy_links else []
 
             part_summary = [{"type": "text", "text": summary}]
             part_data = [{"type": "data", "data": data}]
@@ -182,7 +249,7 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
 
                 failed_task = await self.update_store(
                     task_id=task.id,
-                    status=TaskStatus(state=TaskState.INPUT_REQUIRED, message=Message(role='agent', parts=part_summary, metadata={"data": data})),
+                    status=TaskStatus(state=TaskState.INPUT_REQUIRED, message=Message(role='agent', parts=part_summary, metadata={"data": data, "yt_links": yt_link})),
                     artifacts=[]
                 )
 
@@ -192,7 +259,7 @@ class DiagnosisAgentTaskManager(InMemoryTaskManager):
             updated_task = await self.update_store(
                 task_id=task.id,
                 status=TaskStatus(state=TaskState.COMPLETED, message=Message(role='agent', parts=part_summary)),
-                artifacts=[Artifact(parts=part_data, metadata={"data": data})]
+                artifacts=[Artifact(parts=part_data, metadata={"data": data, "yt_links": yt_link})]
             )
 
             return SendTaskResponse(id=request.id, result=updated_task)

@@ -4,12 +4,12 @@ from typing import List, Optional
 
 class SessionSettings(BaseModel):
     search_for_diy_solution: bool = False
-    user_location: str = None
-    user_diy_skills: str = None
+    user_location: Optional[str] = None
+    user_diy_skills: Optional[str] = None
     user_diy_tools: List[str] = []
-    home_type: str = None
-    solution_preferences: str = None
-    time_available_for_repair: str = None
+    home_type: Optional[str] = None
+    solution_preferences: Optional[str] = None
+    time_available_for_repair: Optional[str] = None
     favourite_language: str = "English"
 
 
@@ -34,3 +34,10 @@ class SessionService:
             del self.sessions[session_id]
             return True
         return False
+    
+    def update_session(self, session_id: str, session_data: SessionSettings) -> Optional[SessionSettings]:
+        """Updates an existing session with new data."""
+        if session_id in self.sessions:
+            self.sessions[session_id] = session_data
+            return session_data
+        return None
