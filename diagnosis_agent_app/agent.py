@@ -113,8 +113,8 @@ async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
         if "youtube.com/watch" in link:
             videos.append(link)
 
-    # Provide only the first 5 links
-    return videos[:5]
+    # Provide only the first 6 links
+    return videos[:6]
 
 
 diy_agent = Agent[DiagnosisContext](
