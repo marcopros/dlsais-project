@@ -81,7 +81,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Processing task {task.id} with user query: {user_message_content}")
 
             # Retrieve or create a session based on task.sessionId
-            session = await self.runner.session_service.get_session(
+            session = self.runner.session_service.get_session(
                 app_name=self.app_name,
                 user_id=self.user_id, # Using default user_id for now
                 session_id=task.sessionId,
@@ -89,7 +89,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
 
             if session is None:
                 logger.info(f"Session not found for task {task.id}. Creating a new session with ID: {task.sessionId}")
-                session = await self.runner.session_service.create_session(
+                session = self.runner.session_service.create_session(
                     app_name=self.app_name,
                     user_id=self.user_id, # Using default user_id for now
                     state={}, # Initial session state
@@ -381,7 +381,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Starting streaming processing for task {task.id} with user query: {user_message_content}")
 
             # Retrieve or create a session
-            session = await self.runner.session_service.get_session(
+            session = self.runner.session_service.get_session(
                 app_name=self.app_name,
                 user_id=self.user_id, # Using default user_id
                 session_id=task.sessionId,
@@ -389,7 +389,7 @@ class AppointmentAgentTaskManager(InMemoryTaskManager):
 
             if session is None:
                 logger.info(f"Session not found for task {task.id} streaming. Creating new session with ID: {task.sessionId}")
-                session = await self.runner.session_service.create_session(
+                session = self.runner.session_service.create_session(
                     app_name=self.app_name,
                     user_id=self.user_id, # Using default user_id
                     state={},

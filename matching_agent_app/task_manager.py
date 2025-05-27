@@ -75,7 +75,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             Final response from the agent as a string.
         """
         # Retrieve or create a session based on session_id
-        session = await self.runner.session_service.get_session(
+        session = self.runner.session_service.get_session(
             app_name=self.app_name,
             user_id=user_id,
             session_id=session_id,
@@ -84,7 +84,7 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
         # If session is None, create a new session
         if session is None:
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
-            session = await self.runner.session_service.create_session(
+            session = self.runner.session_service.create_session(
                 app_name=self.app_name,
                 user_id = user_id,
                 state = {},

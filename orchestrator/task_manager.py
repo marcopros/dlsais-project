@@ -116,7 +116,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         human_readable_logger.log_user_message(query)
         
         # Retrieve or create a session based on session_id
-        session = await self.runner.session_service.get_session(
+        session = self.runner.session_service.get_session(
             app_name=self.app_name,
             user_id=user_id,
             session_id=session_id,
@@ -125,7 +125,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # If session is None, create a new session
         if session is None:
             logger.info(f"Session not found. Creating a new session with ID: {session_id}")
-            session = await self.runner.session_service.create_session(
+            session = self.runner.session_service.create_session(
                 app_name=self.app_name,
                 user_id=user_id,
                 state={},
@@ -145,6 +145,16 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Let the user know the orchestrator is processing
         human_readable_logger.log_system_message("Processing your request...")
 
+        # Run the agent synchronously with the user message and session
+        events = list(
+            self.runner.run(
+                user_id=user_id,
+                session_id=session.id,
+                new_message=content,
+            )
+        )
+
+        '''
         # --- Robust handling: support both sync and async runner.run ---
         events = None
         run_result = self.runner.run(
@@ -161,6 +171,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         else:
             events = list(run_result)
         # -------------------------------------------------------------
+        '''
 
         response = ""                    # Extract agent responses and log them
         agent_name = "Orchestrator"      # The name of the agent that is being called
