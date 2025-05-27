@@ -13,6 +13,9 @@ from google.adk.sessions.in_memory_session_service import InMemorySessionService
 # help(Runner)                      # To see the available methods and attributes of the Runner class
 # help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
 
+# PERSISTENT MEMORY IMPORT
+from persistent_memory.conversation_memory import ( ConversationMemory, A2AConversationLogger,)
+
 # Import common A2A server components and types
 from A2A.types import (
     SendTaskResponse,
@@ -47,7 +50,10 @@ class OrchestratorTaskManager(InMemoryTaskManager):
     Custom Task Manager for handling tasks related to the orchestrator.
     Manages sessions, invokes the agent, streams responses, and updates task status.
     """
-    def __init__(self, agent: Agent, runner: Runner, session_service: InMemorySessionService, app_name: str):
+    def __init__(
+            self, agent: Agent, runner: Runner, session_service: InMemorySessionService, app_name: str, memory: ConversationMemory,
+            
+        ):
         """
         Initialize the task manager with required dependencies.
         
@@ -63,6 +69,10 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         self.runner = runner
         self.session_service = session_service
         self.app_name = app_name
+
+        self._memory = memory                           # PERSISTENT MEMORY
+        self._logger = A2AConversationLogger(memory)
+
         logger.info("OrchestratorTaskManager initialized.")
     
     def extract_professional_id(self, text: str) -> str:
@@ -112,6 +122,10 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         Synchronously invoke the agent to get a final response for a given query and session.
         Handles both sync and async runner.run implementations robustly.
         """
+
+        # 0️⃣  Persisto il messaggio dell’utente
+        self._logger.user(session_id=session_id, user_id=user_id, text=query)
+
         # Log user query in human-readable format
         human_readable_logger.log_user_message(query)
         
@@ -134,12 +148,21 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         else:
             logger.info(f"Session found with ID: {session_id}")
         
+        # OLD
         # Add the user id in the query becouse otherway the orchestrator is not able to manage it
-        query = query + f' \n user_id: {user_id}'
+        #query = query + f' \n user_id: {user_id}'
+
+        # Recupero il contesto recente (sessione corrente + storico ↓)
+        context_block = self._memory.format_context(
+            user_id=user_id, current_session_id=session_id, max_messages=40
+        )
+
+        # Add the user id in the query because otherwise the orchestrator is not able to manage it
+        final_query = f"{context_block}\n\n---\nUser message:\n{query}\nuser_id: {user_id}"
 
         # Wrap the user message in a types.Content object ( Format understandable by ADK Agent)
         content = types.Content(
-            role='user', parts=[types.Part.from_text(text=query)]
+            role='user', parts=[types.Part.from_text(text=final_query)]
         )
 
         # Let the user know the orchestrator is processing
@@ -306,6 +329,11 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         
         # Extract the text from the last event's content parts
         result = {'agent': agent_name, 'text':'\n'.join([p.text for p in events[-1].content.parts if p.text])}
+
+        # ️📝 persistiamo la risposta finale dell’orchestrator
+        self._logger.orchestrator(
+            session_id=session_id, user_id=user_id, text=result["text"]
+        )
         
         # Add extracted IDs if available
         if professional_id:

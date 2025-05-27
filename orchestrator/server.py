@@ -10,6 +10,10 @@ import uvicorn
 from google.adk.runners import Runner
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
 
+# PERSISTENT MEMORY IMPORT
+from persistent_memory import conversation_memory
+from persistent_memory.conversation_memory import ConversationMemory
+
 # Import common A2A server components and types
 from A2A.server import A2AServer
 from A2A.types import AgentCard, MissingAPIKeyError
@@ -40,8 +44,12 @@ async def run_server():
     logger.info("Starting Orchestrator Agent A2A Server initialization...")
 
     try:
+        # 1. In-Memory session (adk state)
         # Initialize session service to store and manage user conversation states
         session_service = InMemorySessionService()
+
+        # 2. Persistent memory (conversation memory)
+        conversation_memory = ConversationMemory()
 
         # The agent instance that will process user inputs and generate responses
         agent = orchestrator
@@ -50,7 +58,9 @@ async def run_server():
         runner = Runner(app_name=APP_NAME, agent=agent, session_service=session_service)
 
         # Instantiate the custom task manager that handles A2A streaming and task execution 
-        task_manager = OrchestratorTaskManager(agent, runner, session_service, APP_NAME)
+        task_manager = OrchestratorTaskManager(
+            agent, runner, session_service, APP_NAME, conversation_memory # ADDED CONVERSATION MEMORY
+        )
 
         # Determine the port and host from environment variables
         port = int(os.getenv("PORT", "8000"))
