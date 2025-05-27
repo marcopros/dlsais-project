@@ -14,7 +14,7 @@ from google.adk.sessions.in_memory_session_service import InMemorySessionService
 # help(InMemorySessionService)      # To see the available methods and attributes of the InMemoryMemoryService class#
 
 # PERSISTENT MEMORY IMPORT
-from persistent_memory.conversation_memory import ( ConversationMemory, A2AConversationLogger,)
+from persistent_memory.conversation_memory import ( ConversationMemory, A2AConversationLogger, AgentType)
 
 # Import common A2A server components and types
 from A2A.types import (
@@ -122,6 +122,15 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         Synchronously invoke the agent to get a final response for a given query and session.
         Handles both sync and async runner.run implementations robustly.
         """
+
+        AGENT_NAME_TO_ENUM = {
+            "Diagnosis Agent":    AgentType.DIAGNOSIS_AGENT,
+            "Matching Agent":     AgentType.MATCHING_AGENT,
+            "Appointment Agent":  AgentType.APPOINTMENT_AGENT,
+            "Feedback Agent":     AgentType.FEEDBACK_AGENT, 
+            "Orchestrator":       AgentType.ORCHESTRATOR,
+}
+
 
         # 0️⃣  Persisto il messaggio dell’utente
         self._logger.user(session_id=session_id, user_id=user_id, text=query)
@@ -330,10 +339,15 @@ class OrchestratorTaskManager(InMemoryTaskManager):
         # Extract the text from the last event's content parts
         result = {'agent': agent_name, 'text':'\n'.join([p.text for p in events[-1].content.parts if p.text])}
 
-        # ️📝 persistiamo la risposta finale dell’orchestrator
-        self._logger.orchestrator(
-            session_id=session_id, user_id=user_id, text=result["text"]
+        # ️📝 SALVIAMO LA RISPOSTA FINALE E L'AUTORE
+        self._logger.agent(
+            session_id=session_id,
+            user_id=user_id,
+            agent_type=AGENT_NAME_TO_ENUM.get(agent_name, AgentType.ORCHESTRATOR),
+            text=result["text"],
+            metadata=response_data,
         )
+
         
         # Add extracted IDs if available
         if professional_id:

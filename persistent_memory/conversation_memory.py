@@ -52,11 +52,21 @@ class MessageAuthor:
         self.agent_name = agent_name or self.type.value
 
     def to_dict(self) -> Dict[str, str]:
-        return {"type": self.type.value, "agent_name": self.agent_name}
+        """
+        Serializza l’autore in forma compatta:
+        - { "type": "user" }                   se è l’utente
+        - { "type": "agent", "agent_name": … } se è un agente
+        """
+        if self.type == AgentType.USER:
+            return {"type": "user"}
+        return {"type": "agent", "agent_name": self.agent_name}
 
     @classmethod
     def from_dict(cls, raw: Dict[str, str]) -> "MessageAuthor":
-        return cls(raw["type"], agent_name=raw.get("agent_name"))
+        if raw["type"] == "user":
+            return cls(AgentType.USER)
+        # raw["type"] == "agent"
+        return cls(raw.get("agent_name", AgentType.ORCHESTRATOR))   # fallback sicuro
 
 
 class ConversationMessage:
@@ -105,8 +115,13 @@ class ConversationMessage:
     # formato “umano” (utile in debug / prompt)
     def pretty(self, with_ts: bool = True) -> str:
         ts = self.timestamp.strftime("%Y-%m-%d %H:%M:%S") if with_ts else ""
-        body = f"[{ts}] " if with_ts else ""
-        return f"{body}{self.author.agent_name}: {self.content}"
+        who = (
+            "user"
+            if self.author.type == AgentType.USER
+            else self.author.agent_name            # es. “Diagnosis Agent”
+        )
+        prefix = f"[{ts}] " if with_ts else ""
+        return f"{prefix}{who}: {self.content}"
 
 
 # ───────────────────── PERSISTENCE LAYER ───────────────────── #
@@ -237,21 +252,27 @@ class ConversationMemory:
         prev_msgs = prev_msgs[-needed:]
         return prev_msgs + current
     
-    # ---------- prompt helper ---------- #
+    # ---------- helper per l’Orchestrator ---------- #
     def format_context(
         self,
         *,
         user_id: str,
         current_session_id: str,
         max_messages: int = 40,
+        with_ts: bool = True,
     ) -> str:
-        """Restituisce i messaggi recenti già formattati per il prompt."""
-        msgs = self.get_recent_context(
+        """
+        Restituisce una stringa con gli ultimi `max_messages`
+        (sessione corrente + storico) già formattati per il prompt.
+        """
+        messages = self.get_recent_context(
             user_id=user_id,
             current_session_id=current_session_id,
             max_messages=max_messages,
         )
-        return "\n".join(m.pretty() for m in msgs)
+        # ConversationMessage.pretty() ora usa author.agent_name,
+        # quindi non serve più pescare msg.type a mano.
+        return "\n".join(m.pretty(with_ts=with_ts) for m in messages)
 
     # ---------- GDPR helpers ---------- #
     def delete_session(self, session_id: str) -> int:
