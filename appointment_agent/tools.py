@@ -23,6 +23,48 @@ DEFAULT_USER_ID = "user_123456"
 DEFAULT_PROFESSIONAL_ID = "pro_123456"  # Luca Bianchi ID
 
 # ----------------------
+# TOOL 0: get_current_date
+# ----------------------
+def get_current_date() -> Dict[str, Any]:
+    """
+    Get the current date and time information.
+    
+    This tool should be used when the user provides relative date expressions
+    like "tomorrow", "next week", "today", etc. to properly calculate the actual dates.
+    
+    Returns:
+        dict: {
+            'current_date': current date in 'YYYY-MM-DD' format,
+            'current_time': current time in 'HH:MM' format,
+            'current_datetime': current date and time in 'YYYY-MM-DD HH:MM' format,
+            'timezone': timezone information,
+            'weekday': current day of the week,
+            'message': description of current date/time
+        }
+    """
+    try:
+        now = datetime.now()
+        
+        return {
+            "status": "success",
+            "current_date": now.strftime('%Y-%m-%d'),
+            "current_time": now.strftime('%H:%M'),
+            "current_datetime": now.strftime('%Y-%m-%d %H:%M'),
+            "timezone": "Europe/Rome (UTC+1/+2)",
+            "weekday": now.strftime('%A'),
+            "day_of_month": now.day,
+            "month": now.strftime('%B'),
+            "year": now.year,
+            "message": f"Current date and time: {now.strftime('%A, %B %d, %Y at %H:%M')} (Europe/Rome timezone)"
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error_message": f"Error getting current date: {str(e)}"
+        }
+
+# ----------------------
 # TOOL 1: check_user_availability
 # ----------------------
 def check_user_availability(user_id: str, date_range: Optional[str] = None, date_text: Optional[str] = None) -> Dict[str, Any]:
@@ -211,6 +253,55 @@ def check_professional_availability(professional_id: str, date_range: Optional[s
             "professional_id": professional_id if professional_id else DEFAULT_PROFESSIONAL_ID  # Always include professional_id in response
         }
 
+
+# ----------------------
+# TOOL 4: get_professional_info
+# ----------------------
+def get_professional_info(professional_id: str) -> Dict[str, Any]:
+    """
+    Get professional information by ID, specifically their name and basic details.
+    
+    Args:
+        professional_id (str): The ID of the professional.
+        
+    Returns:
+        dict: {
+            'status': 'success' or 'error',
+            'professional_name': name of the professional,
+            'professional_id': ID of the professional,
+            'profession': profession/specialization,
+            'message': description or error message
+        }
+    """
+    try:
+        professional_details = get_professional_details(professional_id)
+        
+        if professional_details:
+            return {
+                "status": "success",
+                "professional_name": professional_details.get("name", "Unknown Professional"),
+                "professional_id": professional_id,
+                "profession": professional_details.get("profession", "Unknown"),
+                "location": professional_details.get("location", {}),
+                "message": f"Professional found: {professional_details.get('name', 'Unknown Professional')}"
+            }
+        else:
+            return {
+                "status": "error",
+                "professional_name": f"Professional ID {professional_id}",
+                "professional_id": professional_id,
+                "error_message": f"Professional with ID {professional_id} not found in database",
+                "message": f"Could not find professional with ID {professional_id}"
+            }
+            
+    except Exception as e:
+        return {
+            "status": "error",
+            "professional_name": f"Professional ID {professional_id}",
+            "professional_id": professional_id,
+            "error_message": f"Error retrieving professional info: {str(e)}",
+            "message": f"Error getting professional information: {str(e)}"
+        }
 
 # ----------------------
 # Helper function to get professional details by ID
