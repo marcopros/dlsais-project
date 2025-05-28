@@ -57,37 +57,40 @@
     📅
     </button>
 
+    <!-- Wrapper che si sposta con la sidebar -->
+    <div id="chat-wrapper" class="transition-all duration-300 lg:pl-64">
+      <div id="chat-container" class="min-h-screen transition-all duration-300 flex justify-center px-4 lg:pl-0">
+        <div class="w-full max-w-3xl flex flex-col flex-grow">
+            <!-- Header -->
+            <header class="p-6 border-b border-white/20 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-display font-extrabold text-white">Home Repair Assistant</h1>
+                    <p class="text-white/70 text-sm mt-1">Multi-agent system for all your home repair needs</p>
+                </div>
 
-      <div id="chat-container" class="min-h-screen flex flex-col px-4 transition-all duration-300 lg:ml-64">
-        <!-- Header -->
-        <header class="p-6 border-b border-white/20 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-display font-extrabold text-white">Home Repair Assistant</h1>
-                <p class="text-white/70 text-sm mt-1">Multi-agent system for all your home repair needs</p>
+            </header>
+            <!-- Chat messages -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4 text-white text-sm">
+            <!-- Dynamic messages will appear here -->
             </div>
 
-        </header>
-         <!-- Chat messages -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4 text-white text-sm">
-        <!-- Dynamic messages will appear here -->
+            <!-- Input -->
+            <form id="chat-form" class="flex items-center gap-2 p-4 border-t border-white/10">
+              <textarea id="user-input" rows="1" placeholder="Message the assistant..."
+                  class="flex-1 resize-none px-4 py-2 rounded-full bg-white/20 text-white placeholder-white/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  autocomplete="off"></textarea>
+              <button type="submit"
+                  class="p-3 rounded-full bg-white text-primary hover:bg-gray-100 transition">
+                  <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
+                      stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                      <path d="M22 2L11 13"></path>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+              </button>
+            </form>
         </div>
-
-        <!-- Input -->
-        <form id="chat-form" class="flex items-center gap-2 p-4 border-t border-white/10">
-        <textarea id="user-input" rows="1" placeholder="Message the assistant..."
-            class="flex-1 resize-none px-4 py-2 rounded-full bg-white/20 text-white placeholder-white/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            autocomplete="off"></textarea>
-        <button type="submit"
-            class="p-3 rounded-full bg-white text-primary hover:bg-gray-100 transition">
-            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
-                stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                <path d="M22 2L11 13"></path>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-        </button>
-        </form>
-
       </div>
+    </div>
   </div>
 
   <script src="../static/a2a_chat.js"></script>

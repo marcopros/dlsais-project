@@ -699,20 +699,20 @@ async function updateAppointmentStatus(id, newStatus) {
     
 
 openSidebarBtn.addEventListener('click', () => {
-    renderAppointments();
-    sidebar.classList.remove('-translate-x-full');
-    document.body.classList.add('overflow-hidden');
-    openSidebarBtn.classList.add('hidden');
+  renderAppointments();
+  sidebar.classList.remove('-translate-x-full');
+  document.body.classList.add('overflow-hidden');
+  openSidebarBtn.classList.add('hidden');
 
-    // ➕ Aggiungi classe per spostare la chat
-    chatContainer.classList.add('lg:ml-64'); // o qualsiasi dimensione abbia la sidebar
+  // Aggiungi shift SOLO su desktop
+  chatContainer.classList.add('lg:ml-64');
 });
 
 closeSidebarBtn.addEventListener('click', () => {
-    sidebar.classList.add('-translate-x-full');
-    document.body.classList.remove('overflow-hidden');
-    openSidebarBtn.classList.remove('hidden');
+  sidebar.classList.add('-translate-x-full');
+  document.body.classList.remove('overflow-hidden');
+  openSidebarBtn.classList.remove('hidden');
 
-    // ➖ Rimuovi lo spostamento della chat
-    chatContainer.classList.remove('ml-64');
+  chatContainer.classList.remove('lg:ml-64');
 });
+
