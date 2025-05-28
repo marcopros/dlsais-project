@@ -703,10 +703,16 @@ openSidebarBtn.addEventListener('click', () => {
     sidebar.classList.remove('-translate-x-full');
     document.body.classList.add('overflow-hidden');
     openSidebarBtn.classList.add('hidden');
+
+    // ➕ Aggiungi classe per spostare la chat
+    chatContainer.classList.add('ml-64'); // o qualsiasi dimensione abbia la sidebar
 });
 
 closeSidebarBtn.addEventListener('click', () => {
     sidebar.classList.add('-translate-x-full');
     document.body.classList.remove('overflow-hidden');
     openSidebarBtn.classList.remove('hidden');
+
+    // ➖ Rimuovi lo spostamento della chat
+    chatContainer.classList.remove('ml-64');
 });
