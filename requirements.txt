@@ -1,22 +1,155 @@
-aiohttp
-asyncclick
-pymongo
-fastapi
-uvicorn
-streamlit
-httpx
-bcrypt
-passlib[bcrypt]
-python-dotenv
-python-jose[cryptography]
-pydantic>=2.0,<3.0
-pydantic[email]
-google-generativeai
-google-adk
+aiohappyeyeballs==2.6.1
+aiohttp==3.11.18
+aiosignal==1.3.2
+anaconda-anon-usage @ file:///C:/b/abs_76_7r7k0xr/croot/anaconda-anon-usage_1743190159829/work
+annotated-types==0.7.0
+anyio==4.9.0
+archspec @ file:///croot/archspec_1709217642129/work
+attrs==25.3.0
+Authlib==1.5.2
+bcrypt==4.3.0
+boltons @ file:///C:/b/abs_45_52ughkz/croot/boltons_1737061711836/work
+Brotli @ file:///C:/b/abs_c415aux9ra/croot/brotli-split_1736182803933/work
+cachetools==5.5.2
+certifi==2025.4.26
+cffi==1.17.1
+charset-normalizer==3.4.1
+click==8.1.8
+colorama==0.4.6
+conda @ file:///C:/b/abs_95xxia215w/croot/conda_1743715315076/work/conda-src
+conda-anaconda-telemetry @ file:///C:/b/abs_8fisg12wdf/croot/conda-anaconda-telemetry_1744662558247/work
+conda-anaconda-tos @ file:///C:/b/abs_74fnpuprm8/croot/conda-anaconda-tos_1744823887798/work
+conda-content-trust @ file:///C:/Users/dev-admin/perseverance-python-buildout/croot/conda-content-trust_1729088072778/work
+conda-libmamba-solver @ file:///croot/conda-libmamba-solver_1745607008911/work/src
+conda-package-handling @ file:///C:/b/abs_7fz3aferfv/croot/conda-package-handling_1731369038903/work
+conda_package_streaming @ file:///C:/b/abs_bdz9vbvbh2/croot/conda-package-streaming_1731366449946/work
+contourpy==1.3.2
+cryptography==44.0.2
+cycler==0.12.1
+defusedxml==0.7.1
+Deprecated==1.2.18
+distro==1.9.0
+dnspython==2.7.0
+docstring_parser==0.16
+ecdsa==0.19.1
+fastapi==0.115.12
+filelock==3.18.0
+fonttools==4.58.0
+frozendict @ file:///C:/Users/dev-admin/perseverance-python-buildout/croot/frozendict_1729090952168/work
+frozenlist==1.6.0
+fsspec==2025.3.2
+google-adk==0.3.0
+google-ai-generativelanguage==0.6.15
+google-api-core==2.24.2
+google-api-python-client==2.169.0
+google-auth==2.39.0
+google-auth-httplib2==0.2.0
+google-cloud-aiplatform==1.91.0
+google-cloud-bigquery==3.31.0
+google-cloud-core==2.4.3
+google-cloud-resource-manager==1.14.2
+google-cloud-secret-manager==2.23.3
+google-cloud-speech==2.32.0
+google-cloud-storage==2.19.0
+google-cloud-trace==1.16.1
+google-crc32c==1.7.1
+google-genai==1.13.0
+google-generativeai==0.8.5
+google-resumable-media==2.7.2
+googleapis-common-protos==1.70.0
+graphviz==0.20.3
+greenlet==3.2.1
+griffe==1.7.3
+grpc-google-iam-v1==0.14.2
+grpcio==1.71.0
+grpcio-status==1.71.0
+h11==0.16.0
+httpcore==1.0.9
+httpie==3.2.4
+httplib2==0.22.0
+httpx==0.28.1
+httpx-sse==0.4.0
+huggingface-hub==0.30.2
+idna==3.10
+importlib_metadata==8.6.1
+Jinja2==3.1.6
+jiter==0.9.0
+jsonpatch @ file:///C:/Users/dev-admin/perseverance-python-buildout/croot/jsonpatch_1729054776004/work
+jsonpointer==2.1
+jsonschema==4.23.0
+jsonschema-specifications==2025.4.1
+kiwisolver==1.4.8
+libmambapy @ file:///C:/b/abs_627vsv8bhu/croot/mamba-split_1734469608328/work/libmambapy
+litellm==1.67.5
+markdown-it-py==3.0.0
+MarkupSafe==3.0.2
+matplotlib==3.10.3
+mcp==1.6.0
+mdurl==0.1.2
+menuinst @ file:///C:/b/abs_fblttj5gp1/croot/menuinst_1738943438301/work
+multidict==6.4.3
+numpy==2.2.5
 openai==1.76.2
 openai-agents==0.0.14
-langchain
-langchain-openai
-
-pyasn1>=0.6.1,<0.7.0
-pyasn1-modules>=0.4.0,<0.4.3
+opentelemetry-api==1.32.1
+opentelemetry-exporter-gcp-trace==1.9.0
+opentelemetry-resourcedetector-gcp==1.9.0a0
+opentelemetry-sdk==1.32.1
+opentelemetry-semantic-conventions==0.53b1
+packaging==25.0
+pillow==11.2.1
+platformdirs @ file:///C:/b/abs_ddh15014or/croot/platformdirs_1744273060660/work
+pluggy @ file:///C:/b/abs_dfec_m79vo/croot/pluggy_1733170145382/work
+propcache==0.3.1
+proto-plus==1.26.1
+protobuf==5.29.4
+pyasn1==0.4.8
+pyasn1_modules==0.4.2
+pycosat @ file:///C:/b/abs_18nblzzn70/croot/pycosat_1736868434419/work
+pycparser==2.22
+pydantic==2.11.4
+pydantic-settings==2.9.1
+pydantic_core==2.33.2
+Pygments==2.19.1
+pymongo==4.12.1
+pyparsing==3.2.3
+PySocks==1.7.1
+python-dateutil==2.9.0.post0
+python-dotenv==1.1.0
+python-jose==3.4.0
+PyYAML==6.0.2
+referencing==0.36.2
+regex==2024.11.6
+requests==2.32.3
+requests-toolbelt==1.0.0
+rich==14.0.0
+rpds-py==0.24.0
+rsa==4.9.1
+ruamel.yaml @ file:///C:/b/abs_0dn1nhdq75/croot/ruamel.yaml_1745960327187/work
+ruamel.yaml.clib @ file:///C:/b/abs_475flulhy_/croot/ruamel.yaml.clib_1745937166245/work
+setuptools==80.3.0
+shapely==2.1.0
+six==1.17.0
+sniffio==1.3.1
+SQLAlchemy==2.0.40
+sse-starlette==2.3.3
+starlette==0.46.2
+tiktoken==0.9.0
+tokenizers==0.21.1
+tqdm==4.67.1
+truststore @ file:///C:/b/abs_494cm143zh/croot/truststore_1736550137835/work
+types-requests==2.32.0.20250328
+typing-inspection==0.4.0
+typing_extensions==4.13.2
+tzdata==2025.2
+tzlocal==5.3.1
+uritemplate==4.1.1
+urllib3==2.4.0
+uvicorn==0.34.2
+websockets==15.0.1
+wheel==0.45.1
+win_inet_pton @ file:///C:/Users/dev-admin/perseverance-python-buildout/croot/win_inet_pton_1729038644686/work
+wrapt==1.17.2
+yarl==1.20.0
+zipp==3.21.0
+zstandard @ file:///C:/b/abs_31t8xmrv_h/croot/zstandard_1731356578015/work
