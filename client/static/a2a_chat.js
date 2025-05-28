@@ -705,7 +705,7 @@ openSidebarBtn.addEventListener('click', () => {
     openSidebarBtn.classList.add('hidden');
 
     // ➕ Aggiungi classe per spostare la chat
-    chatContainer.classList.add('ml-64'); // o qualsiasi dimensione abbia la sidebar
+    chatContainer.classList.add('lg:ml-64'); // o qualsiasi dimensione abbia la sidebar
 });
 
 closeSidebarBtn.addEventListener('click', () => {

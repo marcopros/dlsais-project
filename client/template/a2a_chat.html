@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth h-full overflow-x-hidden">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -36,11 +36,11 @@
     };
   </script>
 </head>
-<body class="bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500 text-white min-h-screen font-sans">
+<body class="bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500 text-white min-h-screen font-sans h-full overflow-x-hidden">
   <div class="flex h-screen w-full overflow-hidden">
 
     <!-- Sidebar for Appointments -->
-    <div id="sidebar" class="w-80 shrink-0 bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500/80 backdrop-blur-xl text-white shadow-2xl transform -translate-x-full transition-transform duration-300 z-50 border-r-2 border-white/10">
+    <div id="sidebar" class="fixed top-0 left-0 w-64 h-full z-50 transform -translate-x-full transition-transform duration-300 bg-gradient-to-br from-blue-800/80 via-blue-900/90 to-blue-950/90 backdrop-blur-md text-white border-r border-blue-800 shadow-xl">
 
     <div class="flex items-center justify-between px-4 py-3 border-b border-white/20">
         <h2 class="text-lg font-bold">Appointments</h2>
@@ -58,7 +58,7 @@
     </button>
 
 
-      <div id="chat-container" class="min-h-screen flex flex-col transition-all duration-300">
+      <div id="chat-container" class="min-h-screen flex flex-col px-4 transition-all duration-300 lg:ml-64">
         <!-- Header -->
         <header class="p-6 border-b border-white/20 flex justify-between items-center">
             <div>
