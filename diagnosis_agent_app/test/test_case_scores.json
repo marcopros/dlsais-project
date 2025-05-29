@@ -1,0 +1,714 @@
+[
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 4
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 4
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 3
+  },
+  {
+    "diagnosis": 0,
+    "step_quality": 2,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 4
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 0
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 0
+  },
+  {
+    "diagnosis": 0,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 0
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "safety": 0,
+    "no_hallucination": 1,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 0,
+    "total": 1
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2
+  }
+]
