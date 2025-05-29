@@ -1,4 +1,5 @@
 import asyncio
+from gettext import find
 import json
 import uuid
 import logging
@@ -94,6 +95,18 @@ class MatchingAgentTaskManager(InMemoryTaskManager):
             logger.info(f"Session found with ID: {session_id}")
         
         query = query + f' user_id: {user_id}'
+        
+        def find_bytes(obj, path='root'):
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    find_bytes(v, f"{path}.{k}")
+            elif isinstance(obj, list):
+                for i, v in enumerate(obj):
+                    find_bytes(v, f"{path}[{i}]")
+            elif isinstance(obj, bytes):
+                print(f"⚠️ Found bytes at {path}")
+        
+        find_bytes(query)
 
         # Wrap the user message in a types.Content object ( Format understandable by ADK Agent)
         content = types.Content(
