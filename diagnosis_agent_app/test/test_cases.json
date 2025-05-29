@@ -1,0 +1,1987 @@
+[
+    {
+        "id": "plumbing_001_worn-faucet-washer-or-cartridge",
+        "category": "plumbing",
+        "user_scenario": "My faucet is dripping from the spout",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Shut off the water supply to the faucet.",
+            "Open the faucet to relieve any pressure.",
+            "Disassemble the faucet handle to access internal parts.",
+            "Remove and replace the worn washer or cartridge.",
+            "Reassemble the faucet and turn water back on.",
+            "Check that the faucet no longer drips."
+        ],
+        "youtube_videos": [
+            {
+                "youtube_id": "SYPFon69vKs",
+                "title": "How to Fix a Leaky Faucet | The Home Depot"
+            },
+            {
+                "youtube_id": "uHUCdqbZbEY",
+                "title": "How to Fix A Dripping or Leaky Single Handle Faucet"
+            },
+            {
+                "youtube_id": "wPGFWtVhzYo",
+                "title": "How to Fix a Dripping Faucet / Washer Replacement"
+            }
+        ],
+        "safety_tips": [
+            "Shut off water supply before disassembly",
+            "Cover drain to avoid dropping small parts"
+        ]
+    },
+    {
+        "id": "plumbing_002_worn-o-ring-seals-at-faucet-base",
+        "category": "plumbing",
+        "user_scenario": "My water is leaking around the faucet base when the faucet is on",
+        "gold_diagnosis": {
+            "label": "Worn O-ring seals at faucet base",
+            "accepted_keywords": [
+                "o-ring",
+                "seal",
+                "faucet",
+                "leak",
+                "base"
+            ]
+        },
+        "gold_steps": [
+            "Turn off the water supply to the faucet.",
+            "Loosen and remove the faucet handle and spout.",
+            "Take out the old O-ring seals from the faucet base.",
+            "Install new O-ring seals of the correct size.",
+            "Reassemble the spout and faucet handle.",
+            "Turn water on and test to ensure no leaks at base."
+        ],
+        "youtube_videos": [
+            {
+                "youtube_id": "CuW8Xj0h5D8",
+                "title": "Kitchen Faucet Leaks at the Base. Easy 5 min Fix"
+            },
+            {
+                "youtube_id": "JsoOaZtMCZQ",
+                "title": "Bathroom Faucet Leaking at Base? | Try This Quick Fix"
+            },
+            {
+                "youtube_id": "jmbcRikk7Ec",
+                "title": "Moen Kitchen Faucet Leaks at Base of the Spout Fix it"
+            }
+        ],
+        "safety_tips": [
+            "Shut off water supply before disassembly",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_003_leaky-toilet-flapper-not-sealing",
+        "category": "plumbing",
+        "user_scenario": "My toilet keeps running and won't stop",
+        "gold_diagnosis": {
+            "label": "Leaky toilet flapper not sealing",
+            "accepted_keywords": [
+                "flapper",
+                "toilet",
+                "running",
+                "seal",
+                "tank"
+            ]
+        },
+        "gold_steps": [
+            "Shut off the water supply to the toilet.",
+            "Remove the tank lid and inspect the flapper and chain.",
+            "If flapper is worn or warped, disconnect its chain.",
+            "Install a new flapper in place of the old one.",
+            "Reconnect the chain with proper slack.",
+            "Turn water on and test flush to ensure toilet stops running."
+        ],
+        "youtube_videos": [
+            {
+                "youtube_id": "UV-peiKW9gM",
+                "title": "How to Fix A Running Toilet GUARANTEED | DIY Plumbing Repair"
+            },
+            {
+                "youtube_id": "UaWtrIKjxJY",
+                "title": "How to House: How to Fix a Running Toilet | HGTV"
+            },
+            {
+                "youtube_id": "NQ2AXvqgfPM",
+                "title": "How to fix a running toilet. The two most common causes."
+            }
+        ],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_004_clog-blockage-in-toilet-trap",
+        "category": "plumbing",
+        "user_scenario": "My toilet is clogged and won't flush down",
+        "gold_diagnosis": {
+            "label": "Clog blockage in toilet trap",
+            "accepted_keywords": [
+                "clog",
+                "toilet",
+                "blockage",
+                "trap",
+                "plunger"
+            ]
+        },
+        "gold_steps": [
+            "Avoid flushing again to prevent overflow.",
+            "Use a plunger to create suction and push the clog through.",
+            "If plunger fails, insert a toilet auger to break up the blockage.",
+            "Crank and push the auger to snag or push the clog free.",
+            "Remove auger and flush to verify the toilet drains properly."
+        ],
+        "youtube_videos": [
+            {
+                "youtube_id": "StYhTleU3Vc",
+                "title": "How to Unclog a Toilet | The Home Depot"
+            },
+            {
+                "youtube_id": "KcATYe3Qi9g",
+                "title": "How To Use A Toilet Auger - Ace Hardware"
+            },
+            {
+                "youtube_id": "-83k9m5C1Io",
+                "title": "How To Unclog a Toilet in 11 Seconds!"
+            }
+        ],
+        "safety_tips": [
+            "Wear rubber gloves when plunging",
+            "Place towels around base to catch spills"
+        ]
+    },
+    {
+        "id": "plumbing_005_hair-and-gunk-clog-in-p-trap",
+        "category": "plumbing",
+        "user_scenario": "My bathroom sink drains slowly and gets backed up",
+        "gold_diagnosis": {
+            "label": "Hair/soap clog in sink drain trap",
+            "accepted_keywords": [
+                "clog",
+                "hair",
+                "p-trap",
+                "drain",
+                "gunk"
+            ]
+        },
+        "gold_steps": [
+            "Remove the sink stopper or strainer from the drain opening.",
+            "Use a hair clog tool or needle-nose pliers to pull out hair and gunk.",
+            "Place a bucket under the P-trap pipe beneath the sink.",
+            "Loosen the nuts and remove the P-trap to clear out debris.",
+            "Clean the trap and drain pipe thoroughly.",
+            "Reinstall the trap, tighten fittings, and run water to test flow."
+        ],
+        "youtube_videos": [
+            {
+                "youtube_id": "VW3VNUOL0nw",
+                "title": "Clog Fix: Clean out P-Trap | Bathroom Sink Drain"
+            },
+            {
+                "youtube_id": "ZJoi26pALBY",
+                "title": "How to Open Up a Slow Sink Drain Clog | Remove a P-Trap and Drain Stopper"
+            },
+            {
+                "youtube_id": "w2kEUaGkatI",
+                "title": "Fixing a Clogged Slow-Draining Bathroom Sink by Cleaning P-Trap"
+            }
+        ],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_006_hair-and-gunk-clog-in-p-trap",
+        "category": "plumbing",
+        "user_scenario": "My shower/tub drain is slow and water pools",
+        "gold_diagnosis": {
+            "label": "Hair/soap clog in sink drain trap",
+            "accepted_keywords": [
+                "clog",
+                "hair",
+                "p-trap",
+                "drain",
+                "gunk"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_007_worn-aerator-or-debris",
+        "category": "plumbing",
+        "user_scenario": "My kitchen faucet has low water pressure",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_008_worn-showerhead-or-debris",
+        "category": "plumbing",
+        "user_scenario": "My shower head has weak water pressure",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_009_pilot-light-out-thermocouple",
+        "category": "plumbing",
+        "user_scenario": "I have no hot water from my gas water heater",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_010_broken-dip-tube-or-sediment",
+        "category": "plumbing",
+        "user_scenario": "Not enough hot water from my water heater",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_011_burnt-heating-element",
+        "category": "plumbing",
+        "user_scenario": "My electric water heater is not heating at all",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_012_rusted-tank-or-failed-gasket",
+        "category": "plumbing",
+        "user_scenario": "My water heater is leaking water",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_013_jammed-disposal-blade",
+        "category": "plumbing",
+        "user_scenario": "My garbage disposal hums but doesn't spin",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_014_failed-disposal-seal",
+        "category": "plumbing",
+        "user_scenario": "My garbage disposal is leaking underneath",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_015_clogged-shared-drain-line",
+        "category": "plumbing",
+        "user_scenario": "Water backs up in my kitchen sink when the dishwasher drains",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_016_dry-p-trap-or-vent-issue",
+        "category": "plumbing",
+        "user_scenario": "There's a sewer smell coming from a bathroom drain",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_017_failed-pump-float-switch",
+        "category": "plumbing",
+        "user_scenario": "My sump pump isn't pumping water out",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_018_frozen-pipe-blockage",
+        "category": "plumbing",
+        "user_scenario": "My pipe is frozen and there's no water flow to a faucet",
+        "gold_diagnosis": {
+            "label": "Faulty seal or connection",
+            "accepted_keywords": [
+                "leak",
+                "seal",
+                "faulty",
+                "connection"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_019_cause-to-be-determined",
+        "category": "plumbing",
+        "user_scenario": "Multiple drains in my house are backing up",
+        "gold_diagnosis": {
+            "label": "Cause to be determined",
+            "accepted_keywords": [
+                "multiple",
+                "drains",
+                "in",
+                "my",
+                "house"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "plumbing_020_cause-to-be-determined",
+        "category": "plumbing",
+        "user_scenario": "The pipe under my sink is leaking",
+        "gold_diagnosis": {
+            "label": "Cause to be determined",
+            "accepted_keywords": [
+                "the",
+                "pipe",
+                "under",
+                "my",
+                "sink"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Shut off water supply before starting repairs",
+            "Wear gloves and use a bucket to catch water"
+        ]
+    },
+    {
+        "id": "electrical_001_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "Lights flicker intermittently in one room",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [
+            {
+                "youtube_id": "-qYonWEwPko",
+                "title": "How to Fix Flickering Lights in Your House | Ask This Old House"
+            },
+            {
+                "youtube_id": "wy9-XGolXxk",
+                "title": "WHY ARE MY LIGHTS FLICKERING?!?"
+            },
+            {
+                "youtube_id": "rQdl3FD0ONc",
+                "title": "How to Fix a Flickering Light and Save Your Sanity"
+            }
+        ],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_002_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The light fixture is not working even with a new bulb",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_003_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "My wall outlet is not working at all",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_004_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The top half of an outlet is dead while bottom works",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_005_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The circuit breaker trips when using a hair dryer",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_006_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The GFCI outlet keeps tripping or won't reset",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_007_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The light switch stopped turning the light on",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_008_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The light switch sparks or pops when toggled",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_009_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The dimmer switch feels hot to the touch",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_010_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "A recessed light turns off by itself sometimes",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_011_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "My ceiling fan wobbles or makes noise",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_012_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "My doorbell is not working at all",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_013_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "All outlets in one room lost power",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_014_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "An outlet has burn marks or smells burnt",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_015_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "The breaker immediately trips when I reset it",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_016_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "My LED lights buzz or hum, especially when dimmed",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_017_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "Plugs keep falling out of an outlet",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_018_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "Light bulbs burn out very quickly in one fixture",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_019_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "An LED bulb glows faintly even when switched off",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "electrical_020_worn-faucet-washer-or-cartridge",
+        "category": "electrical",
+        "user_scenario": "My house only has two-prong outlets, no ground",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Turn off power at the breaker before working",
+            "Use insulated tools and avoid wet conditions"
+        ]
+    },
+    {
+        "id": "appliances_001_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My refrigerator is running but not cooling the food",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_002_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My refrigerator is leaking water onto the floor",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_003_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My freezer is icing up with frost buildup",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_004_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My refrigerator's ice maker is not making ice",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_005_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My fridge water dispenser is not dispensing water",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_006_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My electric oven isn't heating up at all",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_007_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "One electric stove burner is not heating up",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_008_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "A gas stove burner won't ignite",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_009_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My gas oven isn't heating (no flame)",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_010_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My gas stove igniter keeps clicking nonstop",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_011_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My microwave runs but doesn't heat food",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_012_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My washing machine won't drain water",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_013_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My washing machine won't spin or agitate",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_014_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My washing machine shakes violently during spin cycle",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_015_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My clothes dryer runs but doesn't heat up",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_016_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My dryer drum isn't spinning at all",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_017_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My dryer takes too long to dry clothes",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_018_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My dishwasher isn't draining water",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_019_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My dishwasher isn't cleaning dishes well",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "appliances_020_worn-faucet-washer-or-cartridge",
+        "category": "appliances",
+        "user_scenario": "My dishwasher is leaking water onto the floor",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Unplug appliance before servicing",
+            "Beware of moving parts and sharp edges"
+        ]
+    },
+    {
+        "id": "furniture_001_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My wooden chair or table is wobbly and unsteady",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_002_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "A wooden floorboard or stair squeaks when stepped on",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_003_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My door does not latch properly when closed",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_004_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My door is sticking and hard to open or close",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_005_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My door knob is loose or wiggling",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_006_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My wooden drawer is stuck and won't slide",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_007_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My cabinet door is sagging and won't close fully",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_008_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "The screw holes in wood are stripped and won't tighten",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_009_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My stair handrail is loose and wobbly",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_010_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My outdoor wooden gate is sagging and dragging",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_011_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My door hinges squeak loudly when opening",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_012_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My drawer slides off its track when opened",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_013_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "A chair leg or rung is broken or cracked",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_014_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My bed frame squeaks or wobbles at night",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_015_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My sliding closet door keeps coming off track",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_016_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My tall bookshelf feels wobbly and unstable",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_017_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "A painted-shut wooden window is stuck closed",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_018_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My baseboard trim has come loose from the wall",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_019_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My shelf is sagging under the weight of items",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    },
+    {
+        "id": "furniture_020_worn-faucet-washer-or-cartridge",
+        "category": "furniture/carpentry",
+        "user_scenario": "My table or desk rocks due to uneven legs or floor",
+        "gold_diagnosis": {
+            "label": "Worn faucet washer or cartridge",
+            "accepted_keywords": [
+                "washer",
+                "cartridge",
+                "faucet",
+                "seal",
+                "worn"
+            ]
+        },
+        "gold_steps": [
+            "Refer to user manual or a professional if unsure.",
+            "Follow proper safety protocols when troubleshooting."
+        ],
+        "youtube_videos": [],
+        "safety_tips": [
+            "Use appropriate protective equipment for this task"
+        ]
+    }
+]
