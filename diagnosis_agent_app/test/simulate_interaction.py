@@ -152,31 +152,40 @@ async def main(
     in_path: str = "test_cases.json",
     out_path: str = "test_cases_with_conversations.json",
 ):
-    # 1. Load the original list of cases
+    # Load original cases
     with open(in_path, "r", encoding="utf-8") as f:
-        cases = json.load(f)  # list[dict]
+        cases = json.load(f)
 
-    # 2. Run one simulation per case
+    # If output already exists, reload progress from it
+    if os.path.exists(out_path):
+        print("🔁 Loading existing results to resume...")
+        with open(out_path, "r", encoding="utf-8") as f:
+            saved_cases = json.load(f)
+        for i, saved in enumerate(saved_cases):
+            cases[i].update(saved)  # merge any completed fields
+
+    # Simulate only unfinished cases
     for i, c in enumerate(cases):
-        print(f"\nSimulating case {i + 1}/{len(cases)}: {c['category']} – {c.get('id', 'no-id')}")
+        if "conversation" in c:
+            print(f"✅ Already done case {i + 1}/{len(cases)}: {c.get('id')}")
+            continue
 
-        # Run simulation
+        print(f"\n🛠️ Simulating case {i + 1}/{len(cases)}: {c['category']} – {c.get('id', 'no-id')}")
         conversation, diagnosis, diy_solution, links = await simulate_case(c)
-
-        # Save results in current case
         c["conversation"] = conversation
         c["diagnosis"] = diagnosis
         c["diy_solution"] = diy_solution
         c["diy_links"] = links
 
-        # Save progress so far (overwrite the file each time)
+        # Save progress
         try:
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(cases, f, ensure_ascii=False, indent=2, default=str)
         except Exception as e:
             print(f"⚠️ Failed to save after case {i + 1}: {e}")
 
-    print(f"\n✅ Saved all {len(cases)} cases to {out_path}")
+    print(f"\n✅ Finished. All {len(cases)} cases saved to {out_path}")
+
 
 # -----------------------------------------------------------------------------  
 # kick the coroutine
