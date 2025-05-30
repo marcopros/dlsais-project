@@ -131,7 +131,7 @@ def getProfessionals(profession: str = None, city: str = None) -> List[dict]:
             query["location.city"] = {"$regex": city, "$options": "i"}
 
         # Execute the query
-        response = collection.find(query)
+        response = collection.find(query, {"password": 0})
         professionals = []
 
         for doc in response:
