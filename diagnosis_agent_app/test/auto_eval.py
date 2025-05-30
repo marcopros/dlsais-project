@@ -268,46 +268,48 @@ def evaluate_all_cases_with_gpt(
     test_cases_path="test_cases_with_conversations.json",
     output_path="test_case_scores_llm.json"
 ):
+    # 1. Carica tutti i test case
     with open(test_cases_path, "r", encoding="utf-8") as f:
         cases = json.load(f)
 
-    scores = []
+    # 2. Carica eventuali punteggi già salvati
+    existing_scores = {}
+    if os.path.exists(output_path):
+        with open(output_path, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                if "id" in item:
+                    existing_scores[item["id"]] = item
+        print(f"🔁 Loaded {len(existing_scores)} previous scores.")
 
+    # 3. Loop sui test case da rivalutare (escludendo electrical & plumbing)
     for i, case in enumerate(tqdm(cases, desc="Evaluating cases")):
-        print(f"\n🔍 Evaluating case {i + 1}/{len(cases)}: {case.get('id', f'#{i}')}")
-        
+        case_id = case.get("id", f"#{i}")
+
+        print(f"\n🔍 Evaluating case {i + 1}/{len(cases)}: {case_id}")
         prompt = format_prompt(case)
 
         try:
             response = client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
+                messages=[{"role": "user", "content": prompt}],
                 temperature=0.0
             )
             raw_content = response.choices[0].message.content
-            if raw_content is not None:
-                parsed = json.loads(raw_content)
-            else:
-                parsed = {"error": "No content returned from model"}
-            parsed["id"] = case.get("id")
-            scores.append(parsed)
+            parsed = json.loads(raw_content) if raw_content else {"error": "No content returned"}
+            parsed["id"] = case_id
+            existing_scores[case_id] = parsed
 
         except Exception as e:
-            print(f"❌ Error on case {case.get('id', f'#{i}')}: {e}")
-            scores.append({"id": case.get("id"), "error": str(e)})
+            print(f"❌ Error on case {case_id}: {e}")
+            existing_scores[case_id] = {"id": case_id, "error": str(e)}
 
-        time.sleep(1.5)  # polite pause to avoid rate limits
+        # Scrive dopo ogni caso, per sicurezza
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(list(existing_scores.values()), f, indent=2)
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(scores, f, indent=2)
+        time.sleep(1.5)  # rate limit pause
 
-    print(f"\n✅ Saved scores to {output_path}")
-
+    print(f"\n✅ Saved updated scores to {output_path}")
 
 if __name__ == "__main__":
     evaluate_all_cases_with_gpt()

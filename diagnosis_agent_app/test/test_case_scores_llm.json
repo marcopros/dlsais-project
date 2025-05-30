@@ -41,10 +41,10 @@
     "step_quality": 1,
     "safety": 0,
     "videos_provided": 1,
-    "video_relevance": 0,
+    "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 7,
+    "total": 8,
     "id": "plumbing_004_clog-blockage-in-toilet-trap"
   },
   {
@@ -87,16 +87,16 @@
     "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 0,
-    "safety": 0,
+    "safety": 1,
     "videos_provided": 1,
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 7,
     "id": "plumbing_008_worn-showerhead-or-debris"
   },
   {
-    "diagnosis": 1,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 0,
@@ -104,7 +104,7 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 8,
+    "total": 9,
     "id": "plumbing_009_pilot-light-out-thermocouple"
   },
   {
@@ -120,15 +120,15 @@
     "id": "plumbing_010_broken-dip-tube-or-sediment"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 1,
     "safety": 1,
     "videos_provided": 1,
-    "video_relevance": 0,
+    "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 7,
     "id": "plumbing_011_burnt-heating-element"
   },
   {
@@ -144,7 +144,7 @@
     "id": "plumbing_012_rusted-tank-or-failed-gasket"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 1,
     "safety": 1,
@@ -152,7 +152,7 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 7,
+    "total": 9,
     "id": "plumbing_013_jammed-disposal-blade"
   },
   {
@@ -168,7 +168,7 @@
     "id": "plumbing_014_failed-disposal-seal"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 1,
     "safety": 0,
@@ -176,7 +176,7 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 7,
     "id": "plumbing_015_clogged-shared-drain-line"
   },
   {
@@ -204,15 +204,15 @@
     "id": "plumbing_017_failed-pump-float-switch"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 0,
     "safety": 0,
     "videos_provided": 1,
-    "video_relevance": 0,
+    "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 4,
+    "total": 7,
     "id": "plumbing_018_frozen-pipe-blockage"
   },
   {
@@ -240,7 +240,7 @@
     "id": "plumbing_020_cause-to-be-determined"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 1,
     "safety": 1,
@@ -248,7 +248,7 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 7,
+    "total": 9,
     "id": "electrical_001_worn-faucet-washer-or-cartridge"
   },
   {
@@ -288,19 +288,19 @@
     "id": "electrical_004_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
-    "step_quality": 0,
-    "safety": 1,
+    "step_quality": 1,
+    "safety": 0,
     "videos_provided": 1,
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 5,
+    "total": 6,
     "id": "electrical_005_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 0,
@@ -308,11 +308,11 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 7,
+    "total": 9,
     "id": "electrical_006_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -320,11 +320,11 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 8,
+    "total": 9,
     "id": "electrical_007_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -332,11 +332,11 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 7,
+    "total": 8,
     "id": "electrical_008_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -344,7 +344,7 @@
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 7,
     "id": "electrical_009_worn-faucet-washer-or-cartridge"
   },
   {
@@ -360,7 +360,7 @@
     "id": "electrical_010_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -368,11 +368,11 @@
     "video_relevance": 1,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 8,
+    "total": 9,
     "id": "electrical_011_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 1,
     "safety": 1,
@@ -380,11 +380,11 @@
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 5,
+    "total": 7,
     "id": "electrical_012_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -392,11 +392,11 @@
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 7,
     "id": "electrical_013_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -404,11 +404,11 @@
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 8,
     "id": "electrical_014_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -416,11 +416,11 @@
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 7,
     "id": "electrical_015_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -428,23 +428,23 @@
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 8,
     "id": "electrical_016_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
     "videos_provided": 0,
-    "video_relevance": 1,
+    "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
     "total": 7,
     "id": "electrical_017_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
     "safety": 1,
@@ -452,31 +452,31 @@
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 7,
+    "total": 8,
     "id": "electrical_018_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 2,
     "diy_present": 1,
-    "step_quality": 2,
+    "step_quality": 1,
     "safety": 1,
     "videos_provided": 0,
     "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 6,
+    "total": 7,
     "id": "electrical_019_worn-faucet-washer-or-cartridge"
   },
   {
-    "diagnosis": 0,
+    "diagnosis": 1,
     "diy_present": 1,
     "step_quality": 2,
-    "safety": 1,
+    "safety": 0,
     "videos_provided": 1,
-    "video_relevance": 1,
+    "video_relevance": 0,
     "no_hallucination": 1,
     "fluency": 1,
-    "total": 8,
+    "total": 7,
     "id": "electrical_020_worn-faucet-washer-or-cartridge"
   },
   {
@@ -958,5 +958,461 @@
     "fluency": 1,
     "total": 5,
     "id": "furniture_020_worn-faucet-washer-or-cartridge"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_001_refrigerator-not-cooling"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 1,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 10,
+    "id": "appliances_002_refrigerator-leaking-water"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 1,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 10,
+    "id": "appliances_003_freezer-icing-up"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 7,
+    "id": "appliances_004_ice-maker-not-making-ice"
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 1,
+    "step_quality": 0,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 0,
+    "fluency": 1,
+    "total": 2,
+    "id": "appliances_005_fridge-water-dispenser-not-dispensing"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_006_electric-oven-not-heating"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_007_electric-stove-burner-not-heating"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 1,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "appliances_008_gas-stove-burner-wont-ignite"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_009_gas-oven-not-heating"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_010_gas-stove-igniter-clicking"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_011_microwave-not-heating"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_012_washing-machine-wont-drain"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_013_washing-machine-wont-spin-agitate"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_014_washing-machine-shaking-violently"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_015_dryer_not_heating"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_016_dryer_drum_not_spinning"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_017_dryer_takes_too_long_to_dry"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "appliances_018_dishwasher_not_draining"
+  },
+  {
+    "diagnosis": 0,
+    "diy_present": 0,
+    "step_quality": 0,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 0,
+    "total": 1,
+    "id": "appliances_019_oven_not_heating"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 1,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "furniture_001_wobbly_chair_table"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 7,
+    "id": "furniture_002_squeaky_floorboard_stair"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 7,
+    "id": "furniture_003_door_not_latching"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 1,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 6,
+    "id": "furniture_005_loose-door-knob"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 1,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "furniture_006_stuck-wooden-drawer"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 1,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "furniture_007_sagging-cabinet-door"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 1,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "furniture_008_stripped-screw-holes-in-wood"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "furniture_009_loose-stair-handrail"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 7,
+    "id": "furniture_010_sagging-outdoor-wooden-gate"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "furniture_011_squeaky-door-hinges"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 7,
+    "id": "furniture_012_drawer-slides-off-track"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "furniture_013_broken-chair-leg"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "furniture_014_squeaky-wobbly-bed-frame"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 1,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "furniture_015_sliding-closet-door-off-track"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 7,
+    "id": "furniture_016_wobbly-bookshelf"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "furniture_017_painted-shut-window-stuck"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 1,
+    "videos_provided": 0,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 9,
+    "id": "furniture_018_loose-baseboard-trim"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 0,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 7,
+    "id": "furniture_019_sagging-shelf"
+  },
+  {
+    "diagnosis": 2,
+    "diy_present": 1,
+    "step_quality": 2,
+    "safety": 0,
+    "videos_provided": 0,
+    "video_relevance": 1,
+    "no_hallucination": 1,
+    "fluency": 1,
+    "total": 8,
+    "id": "furniture_020_wobbly-table-uneven-legs-or-floor"
   }
 ]
