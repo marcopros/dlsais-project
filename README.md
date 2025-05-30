@@ -57,6 +57,8 @@
 
 ## Eval => **[Doc link](https://docs.google.com/document/d/1DTtShv4l6XGIc3_qNbTJpWhqrJHaX9RU3RdrUZLHEIE/edit?usp=drive_link)**
 
+## Diagnosis Agent Evaluation => 📄 **[Report link](https://github.com/marcopros/dlsais-project/blob/no-await/diagnosis_agent_app/test/report_complete.pdf)**
+
 ## DEMO LINK 🚀
 [![Try AskFix](https://img.shields.io/badge/AskFix-CLICK%20HERE-orange?style=for-the-badge&logo=homeassistant)](https://askfix.duckdns.org)
 
