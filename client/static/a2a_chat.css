@@ -264,6 +264,69 @@ button:disabled {
     background-color: var(--highlight-color);
 }
 
+/* Professional Cards Styles */
+.professional-listings {
+    margin-top: 0.75rem;
+}
+
+.professional-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.professional-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.professional-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--highlight-color), var(--orchestrator-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.professional-card:hover::before {
+    opacity: 1;
+}
+
+.contact-professional {
+    background-color: #f97316;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+}
+
+.contact-professional:hover {
+    background-color: #ea580c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(249, 115, 22, 0.4);
+}
+
+.contact-professional:active {
+    transform: translateY(0);
+}
+
+/* Star rating styles */
+.star-rating {
+    display: inline-flex;
+    gap: 1px;
+}
+
+/* Trust indicator styles */
+.trust-badge {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.3));
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    backdrop-filter: blur(4px);
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
     .message {
@@ -289,5 +352,18 @@ button:disabled {
     header p {
         font-size: 0.75rem;
     }
-} 
-} 
+    
+    .professional-card {
+        margin-bottom: 0.5rem;
+        padding: 0.75rem;
+    }
+    
+    .professional-card h4 {
+        font-size: 1rem;
+    }
+    
+    .contact-professional {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}

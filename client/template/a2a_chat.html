@@ -59,7 +59,7 @@
 
     <!-- Wrapper che si sposta con la sidebar -->
     <!-- Wrapper che si sposta con la sidebar -->
-<div id="chat-wrapper" class="transition-all duration-300 lg:pl-64">
+<div id="chat-wrapper" class="transition-all duration-300">
   <div id="chat-container" class="flex justify-center h-[calc(var(--vh,1vh)*100)] overflow-hidden">
     <div class="w-[400px] md:w-[600px] lg:w-[900px] flex flex-col flex-grow">
 
@@ -86,9 +86,44 @@
           class="flex-1 resize-none px-4 py-2 rounded-full bg-white/20 text-white placeholder-white/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent"
           autocomplete="off"
         ></textarea>
+        
+        <!-- Voice Controls -->
+        <div class="flex gap-2">
+          <!-- Microphone button -->
+          <button
+            type="button"
+            id="voice-input-btn"
+            class="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 transition duration-200 transform hover:scale-105"
+            title="Voice input"
+          >
+            <svg id="mic-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path>
+            </svg>
+            <svg id="mic-recording-icon" class="w-5 h-5 hidden text-red-400" fill="currentColor" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="6" class="animate-pulse"></circle>
+            </svg>
+          </button>
+          
+          <!-- Speaker toggle button -->
+          <button
+            type="button"
+            id="speaker-toggle-btn"
+            class="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 transition duration-200 transform hover:scale-105"
+            title="Toggle voice responses"
+          >
+            <svg id="speaker-on-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.824L4.293 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.293l4.09-3.824a1 1 0 011.617.824zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"></path>
+            </svg>
+            <svg id="speaker-off-icon" class="w-5 h-5 hidden text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.824L4.293 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.293l4.09-3.824a1 1 0 011.617.824zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Send button -->
         <button
           type="submit"
-          class="p-3 rounded-full bg-white text-primary hover:bg-gray-100 transition"
+          class="p-3 rounded-full bg-white text-primary hover:bg-gray-100 transition duration-200 transform hover:scale-105"
         >
           <svg
             stroke="currentColor"
@@ -104,6 +139,14 @@
           </svg>
         </button>
       </form>
+      
+      <!-- Voice status indicator -->
+      <div id="voice-status" class="hidden px-4 py-2 text-center text-sm text-white/80 bg-white/10 backdrop-blur-sm">
+        <div id="listening-indicator" class="flex items-center justify-center gap-2">
+          <div class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+          <span>Listening... Speak now</span>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -111,7 +154,7 @@
 
   </div>
 
-  <script src="../static/a2a_chat.js"></script>
+  <script src="../static/voice_chat.js"></script>
 
 </body>
 </html>
