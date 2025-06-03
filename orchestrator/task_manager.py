@@ -566,7 +566,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
             return SendTaskResponse(id=request.id, result=updated_task)
 
         except Exception as e:
-            logger.error(f"Error while processing task {task.id}: {e}")
+            logger.error(f"[ORCHESTRATOR] Error while processing task {task.id}: {e}")
             human_readable_logger.log_system_message(f"❌ Error: {str(e)}")
 
             error_message = Message(
@@ -574,7 +574,7 @@ class OrchestratorTaskManager(InMemoryTaskManager):
                 parts=[
                     TextPart(
                         type="text",
-                        text=f"Error occurred during task processing: {str(e)}"
+                        text=f"[ORCHESTRATOR] Error occurred during task processing: {str(e)}"
                     )
                 ],
                 timestamp=int(asyncio.get_running_loop().time() * 1000),

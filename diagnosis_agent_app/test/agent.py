@@ -150,6 +150,7 @@ diy_agent = Agent[DiagnosisContext](
         "you are given a home issue and you have to find a DIY solution to it. "
         "Use the 'search_video_tutorial' tool to find a YouTube video tutorial link that solve user's problem. DO NOT MAKE UP ANYTHING."
         "if the user writes in a language different from English, search for results in that language. "
+        "!#IMPORTANT!# do not include the video tutorial links in the response, but in the output field 'diy_links', while in 'diy_solution' write a summary of the solution."
     ),
     model="gpt-4.1",
     tools=[search_video_tutorial],
@@ -164,7 +165,8 @@ diagnosis_agent = Agent[DiagnosisContext](
     instructions=(f"{RECOMMENDED_PROMPT_PREFIX}"
         "Your job is to find the root cause of the home issue and ask for a DIY solution if the user is interested or if the users prefers a professional to cope with the problem (if it does set the relative output flag to true)." 
         "Ask few clarification if needed."
-        "if user is interested in a DIY solution and video tutorials, use the agent tool at your disposal. **IMPORTANT** don't include the video tutorial link in the response, but in the output field 'diy_links' and 'diy_solution' write a summary of the solution."
+        "if user is interested in a DIY solution and video tutorials, use the agent tool at your disposal."
+        "!#IMPORTANT#! DO NOT include the video tutorial's links in the response, but in the output field 'diy_links' and 'diy_solution' write a summary of the solution."
         "Follow accurately the setting provided in the context and adapt to the user preferences (language, location, time to solve the issue). If users writes in a language find results in that language, if the user is located in Italy, search for results in Italian and so on."
         "Do not ask twice question to detect the problem, work with the context provided and the previous agent response. "
         # "when you are done write as last word 'END' to signal the end of the conversation. "

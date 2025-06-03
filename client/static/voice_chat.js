@@ -389,6 +389,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return [];
     }
+
+    function renderYouTubeCards(videoUrls) {
+        if (!Array.isArray(videoUrls)) return null;
+
+        const youtubeContainer = document.createElement('div');
+        youtubeContainer.className = 'mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+
+        videoUrls.forEach(async (videoUrl) => {
+            const trimmedUrl = videoUrl.trim();
+            let videoId;
+
+            try {
+                const urlObj = new URL(trimmedUrl);
+                videoId = urlObj.searchParams.get('v') || trimmedUrl.split('v=')[1]?.split(/[&/]/)[0];
+            } catch (err) {
+                console.warn('Invalid YouTube URL:', trimmedUrl);
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(trimmedUrl)}&format=json`);
+                if (!res.ok) throw new Error('Failed to fetch oEmbed data');
+                const data = await res.json();
+
+                const card = document.createElement('div');
+                card.className = 'border border-gray-200 rounded-xl overflow-hidden bg-white shadow hover:shadow-lg transition-shadow duration-300';
+                card.innerHTML = `
+                    <div class="relative pb-[56.25%] h-0 overflow-hidden">
+                        <img src="${data.thumbnail_url}" alt="Thumbnail for ${data.title}" class="absolute top-0 left-0 w-full h-full object-cover" />
+                    </div>
+                    <div class="p-3">
+                        <h3 class="text-sm font-medium text-gray-800 truncate">${data.title}</h3>
+                        <p class="text-xs text-gray-500 mt-1">Watch this helpful guide on YouTube 🎥</p>
+                        <a href="${trimmedUrl}" target="_blank" class="mt-2 inline-block text-xs text-blue-500 hover:underline">Open on YouTube</a>
+                    </div>
+                `;
+
+                youtubeContainer.appendChild(card);
+            } catch (err) {
+                console.error('Error fetching YouTube video info:', err);
+            }
+        });
+
+        return youtubeContainer;
+    }
+
     
     // Function to add a message to the chat
     function addMessage(role, content, agentName = null, metadata = null) {
@@ -396,8 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.classList.add('flex', 'mb-4', role === 'user' ? 'justify-end' : 'justify-start');
         
         const messageContent = document.createElement('div');
-        messageContent.classList.add('flex', 'max-w-xs', 'lg:max-w-md', 'px-4', 'py-2', 'rounded-lg', 'items-start', 'gap-2');
-        
+        messageContent.classList.add('flex', 'max-w-md', 'lg:max-w-2xl', 'px-4', 'py-2', 'rounded-lg', 'items-start', 'gap-2');        
         if (role === 'user') {
             messageContent.classList.add('bg-white', 'text-gray-800', 'order-1');
             messageContent.innerHTML = `
@@ -430,6 +475,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${professionalCardsHtml || ''}
                 </div>
             `;
+
+            // Check for DIY YouTube videos
+            // const diyList = metadata?.diy_list || metadata?.data?.diy_list;
+            // if (Array.isArray(diyList)) {
+            //     const youtubeCards = renderYouTubeCards(diyList);
+            //     if (youtubeCards) {
+            //         const container = messageContent.querySelector('.flex-1');
+            //         container.appendChild(youtubeCards);
+            //     }
+            // }
+
+
             
             // Speak the agent response if speech is enabled
             if (speechEnabled && content) {
@@ -442,9 +499,9 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
         // Add event listeners for professional cards if they exist
-        if (containsProfessionalData(metadata)) {
-            addProfessionalCardEventListeners(messageDiv);
-        }
+        // if (containsProfessionalData(metadata)) {
+        //     addProfessionalCardEventListeners(messageDiv);
+        // }
     }
     
     // Function to add event listeners to professional cards

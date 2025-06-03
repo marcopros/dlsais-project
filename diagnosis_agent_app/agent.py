@@ -81,24 +81,52 @@ class DiagnosisContext(BaseModel):
 
 
 # --- DIY AGENT ---
+# @function_tool
+# async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
+#     """ Searches YouTube for video tutorials matching the given query.
+#         Returns a list of YouTube watch URLs.
+#     Args:
+#         query (str): The search query for the video tutorial.
+#         hl (str): The language code for the search results (e.g., 'it' for Italian).
+#         gl (str): The country code for the search results (e.g., 'it' for Italy).
+#     """
+#     # Add the site filter to the query to search only for YouTube videos
+#     full_query = f"{query} site:youtube.com"
+#     url = "https://serpapi.com/search"
+#     params = {
+#         "q": full_query,
+#         "hl": hl,
+#         "gl": gl,
+#         "engine": "google",
+#         "api_key": os.getenv("SERPAPI_API_KEY"),
+#     }
+
+#     async with aiohttp.ClientSession() as session:
+#         async with session.get(url, params=params) as resp:
+#             resp.raise_for_status()
+#             data = await resp.json()
+
+#     # Extract video links from the response
+#     videos: List[str] = []
+#     for item in data.get("organic_results", []):
+#         link = item.get("link", "")
+#         if "youtube.com/watch" in link:
+#             videos.append(link)
+
+#     # Provide only the first 6 links
+#     return videos[:6]
+
 @function_tool
 async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
-    """ Searches YouTube for video tutorials matching the given query.
-        Returns a list of YouTube watch URLs.
-    Args:
-        query (str): The search query for the video tutorial.
-        hl (str): The language code for the search results (e.g., 'it' for Italian).
-        gl (str): The country code for the search results (e.g., 'it' for Italy).
-    """
-    # Add the site filter to the query to search only for YouTube videos
-    full_query = f"{query} site:youtube.com"
-    url = "https://serpapi.com/search"
+    url = "https://www.googleapis.com/youtube/v3/search"
     params = {
-        "q": full_query,
-        "hl": hl,
-        "gl": gl,
-        "engine": "google",
-        "api_key": os.getenv("SERPAPI_API_KEY"),
+        "part": "snippet",
+        "q": query,
+        "type": "video",
+        "maxResults": 6,
+        "relevanceLanguage": hl,
+        "regionCode": gl,
+        "key": os.getenv("YOUTUBE_API_KEY"),
     }
 
     async with aiohttp.ClientSession() as session:
@@ -106,16 +134,13 @@ async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
             resp.raise_for_status()
             data = await resp.json()
 
-    # Extract video links from the response
     videos: List[str] = []
-    for item in data.get("organic_results", []):
-        link = item.get("link", "")
-        if "youtube.com/watch" in link:
-            videos.append(link)
+    for item in data.get("items", []):
+        video_id = item["id"].get("videoId")
+        if video_id:
+            videos.append(f"https://www.youtube.com/watch?v={video_id}")
 
-    # Provide only the first 6 links
-    return videos[:6]
-
+    return videos
 
 diy_agent = Agent[DiagnosisContext](
     name="DIY agent",
