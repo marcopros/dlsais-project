@@ -81,24 +81,52 @@ class DiagnosisContext(BaseModel):
 
 
 # --- DIY AGENT ---
+# @function_tool
+# async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
+#     """ Searches YouTube for video tutorials matching the given query.
+#         Returns a list of YouTube watch URLs.
+#     Args:
+#         query (str): The search query for the video tutorial.
+#         hl (str): The language code for the search results (e.g., 'it' for Italian).
+#         gl (str): The country code for the search results (e.g., 'it' for Italy).
+#     """
+#     # Add the site filter to the query to search only for YouTube videos
+#     full_query = f"{query} site:youtube.com"
+#     url = "https://serpapi.com/search"
+#     params = {
+#         "q": full_query,
+#         "hl": hl,
+#         "gl": gl,
+#         "engine": "google",
+#         "api_key": os.getenv("SERPAPI_API_KEY"),
+#     }
+
+#     async with aiohttp.ClientSession() as session:
+#         async with session.get(url, params=params) as resp:
+#             resp.raise_for_status()
+#             data = await resp.json()
+
+#     # Extract video links from the response
+#     videos: List[str] = []
+#     for item in data.get("organic_results", []):
+#         link = item.get("link", "")
+#         if "youtube.com/watch" in link:
+#             videos.append(link)
+
+#     # Provide only the first 6 links
+#     return videos[:6]
+
 @function_tool
 async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
-    """ Searches YouTube for video tutorials matching the given query.
-        Returns a list of YouTube watch URLs.
-    Args:
-        query (str): The search query for the video tutorial.
-        hl (str): The language code for the search results (e.g., 'it' for Italian).
-        gl (str): The country code for the search results (e.g., 'it' for Italy).
-    """
-    # Add the site filter to the query to search only for YouTube videos
-    full_query = f"{query} site:youtube.com"
-    url = "https://serpapi.com/search"
+    url = "https://www.googleapis.com/youtube/v3/search"
     params = {
-        "q": full_query,
-        "hl": hl,
-        "gl": gl,
-        "engine": "google",
-        "api_key": os.getenv("SERPAPI_API_KEY"),
+        "part": "snippet",
+        "q": query,
+        "type": "video",
+        "maxResults": 6,
+        "relevanceLanguage": hl,
+        "regionCode": gl,
+        "key": os.getenv("YOUTUBE_API_KEY"),
     }
 
     async with aiohttp.ClientSession() as session:
@@ -106,23 +134,20 @@ async def search_video_tutorial(query: str, hl: str, gl: str) -> List[str]:
             resp.raise_for_status()
             data = await resp.json()
 
-    # Extract video links from the response
     videos: List[str] = []
-    for item in data.get("organic_results", []):
-        link = item.get("link", "")
-        if "youtube.com/watch" in link:
-            videos.append(link)
+    for item in data.get("items", []):
+        video_id = item["id"].get("videoId")
+        if video_id:
+            videos.append(f"https://www.youtube.com/watch?v={video_id}")
 
-    # Provide only the first 6 links
-    return videos[:6]
-
+    return videos
 
 diy_agent = Agent[DiagnosisContext](
     name="DIY agent",
     instructions=(
         "you are given a home issue and you have to find a DIY solution to it. "
         "Use the 'search_video_tutorial' tool to find a YouTube video tutorial link that solve user's problem. DO NOT MAKE UP ANYTHING."
-        "if the user writes in a language different from English, search for results in that language. DO NOT INCLUDE THE VIDEO TUTORIAL LINK IN THE RESPONSE, but in the output field 'diy_links' write the list of links to video tutorials and in 'diy_solution' write a summary of the solution."
+        "if the user writes in a language different from English, search for results in that language. #! DO NOT INCLUDE THE VIDEO TUTORIAL LINK IN THE RESPONSE, but in the output field 'diy_links' write the list of links to video tutorials and in 'diy_solution' write a summary of the solution."
     ),
     model="gpt-4.1",
     tools=[search_video_tutorial],
@@ -137,7 +162,7 @@ diagnosis_agent = Agent[DiagnosisContext](
     instructions=(f"{RECOMMENDED_PROMPT_PREFIX}"
         "Your job is to find the root cause of the home issue and ask for a DIY solution if the user is interested or if the users prefers a professional to cope with the problem (if it does set the relative output flag to true)." 
         "Ask few clarification if needed."
-        "if user is interested in a DIY solution and video tutorials, use the agent tool at your disposal. **IMPORTANT** DO NOT INCLUDE VIDEO TUTORIAL'S LINKS in the response, but in the output field 'diy_links' and 'diy_solution' write a summary of the solution."
+        "if user is interested in a DIY solution and video tutorials, use the agent tool at your disposal. #!IMPORTANT! DO NOT INCLUDE VIDEO TUTORIAL'S LINKS in the response, but in the output field 'diy_links' and 'diy_solution' write a summary of the solution.!#"
         "Follow accurately the setting provided in the context and adapt to the user preferences (language, location, time to solve the issue). If users writes in a language find results in that language, if the user is located in Italy, search for results in Italian and so on."
         "Do not ask twice question to detect the problem, work with the context provided and the previous agent response. "
         # "when you are done write as last word 'END' to signal the end of the conversation. "
