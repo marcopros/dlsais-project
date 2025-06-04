@@ -799,6 +799,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </button>
                             </div>
                         ` : ''}
+                        ${appointment.status === 'confirmed' ? `
+                            <div class="mt-2 text-xs text-green-400">✅ Appointment confirmed</div>
+                            <button data-id="${appointment.id}" onclick="updateAppointmentStatus('${appointment.id}', 'job_completed')" class="mt-2 ml-2 text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition">🔧 Mark as Completed</button>`
+                         : ''}
+                        ${appointment.status === 'job_completed' ? `
+                            <div class="mt-2 text-xs text-yellow-400">📝 Job completed, awaiting feedback</div>
+                            <a href="/feedback?professional_id=${encodeURIComponent(appointment.professionalDetails?.professionalId)}&job=${encodeURIComponent(appointment.problemSummary)}&name=${encodeURIComponent(appointment.professionalDetails?.name)}&appointment_id=${appointment.id}" class="mt-2 inline-block text-sm bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition">
+                            ✍️ Leave a Review
+                            </a>
+                            <button data-id="${appointment.id}" data-action="terminate" class="mt-2 ml-2 text-sm bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600 transition">✅ Finalize</button>`
+                         : ''}
                     `;
                     
                     appointmentsList.appendChild(appointmentDiv);
