@@ -477,14 +477,14 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             // Check for DIY YouTube videos
-            // const diyList = metadata?.diy_list || metadata?.data?.diy_list;
-            // if (Array.isArray(diyList)) {
-            //     const youtubeCards = renderYouTubeCards(diyList);
-            //     if (youtubeCards) {
-            //         const container = messageContent.querySelector('.flex-1');
-            //         container.appendChild(youtubeCards);
-            //     }
-            // }
+            const diyList = metadata?.diy_list || metadata?.data?.diy_list;
+            if (Array.isArray(diyList)) {
+                const youtubeCards = renderYouTubeCards(diyList);
+                if (youtubeCards) {
+                    const container = messageContent.querySelector('.flex-1');
+                    container.appendChild(youtubeCards);
+                }
+            }
 
 
             
