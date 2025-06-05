@@ -14,6 +14,23 @@
 
 AskFix is a **distributed multi-agent AI system** that revolutionizes home repair assistance through intelligent problem diagnosis, professional matching, and automated service coordination. Built on a microservices architecture with Agent-to-Agent (A2A) communication protocols, the system leverages advanced NLP and machine learning to bridge the gap between users experiencing home issues and qualified repair professionals.
 
+---
+
+## 📚 Documentation & Resources
+
+### Technical Documentation
+- 📋 **[System Requirements](https://docs.google.com/document/d/1h5aTDhGsE6GPwdTVpKwTkm87zcH38Ci-F5FXBIQbkOs/edit?usp=sharing)** - Detailed functional and non-functional requirements
+- 🏗️ **[Architecture Design](https://docs.google.com/document/d/156_QKwj74Sz2SoJMdNFXA3mDP4FXiTqmRkL6dN-Yjt4/edit?usp=sharing)** - System architecture and design patterns
+- 📊 **[Evaluation Framework](https://docs.google.com/document/d/1DTtShv4l6XGIc3_qNbTJpWhqrJHaX9RU3RdrUZLHEIE/edit?usp=drive_link)** - Comprehensive evaluation methodology
+
+### Performance Reports
+- 📄 **[Diagnosis Agent Evaluation](https://github.com/marcopros/dlsais-project/blob/no-await/diagnosis_agent_app/test/report_complete.pdf)** - Detailed performance analysis and metrics
+
+### Visual Resources
+- 🎯 **[System Flowchart](https://drive.google.com/file/d/1D16f_EL1sFbW91Xm2gKeAC_NsPZ6Xb2H/view?usp=drive_link)** - Interactive system workflow visualization
+
+---
+
 ### 🎯 Key Features
 
 - **🧠 Intelligent Problem Diagnosis:** AI-powered root cause analysis with 87.5% accuracy
@@ -330,21 +347,6 @@ python -m diagnosis_agent_app.test.auto_eval
 # Integration testing
 python -m pytest tests/
 ```
-
----
-
-## 📚 Documentation & Resources
-
-### Technical Documentation
-- 📋 **[System Requirements](https://docs.google.com/document/d/1h5aTDhGsE6GPwdTVpKwTkm87zcH38Ci-F5FXBIQbkOs/edit?usp=sharing)** - Detailed functional and non-functional requirements
-- 🏗️ **[Architecture Design](https://docs.google.com/document/d/156_QKwj74Sz2SoJMdNFXA3mDP4FXiTqmRkL6dN-Yjt4/edit?usp=sharing)** - System architecture and design patterns
-- 📊 **[Evaluation Framework](https://docs.google.com/document/d/1DTtShv4l6XGIc3_qNbTJpWhqrJHaX9RU3RdrUZLHEIE/edit?usp=drive_link)** - Comprehensive evaluation methodology
-
-### Performance Reports
-- 📄 **[Diagnosis Agent Evaluation](https://github.com/marcopros/dlsais-project/blob/no-await/diagnosis_agent_app/test/report_complete.pdf)** - Detailed performance analysis and metrics
-
-### Visual Resources
-- 🎯 **[System Flowchart](https://drive.google.com/file/d/1D16f_EL1sFbW91Xm2gKeAC_NsPZ6Xb2H/view?usp=drive_link)** - Interactive system workflow visualization
 
 ---
 
