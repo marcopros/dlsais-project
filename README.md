@@ -29,7 +29,7 @@ AskFix is a **distributed multi-agent AI system** that revolutionizes home repai
 
 ### Visual Resources
 - 🎯 **[System Flowchart](https://drive.google.com/file/d/1D16f_EL1sFbW91Xm2gKeAC_NsPZ6Xb2H/view?usp=drive_link)** - Interactive system workflow visualization
-- ▶️ **[Presentation](https://www.canva.com/design/DAGoqD0MPfo/7-a1Xk-T5Idz2HTBckki0w/edit?utm_content=DAGoqD0MPfo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)** - Canva Presentation
+- ▶️ **[Presentation](https://www.canva.com/design/DAGoqD0MPfo/MEf5jkcrVmxc9cbkGqLhCw/view?utm_content=DAGoqD0MPfo&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hcd70b95caa)** - Canva Presentation
 
 ---
 
