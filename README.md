@@ -25,7 +25,7 @@ AskFix is a **distributed multi-agent AI system** that revolutionizes home repai
 
 ### Performance Reports
 - 📄 **[Diagnosis Agent Evaluation](https://github.com/marcopros/dlsais-project/blob/no-await/diagnosis_agent_app/test/report_complete.pdf)** - Detailed performance
-- analysis and metrics
+- ‼️ **[Evaluation Spreadheet](https://github.com/marcopros/dlsais-project/blob/main/askfix_eval_spreadsheet.docx)**
 
 ### Visual Resources
 - 🎯 **[System Flowchart](https://drive.google.com/file/d/1D16f_EL1sFbW91Xm2gKeAC_NsPZ6Xb2H/view?usp=drive_link)** - Interactive system workflow visualization
