@@ -2,7 +2,6 @@
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](https://fastapi.tiangolo.com)
-[![LiteLLM](https://img.shields.io/badge/LiteLLM-Planned-orange.svg)](https://github.com/BerriAI/litellm)
 [![Demo](https://img.shields.io/badge/Live_Demo-Available-brightgreen.svg)](https://askfix.duckdns.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
