@@ -47,9 +47,9 @@ AskFix is a **distributed multi-agent AI system** that revolutionizes home repai
 
 | Component | Technology Stack | Responsibility |
 |-----------|------------------|----------------|
-| **A2A Communication** | Custom Protocol, Pydantic | Inter-agent message passing and task coordination |
+| **A2A Communication** | A2A Protocol Standard | Inter-agent message passing and task coordination |
 | **Agent Runtime** | FastAPI, asyncio | Scalable agent execution environment |
-| **LLM Integration** | Google Gemini, Google ADK | Direct Google AI model access |
+| **LLM Integration** | OpenAI GPT, Google Gemini, Google ADK | Direct AI model access |
 | **Database Layer** | MongoDB | Document-based persistent storage |
 | **Client Interface** | REST API, HTML/JS | User interaction via web interface |
 
@@ -131,7 +131,7 @@ AskFix is a **distributed multi-agent AI system** that revolutionizes home repai
 
 ### Agent-to-Agent (A2A) Communication Protocol
 
-The system implements a custom A2A protocol for seamless inter-agent communication:
+The system implements the A2A protocol for seamless inter-agent communication:
 
 ```python
 class TaskMessage(BaseModel):
@@ -146,7 +146,7 @@ class TaskMessage(BaseModel):
 ### Key Technical Features
 
 **🚀 Core Architecture**
-- **Agent-to-Agent Protocol:** Custom A2A JSON-RPC communication framework
+- **Agent-to-Agent Protocol:** A2A JSON-RPC communication framework
 - **Microservices Design:** Independent agent deployment with FastAPI servers
 - **Async Processing:** Non-blocking I/O with asyncio for concurrent request handling
 - **MongoDB Integration:** Document-based data persistence with connection pooling
@@ -339,7 +339,6 @@ python -m feedback_agent_app.server
 ```bash
 # Run agent-specific tests
 python -m diagnosis_agent_app.test
-python -m matching_agent_app.test
 
 # Run evaluation suite
 python -m diagnosis_agent_app.test.auto_eval
@@ -361,27 +360,6 @@ Experience AskFix in action with our fully deployed system:
 - Interactive DIY solution generation
 - Professional matching simulation
 - Complete user journey walkthrough
-
----
-
-## 🤝 Contributing
-
-We welcome contributions to improve AskFix! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Workflow
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Code Quality Standards
-
-- **Code Style:** Black formatting, PEP 8 compliance
-- **Type Hints:** Full type annotation coverage
-- **Testing:** Minimum 80% test coverage
-- **Documentation:** Comprehensive docstrings and README updates
 
 ---
 
